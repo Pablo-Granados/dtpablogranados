@@ -1,0 +1,138 @@
+/* ============================================================
+   DESIGN TOKENS — mismos valores que la versión anterior
+   ============================================================ */
+:root {
+  --color-bg-dark: #05070a;
+  --color-card-dark: #0f1218;
+  --color-accent: #00f2ff;
+  --color-accent-soft: rgba(0, 242, 255, 0.1);
+  --color-tier-basic: #4ade80;
+  --color-tier-pro: #fbbf24;
+  --color-tier-elite: #f87171;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--color-bg-dark);
+  color: #fff;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #000;
+}
+
+/* ============================================================
+   COMPONENTES REUTILIZABLES
+   ============================================================ */
+.tactical-bg {
+  background-image: radial-gradient(circle at 2px 2px, rgba(0, 242, 255, 0.05) 1px, transparent 0);
+  background-size: 30px 30px;
+}
+
+.sport-card {
+  background: var(--color-card-dark);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+.sport-card:hover {
+  border-color: rgba(0, 242, 255, 0.4);
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+}
+
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.clamp-h1 { font-size: clamp(2rem, 10vw, 5.5rem); }
+.clamp-h2 { font-size: clamp(1.5rem, 8vw, 3.5rem); }
+
+.glow-text { text-shadow: 0 0 20px rgba(0, 242, 255, 0.5); }
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.snap-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+.snap-item { scroll-snap-align: center; flex-shrink: 0; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-dark); }
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 242, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 242, 255, 0.4); }
+
+/* Accordion (usado en Diagnóstico y en carrusel de Servicios) */
+.accordion-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+.accordion-panel.open {
+  max-height: 600px;
+  opacity: 1;
+}
+
+/* Nav animada al hacer scroll */
+#navbar {
+  transition: all 0.5s ease;
+}
+#navbar.scrolled {
+  background: rgba(5, 7, 10, 0.95);
+  backdrop-filter: blur(12px);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+#navbar.not-scrolled { padding-top: 2rem; padding-bottom: 2rem; }
+
+/* Ping animado del badge del hero */
+@keyframes ping-slow {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+.animate-ping-slow { animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+/* Card de "Primera Generación" */
+.gen-card {
+  background: var(--color-card-dark);
+  border: 1px solid rgba(0, 242, 255, 0.15);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+.gen-card:hover {
+  border-color: rgba(0, 242, 255, 0.5);
+  transform: translateY(-2px);
+}

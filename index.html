@@ -1,15 +1,560 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <title>DT PABLO GRANADOS</title>
-    <link rel="icon" type="image/png" href="/favicon.png" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DT PABLO GRANADOS</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind (CDN, sin build) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg-dark': '#05070a',
+            'card-dark': '#0f1218',
+            accent: '#00f2ff',
+            'tier-basic': '#4ade80',
+            'tier-pro': '#fbbf24',
+            'tier-elite': '#f87171',
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Iconos -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-bg-dark font-sans tactical-bg">
+
+  <!-- ============================================================
+       NAV
+  ============================================================ -->
+  <nav id="navbar" class="not-scrolled fixed top-0 left-0 right-0 z-[100]">
+    <div class="container mx-auto flex items-center justify-between px-6 md:px-12">
+      <div class="flex items-center gap-3">
+        <img src="https://i.postimg.cc/0N7nQMXQ/Logo-DTPG.png" alt="DT PG Logo" class="h-10 w-10 brightness-125 object-contain" />
+        <span class="text-sm md:text-xl font-black tracking-tighter uppercase italic">DTPabloGranados</span>
+      </div>
+
+      <div class="hidden lg:flex items-center gap-10">
+        <button onclick="scrollToSection('analisis')" class="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 hover:text-accent transition-colors">Análisis</button>
+        <button onclick="scrollToSection('autoridad')" class="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 hover:text-accent transition-colors">Autoridad</button>
+        <button onclick="scrollToSection('servicios')" class="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 hover:text-accent transition-colors">Servicios</button>
+        <button onclick="scrollToSection('ebook')" class="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 hover:text-accent transition-colors">Ebook</button>
+        <button onclick="scrollToSection('pack')" class="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 hover:text-accent transition-colors">Pack</button>
+      </div>
+
+      <button id="nav-cta" onclick="scrollToSection('pack')"
+        class="hidden lg:flex group items-center gap-3 bg-accent px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-black hover:bg-white transition-all">
+        Ver Planes
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       HERO (siempre fijo, no depende de config.js)
+  ============================================================ -->
+  <section class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-12 md:pt-20">
+    <div class="absolute inset-0 bg-gradient-to-b from-bg-dark/80 via-bg-dark to-bg-dark w-full"></div>
+    <div class="absolute top-1/4 -right-20 h-[600px] w-[600px] bg-accent/5 blur-[180px] rounded-full"></div>
+
+    <div class="relative z-10 flex flex-col items-center text-center mt-16 md:mt-20 w-full max-w-4xl">
+      <div class="bg-white/5 border border-white/10 px-6 py-2 mb-10 inline-flex items-center gap-3">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping-slow absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+        </span>
+        <span class="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Información que Gana Partidos</span>
+      </div>
+
+      <h1 class="clamp-h1 font-black uppercase tracking-tighter leading-[0.85] italic mb-8">
+        Competí con<br />
+        <span class="text-accent glow-text">Ventaja</span>
+      </h1>
+
+      <p class="max-w-2xl text-xl text-white/40 font-medium leading-relaxed mb-12">
+        Videoanálisis profesional de futsal para entrenadores, clubes y jugadores. <br class="hidden md:block" />
+        <span class="text-white">Dejá de improvisar.</span> Empezá a ganar información.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center gap-6">
+        <button onclick="scrollToSection('pack')"
+          class="w-full sm:w-auto bg-white px-12 py-6 text-sm font-black uppercase tracking-[0.2em] text-black hover:bg-accent transition-all flex items-center justify-center gap-4">
+          Ver Planes de Análisis
+          <i data-lucide="target" class="w-5 h-5"></i>
+        </button>
+        <button onclick="window.open('https://youtube.com/@DTPabloGranados', '_blank')"
+          class="w-full sm:w-auto px-12 py-6 text-sm font-black uppercase tracking-[0.2em] text-white/60 border border-white/10 hover:bg-white/5 transition-all">
+          Ver ejemplos
+        </button>
+      </div>
+
+      <div class="mt-16 flex items-center gap-4 bg-accent/10 px-6 py-3 border border-accent/20">
+        <i data-lucide="clock" class="w-4 h-4 text-accent"></i>
+        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-accent">Entrega garantizada en 24–48 hs</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECCIONES DINÁMICAS
+       El orden real y la visibilidad los define config.js
+       (ver applySectionConfig() en main.js)
+  ============================================================ -->
+  <div id="dynamic-sections">
+
+    <!-- IMPACTO VISUAL -->
+    <section data-section="impacto" class="relative z-10 py-16 md:py-32 bg-card-dark/30 border-y border-white/5">
+      <div class="container mx-auto w-full px-6 md:px-12 text-center">
+        <div class="reveal flex flex-col items-center">
+          <div onclick="window.open('https://youtu.be/SUz-FCRyIJ4?t=38', '_blank')"
+            class="relative sport-card w-full max-w-4xl aspect-video mb-12 overflow-hidden group cursor-pointer">
+            <img src="https://i.postimg.cc/7fw6nR4R/futsal.png"
+              class="w-full h-full object-cover grayscale opacity-40 group-hover:opacity-60 transition-all duration-700"
+              alt="Futsal Tactical Insight" />
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="h-20 w-20 bg-accent text-black rounded-full flex items-center justify-center shadow-2xl">
+                <i data-lucide="play" class="w-8 h-8" fill="currentColor"></i>
+              </div>
+            </div>
+          </div>
+          <h2 class="reveal text-4xl md:text-6xl font-black uppercase tracking-tighter italic">
+            No es mirar partidos.<br />
+            <span class="text-accent">Es entenderlos.</span>
+          </h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAGNÓSTICO & SOLUCIÓN -->
+    <section id="analisis" data-section="diagnostico" class="relative z-10 py-16 md:py-32">
+      <div class="container mx-auto w-full px-6 md:px-12">
+        <div class="grid gap-24 lg:grid-cols-2">
+
+          <div class="reveal">
+            <span class="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">El diagnóstico actual</span>
+            <h2 class="mt-6 text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-[0.85] text-white/40 mb-12 lg:mb-20">
+              La mayoría compite<br /><span class="text-white italic">sin saber:</span>
+            </h2>
+            <div class="space-y-8 md:space-y-12 lg:space-y-16">
+              <div class="flex gap-6 md:gap-10 items-center opacity-70">
+                <div class="text-3xl md:text-5xl font-black italic text-accent/20">01</div>
+                <span class="text-xl md:text-3xl lg:text-4xl font-bold tracking-tighter uppercase italic md:not-italic">Cómo neutralizar al rival</span>
+              </div>
+              <div class="flex gap-6 md:gap-10 items-center opacity-70">
+                <div class="text-3xl md:text-5xl font-black italic text-accent/20">02</div>
+                <span class="text-xl md:text-3xl lg:text-4xl font-bold tracking-tighter uppercase italic md:not-italic">Dónde está fallando</span>
+              </div>
+              <div class="flex gap-6 md:gap-10 items-center opacity-70">
+                <div class="text-3xl md:text-5xl font-black italic text-accent/20">03</div>
+                <span class="text-xl md:text-3xl lg:text-4xl font-bold tracking-tighter uppercase italic md:not-italic">Qué patrones se repiten</span>
+              </div>
+            </div>
+            <div class="hidden sm:flex mt-10 md:mt-24 py-12 px-6 border-y border-accent/20 bg-accent/5 backdrop-blur-md w-full justify-center">
+              <p class="text-sm sm:text-base md:text-xl font-black italic leading-tight text-white uppercase text-center max-w-[280px] sm:max-w-none">
+                Compitiendo así, los resultados negativos <br class="hidden sm:block" />
+                <span class="text-accent underline decoration-2 underline-offset-4 px-1">no son mala suerte.</span> <br class="hidden sm:block" />
+                Son inevitables.
+              </p>
+            </div>
+          </div>
+
+          <div class="reveal flex flex-col justify-center relative" id="diagnostico-accordion">
+            <span class="text-[10px] font-black uppercase tracking-[0.4em] text-accent">¿Qué te ofrezco?</span>
+            <h2 class="mt-6 text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-12 italic text-accent glow-text">
+              Información Útil
+            </h2>
+
+            <div class="space-y-4 mt-8 md:mt-12">
+
+              <div class="sport-card overflow-hidden bg-white/[0.02] border-white/5">
+                <button data-accordion-trigger class="w-full flex items-center justify-between p-6 md:p-8 text-left">
+                  <div class="flex items-center gap-6 md:gap-8">
+                    <div class="h-10 w-10 flex items-center justify-center font-black italic bg-white/10 text-white">01</div>
+                    <div>
+                      <h3 class="text-lg md:text-2xl font-black uppercase tracking-tighter italic text-white/60">Qué corregir</h3>
+                      <p class="text-[9px] md:text-xs font-bold text-white/30 uppercase tracking-widest mt-1">Detección de errores tácticos y estructurales.</p>
+                    </div>
+                  </div>
+                  <i data-lucide="chevron-right" class="chevron w-6 h-6 text-white/20 transition-transform duration-300"></i>
+                </button>
+                <div class="accordion-panel">
+                  <div class="p-6 md:p-8 pt-0 border-t border-white/5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-8">
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Posicionamiento fase defensiva</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Mala ocupación de espacios</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Errores toma de decisión</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Desajustes en marcas</div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-6 border-t border-white/5 bg-accent/[0.02] -mx-8 px-8 -mb-8 py-4">
+                      <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-accent/60">Ideal para:</span>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">Equipos con desajustes defensivos recurrentes.</p>
+                      </div>
+                      <i data-lucide="target" class="w-5 h-5 text-accent/40 hidden md:block"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sport-card overflow-hidden bg-white/[0.02] border-white/5">
+                <button data-accordion-trigger class="w-full flex items-center justify-between p-6 md:p-8 text-left">
+                  <div class="flex items-center gap-6 md:gap-8">
+                    <div class="h-10 w-10 flex items-center justify-center font-black italic bg-white/10 text-white">02</div>
+                    <div>
+                      <h3 class="text-lg md:text-2xl font-black uppercase tracking-tighter italic text-white/60">Qué potenciar</h3>
+                      <p class="text-[9px] md:text-xs font-bold text-white/30 uppercase tracking-widest mt-1">Maximización de virtudes existentes.</p>
+                    </div>
+                  </div>
+                  <i data-lucide="chevron-right" class="chevron w-6 h-6 text-white/20 transition-transform duration-300"></i>
+                </button>
+                <div class="accordion-panel">
+                  <div class="p-6 md:p-8 pt-0 border-t border-white/5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-8">
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Fortaleza en el 1vs1</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Efectividad pelota parada</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Velocidad de transición</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Sincronización ofensiva</div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-6 border-t border-white/5 bg-accent/[0.02] -mx-8 px-8 -mb-8 py-4">
+                      <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-accent/60">Ideal para:</span>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">Jugadores y equipos que buscan el salto de calidad.</p>
+                      </div>
+                      <i data-lucide="zap" class="w-5 h-5 text-accent/40 hidden md:block"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sport-card overflow-hidden bg-white/[0.02] border-white/5">
+                <button data-accordion-trigger class="w-full flex items-center justify-between p-6 md:p-8 text-left">
+                  <div class="flex items-center gap-6 md:gap-8">
+                    <div class="h-10 w-10 flex items-center justify-center font-black italic bg-white/10 text-white">03</div>
+                    <div>
+                      <h3 class="text-lg md:text-2xl font-black uppercase tracking-tighter italic text-white/60">Dónde ganar</h3>
+                      <p class="text-[9px] md:text-xs font-bold text-white/30 uppercase tracking-widest mt-1">Análisis de vulnerabilidades del oponente.</p>
+                    </div>
+                  </div>
+                  <i data-lucide="chevron-right" class="chevron w-6 h-6 text-white/20 transition-transform duration-300"></i>
+                </button>
+                <div class="accordion-panel">
+                  <div class="p-6 md:p-8 pt-0 border-t border-white/5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-8">
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Debilidad repliegue rival</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Dificultad ante presión alta</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Espacios generados por pivot</div>
+                      <div class="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest flex items-center gap-3"><span class="h-1.5 w-1.5 bg-accent/40 rounded-full shrink-0"></span>Análisis patrones de salida</div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-6 border-t border-white/5 bg-accent/[0.02] -mx-8 px-8 -mb-8 py-4">
+                      <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-accent/60">Ideal para:</span>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">Partidos decisivos contra rivales directos.</p>
+                      </div>
+                      <i data-lucide="search" class="w-5 h-5 text-accent/40 hidden md:block"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUTORIDAD -->
+    <section id="autoridad" data-section="autoridad" class="relative z-10 py-16 md:py-32 bg-white/[0.01] border-y border-white/5">
+      <div class="container mx-auto w-full px-6 md:px-12 text-center">
+        <div class="reveal mb-12 md:mb-20 flex flex-col items-center">
+          <span class="text-[10px] font-black uppercase tracking-[0.5em] text-accent text-center">Trayectoria Verificada</span>
+          <h2 class="mt-6 text-4xl md:text-5xl font-black uppercase tracking-tighter italic text-center">Posicionamiento <span class="text-white/20">Real</span></h2>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2 items-stretch">
+          <div class="reveal sport-card p-12 text-left bg-gradient-to-br from-card-dark to-[#0a0a0a]">
+            <i data-lucide="award" class="text-accent mb-8 w-10 h-10"></i>
+            <h3 class="text-3xl font-black uppercase tracking-tight mb-8 leading-tight">Experiencia Elite</h3>
+            <ul class="space-y-6">
+              <li class="flex items-center gap-4">
+                <div class="h-1.5 w-6 bg-accent"></div>
+                <span class="text-xl font-bold italic">Videoanalista de Valdetires Ferrol (España)</span>
+              </li>
+              <li class="flex items-center gap-4">
+                <div class="h-1.5 w-6 bg-accent"></div>
+                <span class="text-xl font-bold italic">Ex DT Futsal Femenino Newell's Old Boys (AFA)</span>
+              </li>
+            </ul>
+            <div class="pt-8 mt-8 border-t border-white/5 flex flex-wrap gap-8 grayscale opacity-40">
+              <span class="text-sm font-black uppercase tracking-tighter">AFA</span>
+              <span class="text-sm font-black uppercase tracking-tighter">CONMEBOL</span>
+              <span class="text-sm font-black uppercase tracking-tighter">RFEF</span>
+            </div>
+          </div>
+          <div class="reveal sport-card p-12 flex flex-col justify-center items-center text-center bg-accent/5 border-accent/20">
+            <div class="flex gap-4 mb-10">
+              <a href="https://www.youtube.com/@DTPabloGranados" target="_blank" class="hover:text-accent transition-colors"><i data-lucide="youtube" class="w-8 h-8"></i></a>
+              <a href="https://www.instagram.com/dtpablogranados" target="_blank" class="hover:text-accent transition-colors"><i data-lucide="instagram" class="w-8 h-8"></i></a>
+              <a href="https://www.tiktok.com/@dtpablogranados" target="_blank" class="hover:text-accent transition-colors"><i data-lucide="clapperboard" class="w-8 h-8"></i></a>
+            </div>
+            <h3 class="text-3xl font-black uppercase tracking-tight mb-4">Referente Digital</h3>
+            <p class="text-white/40 font-medium italic">Clips, táctica y contenido técnico <br />con miles de reproducciones.</p>
+            <button onclick="window.open('https://youtube.com/@DTPabloGranados', '_blank')"
+              class="mt-10 text-[10px] font-black uppercase tracking-widest border-b-2 border-accent pb-1 hover:text-accent transition-all">
+              Ver Contenido →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS (carrusel) -->
+    <section id="servicios" data-section="servicios" class="relative z-10 py-16 md:py-32">
+      <div class="container mx-auto w-full px-6 md:px-12">
+        <div class="mb-12 md:mb-24 flex flex-col md:flex-row items-start md:items-end justify-between gap-8 md:gap-12">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-[0.5em] text-tier-elite leading-loose">Oferta Estratégica</span>
+            <h2 class="mt-2 text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none italic">Soluciones <br />Tácticas</h2>
+          </div>
+          <p class="text-white/30 max-w-sm italic font-medium leading-relaxed text-sm">
+            Trabajo con entrenadores, clubes y jugadores que quieren competir mejor con información real, no intuición.
+          </p>
+        </div>
+
+        <div class="relative -mx-6 px-6">
+          <div id="solutions-track" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth px-[calc(50%-45vw)] md:px-0 hide-scrollbar pb-12 flex-nowrap">
+
+            <div class="reveal snap-item w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[400px] sport-card p-8 md:p-10 flex flex-col border-white/10 md:hover:border-accent md:hover:scale-[1.02] transition-all duration-500 cursor-pointer mr-6">
+              <div class="h-10 w-10 flex items-center justify-center bg-accent text-black font-black italic mb-6 md:mb-8">01</div>
+              <h3 class="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 italic">Rival</h3>
+              <p class="text-white/40 text-[10px] md:text-xs leading-relaxed mb-6 font-bold">Análisis exhaustivo del adversario.</p>
+              <div class="space-y-2 mb-8">
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Salida de presión</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Rotación ofensiva</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Déficit arquero</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Pelota parada</div>
+              </div>
+              <div class="mt-auto pt-6 border-t border-white/5">
+                <p class="text-[10px] font-black uppercase tracking-widest text-accent/60">Ideal para:</p>
+                <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">Partidos decisivos o playoffs.</p>
+              </div>
+            </div>
+
+            <div class="reveal snap-item w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[400px] sport-card p-8 md:p-10 flex flex-col border-white/10 md:hover:border-accent md:hover:scale-[1.02] transition-all duration-500 cursor-pointer mr-6">
+              <div class="h-10 w-10 flex items-center justify-center bg-accent text-black font-black italic mb-6 md:mb-8">02</div>
+              <h3 class="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 italic">Propio</h3>
+              <p class="text-white/40 text-[10px] md:text-xs leading-relaxed mb-6 font-bold">Evaluación para corregir táctica.</p>
+              <div class="space-y-2 mb-8">
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Perfilamientos</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Tiempos cobertura</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Ocupación espacio</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Toma decisiones</div>
+              </div>
+              <div class="mt-auto pt-6 border-t border-white/5">
+                <p class="text-[10px] font-black uppercase tracking-widest text-accent/60">Ideal para:</p>
+                <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">Equipos en crecimiento.</p>
+              </div>
+            </div>
+
+            <div class="reveal snap-item w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[400px] sport-card p-8 md:p-10 flex flex-col border-white/10 md:hover:border-accent md:hover:scale-[1.02] transition-all duration-500 cursor-pointer mr-6">
+              <div class="h-10 w-10 flex items-center justify-center bg-accent text-black font-black italic mb-6 md:mb-8">03</div>
+              <h3 class="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 italic">Individual</h3>
+              <p class="text-white/40 text-[10px] md:text-xs leading-relaxed mb-6 font-bold">Seguimiento de performance.</p>
+              <div class="space-y-2 mb-8">
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Desmarques</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Primer toque</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Inteligencia táctica</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Finalizaciones</div>
+              </div>
+              <div class="mt-auto pt-6 border-t border-white/5">
+                <p class="text-[10px] font-black uppercase tracking-widest text-accent/60">Ideal para:</p>
+                <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">Jugadores Pro.</p>
+              </div>
+            </div>
+
+            <div class="reveal snap-item w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[400px] sport-card p-8 md:p-10 flex flex-col border-white/10 md:hover:border-accent md:hover:scale-[1.02] transition-all duration-500 cursor-pointer">
+              <div class="h-10 w-10 flex items-center justify-center bg-accent text-black font-black italic mb-6 md:mb-8">04</div>
+              <h3 class="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 italic">Highlights</h3>
+              <p class="text-white/40 text-[10px] md:text-xs leading-relaxed mb-6 font-bold">Montaje visual de marketing.</p>
+              <div class="space-y-2 mb-8">
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Jugadas clave</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Edición rítmica</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Seguimiento visual</div>
+                <div class="text-[9px] text-white/30 font-bold uppercase tracking-widest flex items-center gap-2"><span class="h-1 w-1 bg-accent/30 rounded-full"></span>Optimizado Social</div>
+              </div>
+              <div class="mt-auto pt-6 border-t border-white/5">
+                <p class="text-[10px] font-black uppercase tracking-widest text-accent/60">Ideal para:</p>
+                <p class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">Representantes/Marca.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="absolute top-1/2 left-2 right-2 md:-left-8 md:-right-8 -translate-y-1/2 flex justify-between pointer-events-none z-20">
+            <button id="solutions-left" class="p-3 md:p-4 bg-accent text-black rounded-full pointer-events-auto hover:bg-white transition-all shadow-[0_0_30px_rgba(0,242,255,0.4)]">
+              <i data-lucide="chevron-right" class="rotate-180 w-6 h-6"></i>
+            </button>
+            <button id="solutions-right" class="p-3 md:p-4 bg-accent text-black rounded-full pointer-events-auto hover:bg-white transition-all shadow-[0_0_30px_rgba(0,242,255,0.4)]">
+              <i data-lucide="chevron-right" class="w-6 h-6"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EBOOK + PRIMERA GENERACIÓN (sección nueva) -->
+    <section id="ebook" data-section="ebook" class="relative z-10 py-16 md:py-32 bg-white/[0.01] border-y border-white/5">
+      <div class="container mx-auto w-full px-6 md:px-12">
+
+        <div class="reveal text-center mb-16 md:mb-20">
+          <span class="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Para arrancar por tu cuenta</span>
+          <h2 class="mt-6 text-4xl md:text-6xl font-black uppercase tracking-tighter italic">
+            Tu primer <span class="text-accent glow-text">sistema táctico</span>
+          </h2>
+        </div>
+
+        <div class="grid gap-16 lg:grid-cols-2 items-start">
+          <!-- Venta del ebook (se completa desde config.js) -->
+          <div id="ebook-content"></div>
+
+          <!-- Primera Generación -->
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Primera Generación</span>
+            <h3 class="mt-4 text-2xl md:text-3xl font-black uppercase italic tracking-tighter mb-8">
+              Quienes ya se sumaron
+            </h3>
+            <div id="generacion-content"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PLANES ESTRATÉGICOS -->
+    <section id="pack" data-section="pack" class="relative z-10 py-16 md:py-32 bg-white/[0.01]">
+      <div class="container mx-auto w-full px-6 md:px-12">
+        <div class="text-center mb-20">
+          <h2 class="reveal text-5xl font-black uppercase tracking-tighter italic">Planes <span class="text-accent">Estratégicos</span></h2>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-4">
+
+          <div class="reveal sport-card p-10 border-white/10 flex flex-col">
+            <span class="text-[10px] font-black uppercase tracking-[0.4em] mb-4 text-tier-basic">Análisis Basic</span>
+            <h3 class="text-3xl font-black uppercase tracking-tighter italic mb-8">Básico</h3>
+            <ul class="space-y-4 mb-12 flex-grow">
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/60"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-tier-basic"></i>Informe Técnico</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/60"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-tier-basic"></i>Clips de video</li>
+            </ul>
+            <button onclick="contactWhatsApp('Básico')" class="w-full bg-accent text-black py-4 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">Elegir Plan</button>
+          </div>
+
+          <div class="reveal sport-card p-10 border-accent/40 bg-accent/5 shadow-2xl relative overflow-hidden flex flex-col lg:scale-105 z-10">
+            <div class="absolute top-0 right-0 bg-accent text-black font-black uppercase italic text-[9px] px-4 py-2">RECOMENDADO</div>
+            <span class="text-[10px] font-black uppercase tracking-[0.4em] mb-4 text-accent">Análisis Pro</span>
+            <h3 class="text-3xl font-black uppercase tracking-tighter italic mb-8">Profesional</h3>
+            <ul class="space-y-4 mb-12 flex-grow">
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/80"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-accent"></i>Informe Técnico</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/80"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-accent"></i>Clips de video</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/80"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-accent"></i>Devolución táctica</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/80"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-accent"></i>Reunión 1 a 1</li>
+            </ul>
+            <button onclick="contactWhatsApp('Profesional')" class="w-full bg-accent text-black py-4 text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(0,242,255,0.3)] hover:bg-white transition-all">Quiero este plan</button>
+          </div>
+
+          <div class="reveal sport-card p-10 border-white/10 flex flex-col">
+            <span class="text-[10px] font-black uppercase tracking-[0.4em] mb-4 text-tier-elite">Análisis Elite</span>
+            <h3 class="text-3xl font-black uppercase tracking-tighter italic mb-8">Élite</h3>
+            <ul class="space-y-4 mb-12 flex-grow">
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/60"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-tier-elite"></i>Informe Técnico Pro</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/60"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-tier-elite"></i>Edición Avanzada</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/60"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-tier-elite"></i>Devolución Táctica</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/60"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-tier-elite"></i>Reunión 1 a 1</li>
+              <li class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/60"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-tier-elite"></i>Acceso a Raw Media</li>
+            </ul>
+            <button onclick="contactWhatsApp('Élite')" class="w-full bg-accent text-black py-4 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">Elegir Plan</button>
+          </div>
+
+          <div class="reveal sport-card p-10 border-[#fbbf24]/30 bg-[#fbbf24]/5 flex flex-col border-dashed hover:border-[#fbbf24]">
+            <span class="text-[10px] font-black uppercase tracking-[0.4em] mb-4 text-[#fbbf24]">Seguimiento Mensual</span>
+            <h3 class="text-3xl font-black uppercase tracking-tighter italic mb-8 text-[#fbbf24]">Elite Mensual</h3>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-[#fbbf24]/50 leading-loose mb-12">
+              Para equipos de alto nivel. Análisis de partidos + rivales + soporte directo + plan de mejora semanal.
+            </p>
+            <button onclick="contactWhatsApp('Elite Mensual')" class="w-full bg-[#fbbf24] py-4 text-[10px] font-black uppercase tracking-widest text-black hover:bg-white transition-all">TRABAJEMOS JUNTOS</button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA FUERTE -->
+    <section data-section="cta" class="relative z-10 py-16 md:py-32">
+      <div class="container mx-auto w-full px-6 md:px-12">
+        <div class="reveal glass p-8 md:p-24 text-center border-accent/20 relative overflow-hidden backdrop-blur-3xl mx-auto">
+          <div class="absolute inset-0 z-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center grayscale"></div>
+          <div class="relative z-10">
+            <span class="text-[10px] font-black uppercase tracking-[0.8em] text-accent/60 mb-4 md:mb-6 block">Soporte estratégico</span>
+            <h2 class="text-3xl md:text-8xl font-black uppercase tracking-tighter mb-8 md:mb-12 italic leading-none">
+              ¿Querés competir <br class="hidden md:block" /><span class="text-white underline decoration-accent decoration-4 md:decoration-8 underline-offset-[8px] md:underline-offset-[16px]">mejor?</span>
+            </h2>
+            <p class="text-lg md:text-2xl text-white/50 mb-12 md:mb-20 max-w-2xl mx-auto font-medium italic leading-relaxed">
+              Necesitás información útil. <br class="md:hidden" /> Escribime y lo vemos personalmente.
+            </p>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+              <button onclick="contactWhatsApp('Diagnóstico')"
+                class="w-full md:w-auto bg-accent text-black px-16 py-8 text-sm font-black uppercase tracking-[0.3em] flex items-center justify-center gap-6 shadow-[0_0_50px_rgba(0,242,255,0.3)] hover:scale-105 transition-all">
+                Solicitar Diagnóstico
+                <i data-lucide="message-circle" class="w-6 h-6"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <!-- fin de #dynamic-sections -->
+
+  <!-- ============================================================
+       FOOTER (siempre fijo)
+  ============================================================ -->
+  <footer class="relative z-10 py-16 md:py-20 bg-bg-dark border-t border-white/10">
+    <div class="container mx-auto w-full px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-12">
+      <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left">
+        <img src="https://i.postimg.cc/0N7nQMXQ/Logo-DTPG.png" alt="DT PG Logo" class="h-12 w-12 md:h-16 md:w-16 brightness-150 object-contain" />
+        <div class="flex flex-col overflow-hidden max-w-[200px] sm:max-w-none">
+          <span class="text-xl md:text-3xl font-black italic tracking-tighter uppercase text-accent leading-none">DTPabloGranados</span>
+          <span class="text-[7px] md:text-[9px] font-black uppercase tracking-[0.2em] md:tracking-[1.0em] text-white/20 mt-3 italic whitespace-nowrap">Información que Gana Partidos</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-10 opacity-30">
+        <a href="https://www.youtube.com/@DTPabloGranados" target="_blank" class="hover:text-accent transition-colors"><i data-lucide="youtube" class="w-5 h-5"></i></a>
+        <a href="https://www.instagram.com/dtpablogranados" target="_blank" class="hover:text-accent transition-colors"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+        <a href="https://www.tiktok.com/@dtpablogranados" target="_blank" class="hover:text-accent transition-colors"><i data-lucide="clapperboard" class="w-5 h-5"></i></a>
+      </div>
+
+      <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20">© 2026 Rosario Hub — Rosario, AR</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
