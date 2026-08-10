@@ -35,6 +35,21 @@ function scrollToSection(id) {
   if (el) el.scrollIntoView({ behavior: "smooth" });
 }
 
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function initBackToTop() {
+  const btn = document.getElementById("back-to-top");
+  if (!btn) return;
+  window.addEventListener("scroll", () => {
+    const show = window.scrollY > 600;
+    btn.classList.toggle("opacity-0", !show);
+    btn.classList.toggle("pointer-events-none", !show);
+    btn.classList.toggle("translate-y-4", !show);
+  });
+}
+
 /* ------------------------------------------------------------
    2) REVEAL: elementos aparecen al entrar en pantalla
 ------------------------------------------------------------ */
@@ -113,6 +128,46 @@ function initCarousel(trackId, btnLeftId, btnRightId) {
   setTimeout(updateArrows, 600);
 }
 
+async function loadSiteData() {
+  const CACHE_KEY = "dtpg_site_data";
+  const CACHE_MS = 5 * 60 * 1000; // 5 minutos
+
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Date.now() - parsed.ts < CACHE_MS) return parsed.data;
+    }
+  } catch (e) { /* sessionStorage no disponible, seguimos sin cache */ }
+
+  const data = await loadJsonp(SITE_CONFIG.sheetUrl);
+
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch (e) { /* si falla el guardado, no pasa nada grave */ }
+
+  return data;
+}
+
+function loadJsonp(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "jsonp_cb_" + Math.random().toString(36).slice(2);
+    window[callbackName] = (data) => {
+      resolve(data);
+      delete window[callbackName];
+      script.remove();
+    };
+    const script = document.createElement("script");
+    script.src = `${url}${url.includes("?") ? "&" : "?"}callback=${callbackName}`;
+    script.onerror = () => {
+      reject(new Error("No se pudo cargar (JSONP)"));
+      delete window[callbackName];
+      script.remove();
+    };
+    document.body.appendChild(script);
+  });
+}
+
 /* ------------------------------------------------------------
    5) EBOOK: pinta la sección de venta desde config.js
 ------------------------------------------------------------ */
@@ -130,10 +185,15 @@ function renderEbook() {
 
   root.innerHTML = `
     <div class="reveal sport-card p-8 md:p-12 bg-gradient-to-br from-card-dark to-[#0a0a0a] border-accent/20">
-      <span class="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Ebook</span>
-      <h3 class="mt-4 text-3xl md:text-4xl font-black uppercase italic tracking-tighter leading-none">${cfg.titulo}</h3>
-      <p class="mt-4 text-white/50 font-medium italic">${cfg.subtitulo}</p>
-      <ul class="mt-8 space-y-4">${bullets}</ul>
+      <div class="grid md:grid-cols-[180px_1fr] gap-8 items-start mb-8">
+        <img src="${cfg.imagen}" alt="${cfg.titulo}" class="w-full max-w-[180px] mx-auto md:mx-0 rounded-lg shadow-2xl" />
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Ebook</span>
+          <h3 class="mt-4 text-3xl md:text-4xl font-black uppercase italic tracking-tighter leading-none">${cfg.titulo}</h3>
+          <p class="mt-4 text-white/50 font-medium italic">${cfg.subtitulo}</p>
+        </div>
+      </div>
+      <ul class="mt-2 space-y-4">${bullets}</ul>
       <div class="mt-10 flex items-center justify-between gap-6 flex-wrap">
         <span class="text-3xl font-black italic text-accent">${cfg.precio}</span>
         <a href="${cfg.checkoutUrl}" target="_blank" rel="noopener"
@@ -146,38 +206,143 @@ function renderEbook() {
 }
 
 /* ------------------------------------------------------------
-   6) PRIMERA GENERACIÓN: pinta la grilla desde config.js
+   6) FUTSAL HUB: pinta la sección destacada de producto propio
 ------------------------------------------------------------ */
-function renderPrimeraGeneracion() {
-  const list = SITE_CONFIG.primeraGeneracion || [];
+function renderFutsalHub() {
+  const cfg = SITE_CONFIG.futsalHub;
+  const root = document.getElementById("futsalhub-content");
+  if (!root || !cfg) return;
+
+  const bullets = cfg.bullets.map(b => `
+    <li class="flex items-start gap-3 text-sm md:text-base text-white/70 font-medium">
+      <span class="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0"></span>
+      ${b}
+    </li>
+  `).join("");
+
+  root.innerHTML = `
+    <div class="reveal sport-card border-accent/30 bg-gradient-to-br from-accent/10 via-card-dark to-card-dark overflow-hidden">
+      <div class="grid lg:grid-cols-2 items-center">
+
+        <div class="p-8 md:p-14 lg:p-16">
+          <span class="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Producto propio</span>
+          <h2 class="mt-4 text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-[0.9]">${cfg.titulo}</h2>
+          <p class="mt-4 text-white/50 font-medium italic">${cfg.subtitulo}</p>
+          <p class="mt-6 text-white/40 text-sm leading-relaxed">${cfg.descripcion}</p>
+          <ul class="mt-8 space-y-4">${bullets}</ul>
+          <a href="${cfg.url}" target="_blank" rel="noopener"
+             class="mt-10 inline-flex items-center gap-3 bg-accent text-black px-10 py-5 text-xs font-black uppercase tracking-[0.2em] hover:bg-white transition-all">
+            Entrar a Futsal Hub
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+
+        <div class="relative h-full min-h-[280px] lg:min-h-[420px] flex items-center justify-center bg-black/30 border-t lg:border-t-0 lg:border-l border-white/5 p-10">
+          <div class="absolute inset-0 tactical-bg opacity-40"></div>
+          <a href="${cfg.url}" target="_blank" rel="noopener" class="relative w-full max-w-sm sport-card border-white/10 bg-bg-dark/80 backdrop-blur-md overflow-hidden block hover:border-accent/50 transition-colors">
+            <div class="flex items-center gap-1.5 px-4 py-3 border-b border-white/5">
+              <span class="h-2.5 w-2.5 rounded-full bg-tier-elite/60"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-tier-pro/60"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-tier-basic/60"></span>
+            </div>
+            <div class="p-8 flex flex-col items-center text-center gap-4">
+              <img src="image/futsalhub-logo.png" alt="ARF Futsal Hub" class="w-24 h-24 object-contain" />
+              <p class="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Estadísticas en vivo</p>
+            </div>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+/* ------------------------------------------------------------
+   7) PRIMERA GENERACIÓN: pinta la grilla desde config.js
+------------------------------------------------------------ */
+function renderPrimeraGeneracion(list) {
   const root = document.getElementById("generacion-content");
   if (!root) return;
 
+  list = list || [];
+
   if (list.length === 0) {
+
     root.innerHTML = `
       <div class="reveal flex flex-col items-center justify-center text-center py-16 border border-dashed border-white/10 rounded-2xl">
         <p class="text-white/30 font-bold uppercase tracking-widest text-xs">Todavía no hay integrantes cargados</p>
         <p class="text-white/20 text-[10px] mt-2 uppercase tracking-widest">Sé el primero en sumarte comprando el ebook</p>
       </div>
     `;
+    root.querySelectorAll(".reveal").forEach((el) => el.classList.add("active"));
     return;
   }
 
-  const cards = list.map((p) => `
-    <div class="reveal gen-card">
-      <p class="text-sm md:text-base font-black uppercase italic tracking-tight">${p.nombre}</p>
-      <p class="text-[10px] md:text-xs text-accent/70 font-bold uppercase tracking-widest mt-1">${p.dato || ""}</p>
-    </div>
-  `).join("");
+  const buildCard = (p) => {
+    const igRow = p.instagram
+      ? `<div class="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-white/40">
+           <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.012-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+           @${p.instagram}
+         </div>`
+      : "";
 
-  root.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${cards}</div>`;
+    const cardInner = `
+      <img src="${p.imagen}" alt="${p.nombre}" class="w-16 h-16 rounded-full object-cover mx-auto border-2 border-accent/30" />
+      <p class="mt-3 text-sm md:text-base font-black uppercase italic tracking-tight text-center">${p.nombre}</p>
+      <p class="text-[10px] md:text-xs text-accent/70 font-bold uppercase tracking-widest mt-1 text-center">${p.dato || ""}</p>
+      ${igRow}
+    `;
+
+    return p.instagram
+      ? `<a href="https://instagram.com/${p.instagram}" target="_blank" rel="noopener" class="reveal gen-card block hover:border-accent/50 transition-colors">${cardInner}</a>`
+      : `<div class="reveal gen-card">${cardInner}</div>`;
+  };
+
+  const PREVIEW_COUNT = 4;
+  const previewCards = list.slice(0, PREVIEW_COUNT).map(buildCard).join("");
+  const verTodosBtn = list.length > PREVIEW_COUNT
+    ? `<button id="generacion-ver-todos" class="mt-6 w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] text-accent border border-accent/30 hover:bg-accent/10 transition-colors rounded-lg">Ver todos (${list.length})</button>`
+    : "";
+
+  root.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${previewCards}</div>
+    ${verTodosBtn}
+  `;
+  root.querySelectorAll(".reveal").forEach((el) => el.classList.add("active"));
+
+  if (list.length > PREVIEW_COUNT) {
+    const modal = document.getElementById("generacion-modal");
+    const modalContent = document.getElementById("generacion-modal-content");
+    const openBtn = document.getElementById("generacion-ver-todos");
+    const closeBtn = document.getElementById("generacion-modal-close");
+    const backdrop = document.getElementById("generacion-modal-backdrop");
+
+    const openModal = () => {
+      modalContent.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${list.map(buildCard).join("")}</div>`;
+      modalContent.querySelectorAll(".reveal").forEach((el) => el.classList.add("active"));
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      document.body.style.overflow = "hidden";
+      lucide.createIcons();
+    };
+    const closeModal = () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      document.body.style.overflow = "";
+    };
+
+    openBtn?.addEventListener("click", openModal);
+    closeBtn?.addEventListener("click", closeModal);
+    backdrop?.addEventListener("click", closeModal);
+  }
 }
 
 /* ------------------------------------------------------------
-   7) SECCIONES: aplica visibilidad y orden según config.js
+   8) SECCIONES: aplica visibilidad y orden según config.js
 ------------------------------------------------------------ */
-function applySectionConfig() {
-  const cfg = SITE_CONFIG.secciones;
+function applySectionConfig(secciones) {
+  const cfg = secciones || SITE_CONFIG.seccionesFallback;
   const container = document.getElementById("dynamic-sections");
   if (!container) return;
 
@@ -193,16 +358,26 @@ function applySectionConfig() {
 
   container.style.display = "flex";
   container.style.flexDirection = "column";
+
 }
 
 /* ------------------------------------------------------------
    INIT
 ------------------------------------------------------------ */
-document.addEventListener("DOMContentLoaded", () => {
-  applySectionConfig();
+document.addEventListener("DOMContentLoaded", async () => {
+  let data = { secciones: null, generacion: [] };
+  try {
+    data = await loadSiteData();
+  } catch (err) {
+    console.error("No se pudo cargar la configuración del Sheet:", err);
+  }
+
+  applySectionConfig(data.secciones);
   renderEbook();
-  renderPrimeraGeneracion();
+  renderFutsalHub();
+  renderPrimeraGeneracion(data.generacion);
   initNavScroll();
+  initBackToTop();
   initAccordion("#diagnostico-accordion");
   initCarousel("solutions-track", "solutions-left", "solutions-right");
   initRevealObserver();

@@ -11,32 +11,33 @@
 const SITE_CONFIG = {
 
   // ----------------------------------------------------------
-  // 1) SECCIONES: prendé/apagá y reordená el contenido del medio
-  //    de la página (Hero y Footer siempre quedan fijos).
-  //    - visible: true/false → se muestra o se oculta
-  //    - orden: número → de menor a mayor, define el orden
+  // 1) SECCIONES: ahora se controla desde la pestaña "Secciones"
+  //    de tu Google Sheet (visible + orden). Esto de acá abajo
+  //    es solo un respaldo por si el Sheet no responde.
   // ----------------------------------------------------------
-  secciones: {
-    impacto:     { visible: true, orden: 1 },  // "No es mirar partidos..."
-    diagnostico: { visible: true, orden: 2 },  // Dolor + Solución
-    autoridad:   { visible: true, orden: 3 },  // Trayectoria
-    servicios:   { visible: true, orden: 4 },  // Carrusel de soluciones
-    ebook:       { visible: false, orden: 5 },  // Venta ebook + Primera Generación
-    pack:        { visible: true, orden: 6 },  // Planes estratégicos
-    cta:         { visible: true, orden: 7 },  // CTA final WhatsApp
+  seccionesFallback: {
+    hero: { visible: true, orden: 1 },
+    impacto: { visible: true, orden: 2 },
+    diagnostico: { visible: true, orden: 3 },
+    autoridad: { visible: true, orden: 4 },
+    servicios: { visible: true, orden: 5 },
+    ebook: { visible: true, orden: 6 },
+    futsalhub: { visible: true, orden: 7 },
+    pack: { visible: true, orden: 8 },
+    cta: { visible: true, orden: 9 },
   },
 
   // ----------------------------------------------------------
   // 2) EBOOK: datos de venta
   // ----------------------------------------------------------
   ebook: {
-    titulo: "El Manual del DT de Futsal",
-    subtitulo: "Tu primer sistema táctico, de la teoría a la cancha.",
-    precio: "$14.999 ARS",
+    titulo: "Leé el partido",
+    subtitulo: "El manual del analista.",
+    precio: "",
     // TODO: reemplazar por tu link real de checkout de Hotmart
     // Ejemplo real: https://pay.hotmart.com/A12345678B
     checkoutUrl: "https://pay.hotmart.com/TU-PRODUCTO-AQUI",
-    imagen: "img/ebook-cover.png", // poné acá tu tapa cuando la tengas
+    imagen: "image/Lep.png", // poné acá tu tapa cuando la tengas
     bullets: [
       "Sistemas defensivos y ofensivos explicados paso a paso",
       "Ejercicios de entrenamiento listos para aplicar",
@@ -46,14 +47,27 @@ const SITE_CONFIG = {
   },
 
   // ----------------------------------------------------------
-  // 3) PRIMERA GENERACIÓN: agregá una línea por cada persona
+  // 3) FUTSAL HUB: tu app propia de estadísticas de la ARF
+  // ----------------------------------------------------------
+  futsalHub: {
+    titulo: "Futsal Hub",
+    subtitulo: "Toda la liga de futsal de Rosario, en un solo lugar.",
+    descripcion: "La plataforma de estadísticas que armé para seguir la Asociación Rosarina de Futsal: resultados en vivo, tabla de posiciones, fixture por jornada, playoffs y el historial completo de cada club.",
+    url: "https://futsalrosario.vercel.app/",
+    bullets: [
+      "Resultados y fixture actualizados por jornada",
+      "Tabla de posiciones y llaves de playoffs",
+      "Palmarés histórico por club",
+      "Guardá tus equipos favoritos y seguilos de cerca"
+    ]
+  },
+
+  // ----------------------------------------------------------
+  // 4) PRIMERA GENERACIÓN: agregá una línea por cada persona
   //    que compró el ebook. Simplemente copiá un bloque { } y
   //    completá los datos. El orden en que los pongas acá es
   //    el orden en que aparecen en la página.
   // ----------------------------------------------------------
-  primeraGeneracion: [
-    // Ejemplo — borrá esta línea de ejemplo cuando cargues la primera real:
-    // { nombre: "Juan Pérez", dato: "Club Atlético X — Rosario" },
-  ]
+  sheetUrl: "https://script.google.com/macros/s/AKfycbyYPcGTiACOr9KeJ1QAPf2y4s4Tnwyk13mpFID9I7aZi5Op3SIYNKF58iNk68AnAJCw/exec"
 
 };
