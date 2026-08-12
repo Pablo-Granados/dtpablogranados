@@ -34,10 +34,8 @@ const SITE_CONFIG = {
     titulo: "Leé el partido",
     subtitulo: "El manual del analista.",
     precio: "",
-    // TODO: reemplazar por tu link real de checkout de Hotmart
-    // Ejemplo real: https://pay.hotmart.com/A12345678B
-    checkoutUrl: "https://pay.hotmart.com/TU-PRODUCTO-AQUI",
-    imagen: "image/Lep.png", // poné acá tu tapa cuando la tengas
+    checkoutUrl: "https://mpago.la/2pV7xCs",
+    imagen: "image/Lep.png",
     bullets: [
       "Sistemas defensivos y ofensivos explicados paso a paso",
       "Ejercicios de entrenamiento listos para aplicar",
