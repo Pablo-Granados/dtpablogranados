@@ -196,7 +196,7 @@ function renderEbook() {
       <ul class="mt-2 space-y-4">${bullets}</ul>
       <div class="mt-10 flex items-center justify-between gap-6 flex-wrap">
         <span class="text-3xl font-black italic text-accent">${cfg.precio}</span>
-        <a href="${cfg.checkoutUrl}" target="_blank" rel="noopener"
+        <a href="checkout.html"
            class="bg-accent text-black px-10 py-5 text-xs font-black uppercase tracking-[0.2em] hover:bg-white transition-all inline-flex items-center gap-3">
           Quiero mi ejemplar
         </a>
