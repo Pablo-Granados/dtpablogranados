@@ -234,7 +234,6 @@ function renderFutsalHub() {
           <span class="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Producto propio</span>
           <h2 class="mt-4 text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-[0.9]">${cfg.titulo}</h2>
           <p class="mt-4 text-white/50 font-medium italic">${cfg.subtitulo}</p>
-          <p class="mt-3 text-[10px] font-black uppercase tracking-widest text-accent/70">🔥 35% OFF — Solo para los primeros 50</p>
           <p class="mt-6 text-white/40 text-sm leading-relaxed">${cfg.descripcion}</p>
           <ul class="mt-8 space-y-4">${bullets}</ul>
           <a href="${cfg.url}" target="_blank" rel="noopener"
