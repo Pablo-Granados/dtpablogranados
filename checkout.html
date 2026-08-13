@@ -88,21 +88,70 @@
         <p class="mt-4 text-[10px] font-black uppercase tracking-widest text-accent/70">⚠️ Oferta válida únicamente para los primeros 50 compradores</p>
       </div>
 
-      <a href="${cfg.checkoutUrl}" target="_blank" rel="noopener"
-         class="w-full flex items-center justify-center gap-4 bg-accent text-black py-6 text-sm font-black uppercase tracking-[0.2em] hover:bg-white transition-all">
+      <div class="sport-card p-6 md:p-8 mb-8">
+        <span class="text-[10px] font-black uppercase tracking-[0.4em] text-accent/70">Completá tus datos</span>
+        <p class="text-white/40 text-xs mt-2 mb-6">Los necesitamos para prepararte el material y tu certificado.</p>
+        <iframe name="hidden-submit-frame" style="display:none"></iframe>
+        <form id="form-datos" target="hidden-submit-frame" method="POST" action="${SITE_CONFIG.sheetUrl}" class="space-y-4">
+          <input required name="nombre" placeholder="Nombre y apellido" class="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm focus:border-accent outline-none" />
+          <input required type="email" name="email" placeholder="Email (donde recibís el material)" class="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm focus:border-accent outline-none" />
+          <input required name="whatsapp" placeholder="WhatsApp (con código de área, ej: +54 9...)" class="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm focus:border-accent outline-none" />
+          <select required name="rol" class="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm focus:border-accent outline-none">
+            <option value="">Tu rol en el deporte</option>
+            <option>DT</option>
+            <option>Analista</option>
+            <option>Jugador</option>
+            <option>Aficionado</option>
+          </select>
+          <input required name="club" placeholder="Club al que pertenecés (o tu ciudad)" class="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm focus:border-accent outline-none" />
+          <input name="instagram" placeholder="Instagram (sin @, opcional)" class="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm focus:border-accent outline-none" />
+          <button type="submit" class="w-full bg-white/10 hover:bg-white/20 py-4 text-xs font-black uppercase tracking-widest transition-all">Guardar mis datos</button>
+        </form>
+        <p id="form-status" class="hidden mt-4 text-center text-[10px] font-black uppercase tracking-widest text-accent"></p>
+      </div>
+
+      <button id="btn-pagar" disabled
+         class="w-full flex items-center justify-center gap-4 bg-white/10 text-white/30 py-6 text-sm font-black uppercase tracking-[0.2em] cursor-not-allowed transition-all">
         Comprar ahora
         <i data-lucide="arrow-right" class="w-5 h-5"></i>
-      </a>
+      </button>
+      <p class="text-center text-[10px] text-white/20 uppercase tracking-widest mt-3">Completá el formulario para habilitar el pago</p>
 
       <p class="text-center text-[10px] text-white/20 uppercase tracking-widest mt-6">
         Pago 100% seguro a través de Mercado Pago
       </p>
     `;
+
+    const form = document.getElementById("form-datos");
+    const iframe = document.querySelector('iframe[name="hidden-submit-frame"]');
+    const btnPagar = document.getElementById("btn-pagar");
+    const formStatus = document.getElementById("form-status");
+    const notaPago = btnPagar.nextElementSibling;
+
+    form.addEventListener("submit", () => {
+      form.dataset.submitted = "1";
+      formStatus.textContent = "Guardando tus datos, un momento…";
+      formStatus.classList.remove("hidden");
+    });
+
+    iframe.addEventListener("load", () => {
+      if (!form.dataset.submitted) return; // ignora la carga inicial en blanco del iframe
+      formStatus.textContent = "¡Listo! Ya podés pagar.";
+      form.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
+      btnPagar.disabled = false;
+      btnPagar.classList.remove("bg-white/10", "text-white/30", "cursor-not-allowed");
+      btnPagar.classList.add("bg-accent", "text-black", "hover:bg-white");
+      notaPago.remove();
+    });
+
+    btnPagar.addEventListener("click", () => {
+      if (btnPagar.disabled) return;
+      window.open(cfg.checkoutUrl, "_blank");
+    });
   </script>
   <script defer src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.js">
 
   </script>
-  <script>lucide.createIcons();</script>
 </body>
 
 </html>

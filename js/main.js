@@ -128,27 +128,6 @@ function initCarousel(trackId, btnLeftId, btnRightId) {
   setTimeout(updateArrows, 600);
 }
 
-async function loadSiteData() {
-  const CACHE_KEY = "dtpg_site_data";
-  const CACHE_MS = 5 * 60 * 1000; // 5 minutos
-
-  try {
-    const raw = sessionStorage.getItem(CACHE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Date.now() - parsed.ts < CACHE_MS) return parsed.data;
-    }
-  } catch (e) { /* sessionStorage no disponible, seguimos sin cache */ }
-
-  const data = await loadJsonp(SITE_CONFIG.sheetUrl);
-
-  try {
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-  } catch (e) { /* si falla el guardado, no pasa nada grave */ }
-
-  return data;
-}
-
 function loadJsonp(url) {
   return new Promise((resolve, reject) => {
     const callbackName = "jsonp_cb_" + Math.random().toString(36).slice(2);
@@ -167,6 +146,29 @@ function loadJsonp(url) {
     document.body.appendChild(script);
   });
 }
+
+async function loadSiteData() {
+  const CACHE_KEY = "dtpg_site_data";
+  const CACHE_MS = 5 * 60 * 1000;
+
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Date.now() - parsed.ts < CACHE_MS) return parsed.data;
+    }
+  } catch (e) {}
+
+  const data = await loadJsonp(SITE_CONFIG.sheetUrl);
+
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch (e) {}
+
+  return data;
+}
+
+
 
 /* ------------------------------------------------------------
    5) EBOOK: pinta la sección de venta desde config.js
@@ -346,8 +348,8 @@ function renderPrimeraGeneracion(list) {
 /* ------------------------------------------------------------
    8) SECCIONES: aplica visibilidad y orden según config.js
 ------------------------------------------------------------ */
-function applySectionConfig(secciones) {
-  const cfg = secciones || SITE_CONFIG.seccionesFallback;
+function applySectionConfig() {
+  const cfg = SITE_CONFIG.seccionesFallback;
   const container = document.getElementById("dynamic-sections");
   if (!container) return;
 
@@ -370,20 +372,23 @@ function applySectionConfig(secciones) {
    INIT
 ------------------------------------------------------------ */
 document.addEventListener("DOMContentLoaded", async () => {
-  let data = { secciones: null, generacion: [] };
-  try {
-    data = await loadSiteData();
-  } catch (err) {
-    console.error("No se pudo cargar la configuración del Sheet:", err);
-  }
-
-  applySectionConfig(data.secciones);
+  applySectionConfig();
   renderEbook();
   renderFutsalHub();
-  renderPrimeraGeneracion(data.generacion);
   initNavScroll();
   initBackToTop();
   initAccordion("#diagnostico-accordion");
   initCarousel("solutions-track", "solutions-left", "solutions-right");
   initRevealObserver();
+  lucide.createIcons();
+
+  let generacion = [];
+  try {
+    const data = await loadSiteData();
+    generacion = data.generacion || [];
+  } catch (err) {
+    console.error("No se pudo cargar Primera Generación:", err);
+  }
+  renderPrimeraGeneracion(generacion);
+
 });

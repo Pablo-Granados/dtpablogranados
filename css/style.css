@@ -31,6 +31,15 @@ body {
   color: #000;
 }
 
+select {
+  accent-color: #00f2ff;
+}
+
+select option {
+  background-color: #ffffff;
+  color: #05070a;
+}
+
 /* ============================================================
    COMPONENTES REUTILIZABLES
    ============================================================ */

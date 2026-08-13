@@ -11,17 +11,17 @@
 const SITE_CONFIG = {
 
   // ----------------------------------------------------------
-  // 1) SECCIONES: ahora se controla desde la pestaña "Secciones"
-  //    de tu Google Sheet (visible + orden). Esto de acá abajo
-  //    es solo un respaldo por si el Sheet no responde.
+  // 1) SECCIONES: fijas acá (ya no vienen del Sheet, para que
+  //    la página cargue al instante). Para cambiar el orden o
+  //    esconder una sección, editás directo estos números.
   // ----------------------------------------------------------
   seccionesFallback: {
     hero: { visible: true, orden: 1 },
-    impacto: { visible: true, orden: 2 },
-    diagnostico: { visible: true, orden: 3 },
+    impacto: { visible: true, orden: 6 },
+    diagnostico: { visible: true, orden: 5 },
     autoridad: { visible: true, orden: 4 },
-    servicios: { visible: true, orden: 5 },
-    ebook: { visible: true, orden: 6 },
+    servicios: { visible: true, orden: 3 },
+    ebook: { visible: true, orden: 2 },
     futsalhub: { visible: true, orden: 7 },
     pack: { visible: true, orden: 8 },
     cta: { visible: true, orden: 9 },
