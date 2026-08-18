@@ -17,20 +17,21 @@ const SITE_CONFIG = {
   // ----------------------------------------------------------
   seccionesFallback: {
     hero: { visible: true, orden: 1 },
-    impacto: { visible: true, orden: 6 },
-    diagnostico: { visible: true, orden: 7 },
-    autoridad: { visible: true, orden: 5 },
-    servicios: { visible: true, orden: 3 },
+    impacto: { visible: true, orden: 7 },
+    diagnostico: { visible: true, orden: 8 },
+    autoridad: { visible: true, orden: 6 },
+    servicios: { visible: true, orden: 4 },
     ebook: { visible: true, orden: 2 },
-    futsalhub: { visible: true, orden: 4 },
-    pack: { visible: true, orden: 8 },
-    cta: { visible: true, orden: 9 },
+    opiniones: { visible: true, orden: 3 },
+    futsalhub: { visible: true, orden: 5 },
+    pack: { visible: true, orden: 9 },
+    cta: { visible: true, orden: 10 },
   },
 
   // ----------------------------------------------------------
   // 2) EBOOK: datos de venta
   // ----------------------------------------------------------
-ebook: {
+  ebook: {
     titulo: "Leé el partido",
     subtitulo: "El manual del analista.",
     precio: "$22.750 ARS",

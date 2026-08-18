@@ -344,6 +344,35 @@ function renderPrimeraGeneracion(list) {
   }
 }
 
+function renderOpiniones(list) {
+  const root = document.getElementById("opiniones-content");
+  if (!root) return;
+  list = list || [];
+
+  if (list.length === 0) {
+    root.innerHTML = `<p class="text-center text-white/20 text-[10px] uppercase tracking-widest">Todavía no hay opiniones cargadas</p>`;
+    return;
+  }
+
+  const cards = list.map((o) => {
+    const estrellas = Number(o.estrellas) || 0;
+    const stars = Array.from({ length: 5 }, (_, i) =>
+      `<span style="color:${i < estrellas ? '#00f2ff' : 'rgba(255,255,255,0.15)'}">★</span>`
+    ).join("");
+
+    return `
+      <div class="reveal gen-card text-left">
+        <div class="text-lg mb-2">${stars}</div>
+        <p class="text-white/70 text-sm leading-relaxed italic">"${o.comentario || ""}"</p>
+        <p class="mt-3 text-[10px] font-black uppercase tracking-widest text-accent/70">${o.nombre || ""}</p>
+      </div>
+    `;
+  }).join("");
+
+  root.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>`;
+  root.querySelectorAll(".reveal").forEach((el) => el.classList.add("active"));
+}
+
 /* ------------------------------------------------------------
    8) SECCIONES: aplica visibilidad y orden según config.js
 ------------------------------------------------------------ */
@@ -384,7 +413,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   let generacion = [];
   try {
     const data = await loadSiteData();
-    generacion = data.generacion || [];
+        generacion = data.generacion || [];
+    renderOpiniones(data.opiniones || []);
   } catch (err) {
     console.error("No se pudo cargar Primera Generación:", err);
   }
