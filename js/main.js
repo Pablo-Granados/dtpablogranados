@@ -157,13 +157,13 @@ async function loadSiteData() {
       const parsed = JSON.parse(raw);
       if (Date.now() - parsed.ts < CACHE_MS) return parsed.data;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   const data = await loadJsonp(SITE_CONFIG.sheetUrl);
 
   try {
     sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-  } catch (e) {}
+  } catch (e) { }
 
   return data;
 }
@@ -354,23 +354,138 @@ function renderOpiniones(list) {
     return;
   }
 
-  const cards = list.map((o) => {
-    const estrellas = Number(o.estrellas) || 0;
-    const stars = Array.from({ length: 5 }, (_, i) =>
-      `<span style="color:${i < estrellas ? '#00f2ff' : 'rgba(255,255,255,0.15)'}">★</span>`
+  const getEstrellas = (o) => Number(o['estrellas'] ?? o['calificación'] ?? o['calificacion']) || 0;
+
+  const formatFecha = (raw) => {
+    const d = new Date(raw);
+    if (isNaN(d)) return "";
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd} - ${mm} - ${d.getFullYear()}`;
+  };
+
+  const buildStars = (cantidad) =>
+    Array.from({ length: 5 }, (_, i) =>
+      `<span style="color:${i < cantidad ? '#fbbf24' : 'rgba(255,255,255,0.15)'}">★</span>`
     ).join("");
 
-    return `
-      <div class="reveal gen-card text-left">
-        <div class="text-lg mb-2">${stars}</div>
-        <p class="text-white/70 text-sm leading-relaxed italic">"${o.comentario || ""}"</p>
-        <p class="mt-3 text-[10px] font-black uppercase tracking-widest text-accent/70">${o.nombre || ""}</p>
+  const buildCard = (o) => `
+    <div class="reveal gen-card text-left">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <p class="text-[10px] font-black uppercase tracking-widest text-accent/70">${o.nombre || ""}</p>
+        <div class="text-sm">${buildStars(getEstrellas(o))}</div>
       </div>
-    `;
-  }).join("");
+      <p class="text-white/70 text-sm leading-relaxed italic">"${o.comentario || ""}"</p>
+      <p class="mt-3 text-[9px] text-white/30 uppercase tracking-widest">${formatFecha(o['marca temporal'])}</p>
+    </div>
+  `;
 
-  root.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>`;
+  const valores = list.map(getEstrellas);
+  const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
+  const promedioRedondeado = Math.round(promedio);
+
+  const resumen = `
+    <div class="reveal text-center mb-12">
+      <div class="text-3xl mb-2">${buildStars(promedioRedondeado)}</div>
+      <p class="text-white/50 text-sm font-medium">
+        <span class="text-white font-black">${promedio.toFixed(1)}</span> sobre 5 — ${list.length} opinión${list.length === 1 ? "" : "es"}
+      </p>
+    </div>
+  `;
+
+  const destacadas = list
+    .filter(o => String(o.destacada).trim().toUpperCase() === "TRUE")
+    .slice(0, 3);
+
+  const cardsDestacadas = destacadas.map(buildCard).join("");
+  const verTodasBtn = `<button id="opiniones-ver-todas" class="mt-6 w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] text-accent border border-accent/30 hover:bg-accent/10 transition-colors rounded-lg">Ver todas (${list.length})</button>`;
+
+  root.innerHTML = `
+    ${resumen}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cardsDestacadas}</div>
+    ${verTodasBtn}
+  `;
   root.querySelectorAll(".reveal").forEach((el) => el.classList.add("active"));
+
+  const ordenadas = [...list].sort((a, b) => new Date(b['marca temporal']) - new Date(a['marca temporal']));
+  const PAGE_SIZE = 5;
+  let paginaActual = 1;
+  let filtroEstrellas = null;
+
+  const modal = document.getElementById("opiniones-modal");
+  const modalFiltros = document.getElementById("opiniones-modal-filtros");
+  const modalContent = document.getElementById("opiniones-modal-content");
+  const modalPagination = document.getElementById("opiniones-modal-pagination");
+  const openBtn = document.getElementById("opiniones-ver-todas");
+  const closeBtn = document.getElementById("opiniones-modal-close");
+  const backdrop = document.getElementById("opiniones-modal-backdrop");
+
+  const getFiltradas = () =>
+    filtroEstrellas === null ? ordenadas : ordenadas.filter(o => getEstrellas(o) === filtroEstrellas);
+
+  const renderFiltros = () => {
+    const opciones = [null, 5, 4, 3, 2, 1];
+    modalFiltros.innerHTML = opciones.map(op => {
+      const activo = filtroEstrellas === op;
+      const label = op === null ? "Todas" : `${op} ★`;
+      return `<button data-filtro="${op}" class="px-4 py-2 text-[10px] font-black uppercase tracking-widest border transition-colors ${activo ? "bg-accent text-black border-accent" : "border-white/10 text-white/50 hover:border-accent/50"}">${label}</button>`;
+    }).join("");
+
+    modalFiltros.querySelectorAll("[data-filtro]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.filtro;
+        filtroEstrellas = val === "null" ? null : Number(val);
+        paginaActual = 1;
+        renderFiltros();
+        renderPagina();
+      });
+    });
+  };
+
+  const renderPagina = () => {
+    const filtradas = getFiltradas();
+    const totalPaginas = Math.max(1, Math.ceil(filtradas.length / PAGE_SIZE));
+    const start = (paginaActual - 1) * PAGE_SIZE;
+    const pageItems = filtradas.slice(start, start + PAGE_SIZE);
+
+    modalContent.innerHTML = pageItems.length
+      ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${pageItems.map(buildCard).join("")}</div>`
+      : `<p class="text-center text-white/20 text-[10px] uppercase tracking-widest py-8">No hay opiniones con ese filtro</p>`;
+    modalContent.querySelectorAll(".reveal").forEach((el) => el.classList.add("active"));
+
+    modalPagination.innerHTML = `
+      <button id="opiniones-prev" ${paginaActual === 1 ? "disabled" : ""} class="px-4 py-2 text-[10px] font-black uppercase tracking-widest border border-white/10 hover:border-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">← Anterior</button>
+      <span class="text-[10px] font-black uppercase tracking-widest text-white/40">Página ${paginaActual} de ${totalPaginas}</span>
+      <button id="opiniones-next" ${paginaActual === totalPaginas ? "disabled" : ""} class="px-4 py-2 text-[10px] font-black uppercase tracking-widest border border-white/10 hover:border-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">Siguiente →</button>
+    `;
+
+    document.getElementById("opiniones-prev")?.addEventListener("click", () => {
+      if (paginaActual > 1) { paginaActual--; renderPagina(); }
+    });
+    document.getElementById("opiniones-next")?.addEventListener("click", () => {
+      if (paginaActual < totalPaginas) { paginaActual++; renderPagina(); }
+    });
+  };
+
+  const openModal = () => {
+    paginaActual = 1;
+    filtroEstrellas = null;
+    renderFiltros();
+    renderPagina();
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.style.overflow = "hidden";
+    lucide.createIcons();
+  };
+  const closeModal = () => {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.style.overflow = "";
+  };
+
+  openBtn?.addEventListener("click", openModal);
+  closeBtn?.addEventListener("click", closeModal);
+  backdrop?.addEventListener("click", closeModal);
 }
 
 /* ------------------------------------------------------------
@@ -413,7 +528,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let generacion = [];
   try {
     const data = await loadSiteData();
-        generacion = data.generacion || [];
+    generacion = data.generacion || [];
     renderOpiniones(data.opiniones || []);
   } catch (err) {
     console.error("No se pudo cargar Primera Generación:", err);
