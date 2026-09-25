@@ -106,7 +106,7 @@ export const projects: Project[] = [
     href: '/proyectos/futsal-hub',
     external: 'https://www.futsalhub.com.ar/',
     externalLabel: 'Explorar la plataforma',
-    media: { label: 'Captura · Futsal Hub · tabla y estadísticas', src: '/public/media/fh.png' },
+    media: { label: 'Captura · Futsal Hub · tabla y estadísticas', src: '/media/fh.png' },
   },
   {
     slug: 'laa-sports',
@@ -123,7 +123,7 @@ export const projects: Project[] = [
     href: '/proyectos/laa-sports',
     external: 'https://laasports.vercel.app/',
     externalLabel: 'Ver el sitio',
-    media: { label: 'Captura · LAA Sports · plantel y perfil de jugador', src: '/public/media/logoblanco.png' },
+    media: { label: 'Captura · LAA Sports · plantel y perfil de jugador', src: '/media/logoblanco.png' },
   },
 ];
 
