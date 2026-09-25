@@ -1,0 +1,36 @@
+---
+import { site, nav, cta } from '@/data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-line">
+  <div class="page grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr]">
+    <div>
+      <p class="display text-4xl text-bone md:text-5xl">{site.tagline}</p>
+      <p class="mt-4 max-w-sm text-mute">{site.description}</p>
+    </div>
+
+    <nav aria-label="Secciones">
+      <p class="tag mb-4 text-faint">Secciones</p>
+      <ul class="space-y-2">
+        {nav.map((item) => <li><a href={item.href} class="text-mute hover:text-bone">{item.label}</a></li>)}
+        <li><a href={cta.diagnostico.href} class="text-mute hover:text-bone">Diagnóstico</a></li>
+      </ul>
+    </nav>
+
+    <div>
+      <p class="tag mb-4 text-faint">Contenido</p>
+      <ul class="space-y-2">
+        <li><a href={site.social.youtube} class="text-mute hover:text-bone" target="_blank" rel="noopener" data-umami-event="out_youtube" data-umami-event-ubicacion="footer">YouTube</a></li>
+        <li><a href={site.social.instagram} class="text-mute hover:text-bone" target="_blank" rel="noopener" data-umami-event="out_instagram" data-umami-event-ubicacion="footer">Instagram</a></li>
+        <li><a href={site.social.linkedin} class="text-mute hover:text-bone" target="_blank" rel="noopener" data-umami-event="out_linkedin" data-umami-event-ubicacion="footer">LinkedIn</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-line">
+    <div class="page flex flex-col gap-2 py-6 text-sm text-faint sm:flex-row sm:justify-between">
+      <p>© {year} {site.name}</p>
+      <p class="tag">{site.handle}</p>
+    </div>
+  </div>
+</footer>

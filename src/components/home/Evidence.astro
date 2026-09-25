@@ -1,0 +1,42 @@
+---
+import { evidence } from '@/data/site';
+---
+
+<section aria-label="Datos" class="border-b border-line">
+  <div class="page">
+    <dl class="grid grid-cols-2 gap-px bg-line lg:grid-cols-4" data-reveal>
+      {
+        evidence.map((e, i) => (
+          <div class="reveal flex flex-col gap-2 bg-ink px-1 py-8 sm:px-5 lg:first:pl-0" style={`--d:${i * 0.07}s`}>
+            <dt class="order-2 text-sm leading-snug text-mute">{e.label}</dt>
+            <dd class="display order-1 flex items-center gap-3 text-4xl text-bone md:text-5xl" data-live={i === 0 ? 'partidos' : undefined}>{e.value}</dd>
+                      </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+
+<script>
+  // Cuenta real de partidos en Futsal Hub (clave pública anon). Si falla, queda el número fijo.
+  const url = import.meta.env.PUBLIC_SUPABASE_URL;
+  const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  const el = document.querySelector<HTMLElement>('[data-live="partidos"]');
+
+  if (url && key && el) {
+    fetch(`${url}/rest/v1/partidos?select=id&limit=1`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}`, Prefer: 'count=exact' },
+    })
+      .then((r) => {
+        const total = Number(r.headers.get('content-range')?.split('/')[1]);
+        if (!r.ok || !total) return;
+        el.textContent = total.toLocaleString('es-AR');
+        const badge = document.createElement('span');
+        badge.className = 'tag flex items-center gap-1.5 text-signal';
+        badge.innerHTML = '<span class="size-1.5 animate-pulse rounded-full bg-signal"></span>En vivo';
+        el.append(badge);
+      })
+      .catch(() => {});
+  }
+</script>

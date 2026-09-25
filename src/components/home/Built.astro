@@ -1,0 +1,78 @@
+---
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import Media from '@/components/ui/Media.astro';
+import Button from '@/components/ui/Button.astro';
+import { projects } from '@/data/site';
+---
+
+<section id="proyectos" class="py-20 md:py-28" aria-labelledby="construi-title">
+  <div class="page">
+    <SectionHeader
+      id="construi-title"
+      index="01"
+      kicker="Lo que construí"
+      title="Herramientas reales, en uso"
+      lead="No son ejercicios de portfolio. Son productos que resuelven un problema concreto del deporte y que la gente usa todas las semanas."
+    />
+
+    <div class="space-y-20 md:space-y-28">
+      {
+        projects.map((p, i) => (
+          <article class="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-14" data-reveal aria-labelledby={`p-${p.slug}`}>
+            <div class:list={['reveal w-full max-w-xl lg:col-span-4 lg:max-w-none', i % 2 === 1 && 'lg:order-2']}>
+              <a
+                href={p.external}
+                target="_blank"
+                rel="noopener"
+                class="group block"
+                aria-label={`${p.externalLabel}: ${p.name}`}
+                data-umami-event={`out_${p.slug}`}
+                data-umami-event-ubicacion="home-imagen"
+              >
+                <Media
+                  label={p.media.label}
+                  src={p.media.src}
+                  class="transition-[border-color,translate] duration-300 group-hover:-translate-y-1 group-hover:border-signal"
+                />
+              </a>
+            </div>
+
+            <div class:list={['reveal flex max-w-2xl flex-col lg:col-span-8', i % 2 === 1 && 'lg:order-1']} style="--d:.1s">
+                          <p class="tag flex flex-wrap gap-x-3 text-faint">
+                <span class="text-signal">{p.kind}</span>
+                <span>{p.year}</span>
+              </p>
+              <h3 id={`p-${p.slug}`} class="display mt-3 text-5xl text-bone md:text-6xl">
+                {p.name}
+              </h3>
+
+              <dl class="mt-6 space-y-5 text-[0.9375rem] leading-relaxed">
+                <div>
+                  <dt class="tag mb-1 text-faint">Problema</dt>
+                  <dd class="text-mute">{p.problem}</dd>
+                </div>
+                <div>
+                  <dt class="tag mb-1 text-faint">Qué construí</dt>
+                  <dd class="text-mute">{p.built}</dd>
+                </div>
+                <div>
+                  <dt class="tag mb-1 text-signal">Resultado</dt>
+                  <dd class="text-bone">{p.result}</dd>
+                </div>
+              </dl>
+
+              <p class="tag mt-6 text-faint">
+                <span class="sr-only">Tecnologías: </span>{p.stack.join('  ·  ')}
+              </p>
+
+              <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <Button href={p.external} variant="ghost" event={`out_${p.slug}`} place="home">                  {p.externalLabel}
+                </Button>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,36 @@
+---
+/**
+ * Espacio para imagen o video propio.
+ * Sin `src` muestra un marcador que indica qué material va ahí,
+ * así el diseño se puede revisar antes de tener todas las capturas.
+ */
+interface Props {
+  src?: string;
+  alt?: string;
+  label: string;
+  ratio?: string;
+  video?: boolean;
+  class?: string;
+}
+const { src, alt = '', label, ratio = '16 / 10', video = false, class: className } = Astro.props;
+---
+
+<figure class:list={['frame relative border border-line bg-panel', className]} style={`aspect-ratio:${ratio}`}>
+  <div class="absolute inset-0 overflow-hidden">
+  {
+    src && video ? (
+      <video class="absolute inset-0 size-full object-contain" src={src} autoplay muted loop playsinline preload="metadata" aria-label={alt} />
+    ) : src ? (
+      <img class="absolute inset-0 size-full object-contain" src={src} alt={alt} loading="lazy" decoding="async" />
+          ) : (
+      <div class="relative flex size-full items-end p-4">
+        <div class="court-grid absolute inset-0 opacity-60" aria-hidden="true" />
+        <div class="relative flex w-full items-center justify-between gap-4">
+          <span class="tag text-faint">{label}</span>
+          <span class="tag text-faint">00:00:00</span>
+        </div>
+      </div>
+    )
+  }
+  </div>
+</figure>

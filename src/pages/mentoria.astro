@@ -1,0 +1,232 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/ui/Button.astro';
+import { cta, site } from '@/data/site';
+import { pricing, problem, forWho, stages, includes, faq } from '@/data/mentoria';
+
+const fmt = (n: number) => `${pricing.currency} ${n.toLocaleString('es-AR')}`;
+const hasFounders = pricing.founders.spots > 0;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Sistema Propio — Mentoría 1:1 de análisis para fútbol y futsal',
+    provider: { '@type': 'Person', name: site.name },
+    serviceType: 'Mentoría de videoanálisis y análisis táctico',
+    offers: { '@type': 'Offer', price: pricing.full, priceCurrency: pricing.currency },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+
+<Base
+  title="Sistema Propio · Mentoría de análisis"
+  description="Mentoría 1:1 de 12 semanas para entrenadores y analistas de fútbol y futsal. Construí tu propio sistema de análisis sobre tu equipo, con devolución personalizada."
+  schema={schema}
+>
+  <!-- Hero -->
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+    <div class="page relative grid gap-12 py-16 md:py-24 lg:grid-cols-12 lg:items-end">
+      <div class="lg:col-span-8" data-reveal>
+        <p class="tag reveal flex flex-wrap items-center gap-x-3 gap-y-1 text-mute">
+          <span class="text-signal">Mentoría 1:1</span><span aria-hidden="true">/</span>
+          <span>12 semanas</span><span aria-hidden="true">/</span>
+          <span>Fútbol y futsal</span>
+        </p>
+        <h1 class="display reveal mt-6 text-6xl text-bone sm:text-7xl lg:text-8xl" style="--d:.06s">Sistema Propio</h1>
+        <p class="reveal mt-6 max-w-2xl text-xl leading-relaxed text-mute" style="--d:.12s">
+          En 12 semanas construís tu sistema de análisis —qué observar, cómo capturarlo, qué medir y cómo presentarlo—
+          aplicado a tu equipo real, y lo dejás funcionando en tu semana de trabajo.
+        </p>
+        <div class="reveal mt-9 flex flex-wrap items-center gap-x-6 gap-y-4" style="--d:.18s">
+          <Button href={cta.aplicar.href} event={cta.aplicar.event} place="mentoria-hero">{cta.aplicar.label}</Button>
+          <Button href={cta.diagnostico.href} variant="text" event={cta.diagnostico.event} place="mentoria-hero">
+            Primero, el diagnóstico (3 min)
+          </Button>
+        </div>
+      </div>
+
+      <dl class="frame grid grid-cols-2 gap-px border border-line bg-line lg:col-span-4" data-reveal>
+        {
+          [
+            ['Duración', '12 semanas'],
+            ['Formato', '1:1 online'],
+            ['Dedicación', '4–6 h/semana'],
+            ['Inversión', hasFounders ? `Desde ${fmt(pricing.founders.price)}` : fmt(pricing.full)],
+          ].map(([k, v], i) => (
+            <div class="reveal bg-panel p-5" style={`--d:${0.1 + i * 0.05}s`}>
+              <dt class="tag text-faint">{k}</dt>
+              <dd class="mt-2 font-medium text-bone">{v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <!-- Problema: bloque editorial -->
+  <section class="py-20 md:py-28">
+    <div class="page grid gap-10 lg:grid-cols-12" data-reveal>
+      <h2 class="reveal text-3xl font-semibold leading-tight text-bone md:text-5xl lg:col-span-7">{problem.title}</h2>
+      <div class="space-y-5 text-lg leading-relaxed text-mute lg:col-span-5 lg:pt-2">
+        {problem.body.map((p, i) => <p class="reveal" style={`--d:${0.1 + i * 0.08}s`}>{p}</p>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Etapas: línea de tiempo -->
+  <section class="border-y border-line bg-panel py-20 md:py-28" aria-labelledby="etapas-title">
+    <div class="page">
+      <div class="mb-12 max-w-2xl" data-reveal>
+        <p class="tag reveal text-signal">Cómo funciona</p>
+        <h2 id="etapas-title" class="display reveal mt-3 text-5xl text-bone md:text-6xl" style="--d:.06s">5 etapas, 5 entregables</h2>
+        <p class="reveal mt-5 text-lg leading-relaxed text-mute" style="--d:.12s">
+          Cada etapa termina en algo concreto, hecho con tus partidos. Al final no tenés apuntes: tenés tu sistema.
+        </p>
+      </div>
+
+      <ol class="relative border-l border-line-strong" data-reveal>
+        {
+          stages.map((s, i) => (
+            <li class="reveal relative grid gap-3 pb-12 pl-8 last:pb-0 md:grid-cols-12 md:gap-8 md:pl-12" style={`--d:${i * 0.08}s`}>
+              <span class="absolute -left-[5px] top-1.5 size-2.5 bg-signal" aria-hidden="true" />
+              <p class="tag pt-1 text-faint md:col-span-2">{s.weeks}</p>
+              <div class="md:col-span-6">
+                <h3 class="text-2xl font-semibold text-bone">{s.title}</h3>
+                <p class="mt-2 leading-relaxed text-mute">{s.body}</p>
+              </div>
+              <p class="self-start border border-signal/40 px-3 py-2 text-sm text-bone md:col-span-4">
+                <span class="tag mb-1 block text-signal">Entregable</span>
+                {s.deliverable}
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Qué incluye -->
+  <section class="py-20 md:py-28" aria-labelledby="incluye-title">
+    <div class="page">
+      <h2 id="incluye-title" class="display mb-10 text-4xl text-bone md:text-5xl">Qué incluye</h2>
+      <ul class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+        {
+          includes.map((it, i) => (
+            <li class="reveal border-t border-line pt-5" style={`--d:${i * 0.05}s`}>
+              <h3 class="font-semibold text-bone">{it.title}</h3>
+              <p class="mt-2 leading-relaxed text-mute">{it.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Para quién -->
+  <section class="border-y border-line bg-panel py-20 md:py-28" aria-labelledby="quien-title">
+    <div class="page">
+      <h2 id="quien-title" class="display mb-10 text-4xl text-bone md:text-5xl">¿Es para vos?</h2>
+      <div class="grid gap-px bg-line md:grid-cols-2">
+        <div class="bg-panel p-7 md:p-10">
+          <p class="tag text-signal">Sí, si…</p>
+          <ul class="mt-5 space-y-4">
+            {forWho.yes.map((t) => <li class="flex gap-3 text-bone"><span class="text-signal" aria-hidden="true">+</span>{t}</li>)}
+          </ul>
+        </div>
+        <div class="bg-panel p-7 md:p-10">
+          <p class="tag text-faint">No, si…</p>
+          <ul class="mt-5 space-y-4">
+            {forWho.no.map((t) => <li class="flex gap-3 text-mute"><span class="text-faint" aria-hidden="true">–</span>{t}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inversión -->
+  <section class="py-20 md:py-28" aria-labelledby="inversion-title">
+    <div class="page grid gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <h2 id="inversion-title" class="display text-4xl text-bone md:text-5xl">Inversión</h2>
+        <p class="mt-5 text-lg leading-relaxed text-mute">
+          Antes de empezar hacemos una llamada corta para ver si el programa encaja con lo que necesitás. Si no
+          encaja, te lo digo.
+        </p>
+      </div>
+
+      <div class="grid gap-6 lg:col-span-7">
+        <div class="frame border border-line bg-panel p-7 md:p-9">
+          <p class="tag text-faint">Programa completo</p>
+          <p class="display mt-3 text-6xl text-bone">{fmt(pricing.full)}</p>
+          <p class="mt-2 text-mute">
+            o {pricing.installments.count} cuotas de {fmt(pricing.installments.amount)}
+          </p>
+          <div class="mt-7">
+            <Button href={cta.aplicar.href} event={cta.aplicar.event} place="mentoria-precio">{cta.aplicar.label}</Button>
+          </div>
+        </div>
+
+        {
+          hasFounders && (
+            <div class="border border-signal/40 p-7 md:p-9">
+              <p class="tag text-signal">Cohorte fundadora · {pricing.founders.spots} lugares</p>
+              <p class="mt-3 text-3xl font-semibold text-bone">{fmt(pricing.founders.price)}</p>
+              <p class="mt-1 text-mute">
+                o {pricing.founders.installments.count} cuotas de {fmt(pricing.founders.installments.amount)}
+              </p>
+                            <p class="mt-3 leading-relaxed text-mute">
+                Para las primeras personas que entren. A cambio, te pido permiso para usar tus entregables (sin
+                datos sensibles) como caso de estudio, y tu opinión sincera al terminar.
+              </p>
+            </div>
+          )
+        }
+
+        <p class="text-sm leading-relaxed text-faint">
+          Garantía: si después de las 2 primeras semanas sentís que no es para vos, te devuelvo lo que pagaste, menos
+          esas dos sesiones.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="border-t border-line py-20 md:py-28" aria-labelledby="faq-title">
+    <div class="page max-w-4xl">
+      <h2 id="faq-title" class="display mb-8 text-4xl text-bone md:text-5xl">Preguntas frecuentes</h2>
+      <div class="divide-y divide-line border-y border-line">
+        {
+          faq.map((f) => (
+            <details class="group">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-lg font-medium text-bone [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <span class="font-mono text-signal transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+              </summary>
+              <p class="pb-6 pr-10 leading-relaxed text-mute">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section class="border-t border-line">
+    <div class="page flex flex-col items-start gap-8 py-20 md:flex-row md:items-end md:justify-between md:py-24">
+      <div class="max-w-2xl">
+        <h2 class="display text-5xl text-bone md:text-6xl">¿Empezamos?</h2>
+        <p class="mt-4 text-lg leading-relaxed text-mute">
+          Contame en qué estás y qué querés resolver. Te respondo personalmente dentro de las 24 horas.
+        </p>
+      </div>
+      <Button href={cta.aplicar.href} event={cta.aplicar.event} place="mentoria-cierre">{cta.aplicar.label}</Button>
+    </div>
+  </section>
+</Base>

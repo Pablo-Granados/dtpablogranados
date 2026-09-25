@@ -1,0 +1,285 @@
+---
+import Base from '@/layouts/Base.astro';
+import { options } from '@/data/aplicacion';
+import { pricing } from '@/data/mentoria';
+
+const calLink = import.meta.env.PUBLIC_CAL_LINK ?? '';
+const price = `${pricing.currency} ${pricing.full.toLocaleString('es-AR')}`;
+const cuotas = `${pricing.installments.count} cuotas de ${pricing.currency} ${pricing.installments.amount}`;
+
+const steps = ['Quién sos', 'Tu situación', 'Compromiso'];
+
+const input =
+  'w-full border border-line-strong bg-ink px-3 py-3 text-base text-bone placeholder:text-faint focus:border-signal focus:outline-none';
+const chip =
+  'cursor-pointer border border-line-strong px-4 py-2.5 text-sm text-mute transition-colors hover:border-signal hover:text-bone has-[:checked]:border-signal has-[:checked]:bg-signal/10 has-[:checked]:text-bone has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-signal';
+---
+
+<Base
+  title="Aplicar a Sistema Propio"
+  description="Aplicación a la mentoría Sistema Propio. Tres pasos cortos para entender en qué estás y si el programa te sirve."
+  noindex
+>
+  <section class="page max-w-3xl py-14 md:py-20">
+    <a href="/mentoria" class="tag text-faint hover:text-bone">← Sistema Propio</a>
+    <h1 class="display mt-4 text-5xl text-bone md:text-6xl">Aplicar</h1>
+    <p class="mt-4 text-lg leading-relaxed text-mute">
+      Son 3 pasos cortos. Los leo antes de la llamada, así la usamos para hablar de lo tuyo y no para repetir datos.
+    </p>
+
+    <!-- Indicador de pasos -->
+    <ol class="mt-10 grid grid-cols-3 gap-2" aria-label="Pasos" data-steps-nav>
+      {
+        steps.map((s, i) => (
+          <li data-step-ind={i} class="border-t-2 border-line pt-3 transition-colors data-[active]:border-signal data-[done]:border-mute">
+            <span class="tag block text-faint">Paso {i + 1}</span>
+            <span class="mt-1 block text-sm text-mute">{s}</span>
+          </li>
+        ))
+      }
+    </ol>
+
+    <form data-apply class="mt-10" novalidate>
+      <!-- Paso 1 -->
+      <fieldset data-step="0" class="grid gap-6">
+        <legend class="sr-only">Quién sos</legend>
+        <div class="grid gap-6 sm:grid-cols-2">
+          <label class="grid gap-2 text-sm text-mute">Nombre y apellido
+            <input name="nombre" required maxlength="80" autocomplete="name" class={input} />
+          </label>
+          <label class="grid gap-2 text-sm text-mute">Email
+            <input name="email" type="email" required maxlength="160" autocomplete="email" class={input} />
+          </label>
+        </div>
+        <label class="grid gap-2 text-sm text-mute">WhatsApp <span class="text-faint">(opcional, con código de país)</span>
+          <input name="whatsapp" type="tel" maxlength="40" autocomplete="tel" placeholder="+54 9 341 …" class={input} />
+        </label>
+
+        {[
+          ['rol', '¿Cuál es tu rol hoy?', options.rol],
+          ['deporte', '¿En qué deporte?', options.deporte],
+          ['nivel', '¿En qué nivel?', options.nivel],
+        ].map(([name, label, list]) => (
+          <div role="radiogroup" aria-label={label as string} class="grid gap-3">
+            <p class="text-sm text-mute">{label}</p>
+            <div class="flex flex-wrap gap-2">
+              {(list as readonly string[]).map((o) => (
+                <label class={chip}><input type="radio" name={name as string} value={o} required class="sr-only" />{o}</label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </fieldset>
+
+      <!-- Paso 2 -->
+      <fieldset data-step="1" class="grid gap-8" hidden>
+        <legend class="sr-only">Tu situación</legend>
+        <div role="radiogroup" aria-label="¿Tenés acceso a video de tu equipo?" class="grid gap-3">
+          <p class="text-sm text-mute">¿Tenés acceso a video de tu equipo?</p>
+          <div class="flex flex-wrap gap-2">
+            {options.video.map((o) => <label class={chip}><input type="radio" name="video" value={o} required class="sr-only" />{o}</label>)}
+          </div>
+        </div>
+
+        <div class="grid gap-3">
+          <p class="text-sm text-mute">¿Qué herramientas usás hoy? <span class="text-faint">(podés elegir varias)</span></p>
+          <div class="flex flex-wrap gap-2">
+            {options.herramientas.map((o) => <label class={chip}><input type="checkbox" name="herramientas" value={o} class="sr-only" />{o}</label>)}
+          </div>
+        </div>
+
+        <label class="grid gap-2 text-sm text-mute">
+          ¿Qué querés tener resuelto dentro de 3 meses?
+          <textarea name="objetivo" required minlength="10" maxlength="1200" rows="4"
+            placeholder="Por ejemplo: dejar de armar el informe del rival a último momento y tener un proceso que pueda repetir cada semana."
+            class={input}></textarea>
+        </label>
+      </fieldset>
+
+      <!-- Paso 3 -->
+      <fieldset data-step="2" class="grid gap-8" hidden>
+        <legend class="sr-only">Compromiso</legend>
+        <div role="radiogroup" aria-label="¿Cuántas horas por semana podés dedicarle?" class="grid gap-3">
+          <p class="text-sm text-mute">¿Cuántas horas por semana podés dedicarle?</p>
+          <div class="flex flex-wrap gap-2">
+            {options.horas.map((o) => <label class={chip}><input type="radio" name="horas" value={o} required class="sr-only" />{o}</label>)}
+          </div>
+        </div>
+
+        <div role="radiogroup" aria-label="Inversión" class="grid gap-3">
+          <p class="text-sm leading-relaxed text-mute">
+            Sistema Propio tiene una inversión de <span class="text-bone">{price}</span> (o {cuotas}). ¿Es viable para vos ahora?
+          </p>
+          <div class="flex flex-wrap gap-2">
+            {options.inversion.map((o) => <label class={chip}><input type="radio" name="inversion" value={o} required class="sr-only" />{o}</label>)}
+          </div>
+        </div>
+
+        <input name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+      </fieldset>
+
+      <!-- Navegación -->
+      <div class="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
+        <button type="button" data-prev class="tag text-mute hover:text-bone disabled:invisible">← Atrás</button>
+        <div class="flex items-center gap-4">
+          <p data-msg class="text-sm text-signal" role="status"></p>
+          <button type="button" data-next class="inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-bone disabled:opacity-60">
+            Siguiente
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Resultado: califica -->
+    <div data-ok hidden class="mt-12 border-t border-line pt-10">
+      <p class="tag text-signal">Aplicación recibida</p>
+      <h2 class="display mt-3 text-4xl text-bone md:text-5xl">Elegí día y horario</h2>
+      <p class="mt-4 text-lg leading-relaxed text-mute">
+        Es una llamada de 30 minutos para ver si el programa encaja con lo que necesitás. Ya tengo tus respuestas.
+      </p>
+      {
+        calLink ? (
+          <>
+            <div id="cal-inline" class="mt-8 min-h-[36rem] overflow-hidden border border-line bg-panel" />
+            <a data-cal-fallback href={`https://cal.com/${calLink}`} target="_blank" rel="noopener" class="mt-4 inline-block text-sm text-mute underline underline-offset-4 hover:text-signal">
+              ¿No se ve la agenda? Abrila en otra pestaña
+            </a>
+          </>
+        ) : (
+          <p class="mt-8 border border-line bg-panel p-6 text-mute">Te escribo en las próximas 24 horas para coordinar.</p>
+        )
+      }
+    </div>
+
+    <!-- Resultado: no califica -->
+    <div data-no hidden class="mt-12 border-t border-line pt-10">
+      <p class="tag text-signal">Aplicación recibida</p>
+      <h2 class="display mt-3 text-4xl text-bone md:text-5xl">Gracias por contarme</h2>
+      <p class="mt-4 text-lg leading-relaxed text-mute">
+        Por lo que me contaste, hoy Sistema Propio no es lo que más te va a servir, y prefiero decírtelo ahora en
+        lugar de venderte algo que no vas a poder aprovechar. Te mandé un mail con los próximos pasos.
+      </p>
+      <p class="mt-4 text-lg leading-relaxed text-mute">
+        Si no lo hiciste, empezá por el diagnóstico: en 3 minutos te dice por dónde arrancar.
+      </p>
+      <a href="/diagnostico" class="mt-8 inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink hover:bg-bone"
+        data-umami-event="cta_diagnostico" data-umami-event-ubicacion="aplicar-no-califica">Hacer el diagnóstico</a>
+    </div>
+  </section>
+</Base>
+
+<!-- Agenda de Cal.com: snippet oficial, se carga solo si la aplicación califica -->
+<script define:vars={{ calLink }}>
+  window.pgLoadCal = function (name, email, notes) {
+    if (!calLink) return;
+    var fb = document.querySelector('[data-cal-fallback]');
+    if (fb) fb.href = 'https://cal.com/' + calLink + '?name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email);
+
+    (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    Cal('init', { origin: 'https://cal.com' });
+    Cal('inline', {
+      elementOrSelector: '#cal-inline',
+      calLink: calLink,
+      config: { name: name, email: email, notes: notes.slice(0, 500), theme: 'dark', layout: 'month_view' },
+    });
+    Cal('on', {
+      action: 'bookingSuccessful',
+      callback: function () { if (window.umami) window.umami.track('llamada_agendada'); },
+    });
+  };
+</script>
+
+<script>
+  type Umami = { track: (event: string, data?: Record<string, unknown>) => void };
+  const track = (e: string, d?: Record<string, unknown>) => (window as unknown as { umami?: Umami }).umami?.track(e, d);
+
+  const form = document.querySelector<HTMLFormElement>('[data-apply]')!;
+  const steps = [...form.querySelectorAll<HTMLFieldSetElement>('[data-step]')];
+  const inds = [...document.querySelectorAll<HTMLElement>('[data-step-ind]')];
+  const prev = form.querySelector<HTMLButtonElement>('[data-prev]')!;
+  const next = form.querySelector<HTMLButtonElement>('[data-next]')!;
+  const msg = form.querySelector<HTMLElement>('[data-msg]')!;
+  let current = 0;
+
+  function render() {
+    steps.forEach((s, i) => (s.hidden = i !== current));
+    inds.forEach((el, i) => {
+      el.toggleAttribute('data-active', i === current);
+      el.toggleAttribute('data-done', i < current);
+    });
+    prev.disabled = current === 0;
+    next.textContent = current === steps.length - 1 ? 'Enviar aplicación' : 'Siguiente';
+    msg.textContent = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /** Revisa los campos obligatorios del paso actual */
+  function validStep(): boolean {
+    const fs = steps[current];
+    const missing: string[] = [];
+    fs.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[required]:not([type=radio]), textarea[required]').forEach((el) => {
+      if (!el.checkValidity()) missing.push(el.name);
+    });
+    const radios = new Set([...fs.querySelectorAll<HTMLInputElement>('input[type=radio][required]')].map((r) => r.name));
+    radios.forEach((name) => {
+      if (!fs.querySelector(`input[name="${name}"]:checked`)) missing.push(name);
+    });
+    if (missing.length) {
+      msg.textContent = missing[0] === 'email' ? 'Revisá el email.' : missing[0] === 'objetivo' ? 'Contame un poco más qué querés resolver.' : 'Te falta completar algún campo.';
+      const first = fs.querySelector<HTMLElement>(`[name="${missing[0]}"]`);
+      first?.focus();
+      return false;
+    }
+    return true;
+  }
+
+  prev.addEventListener('click', () => {
+    if (current > 0) { current--; render(); }
+  });
+
+  next.addEventListener('click', async () => {
+    if (!validStep()) return;
+    if (current === 0) track('aplicacion_start');
+    if (current < steps.length - 1) {
+      current++;
+      track('aplicacion_step', { paso: current + 1 });
+      render();
+      return;
+    }
+
+    // Enviar
+    const fd = new FormData(form);
+    const data: Record<string, unknown> = Object.fromEntries(fd);
+    data.herramientas = fd.getAll('herramientas');
+    data.utm = Object.fromEntries([...new URLSearchParams(location.search)].filter(([k]) => k.startsWith('utm_')));
+
+    next.disabled = true;
+    msg.className = 'text-sm text-mute';
+    msg.textContent = 'Enviando…';
+
+    try {
+      const res = await fetch('/api/aplicacion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const { calificada } = await res.json();
+      track('aplicacion_submit', { calificada });
+
+      form.hidden = true;
+      document.querySelector<HTMLElement>('[data-steps-nav]')!.hidden = true;
+      document.querySelector<HTMLElement>(calificada ? '[data-ok]' : '[data-no]')!.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (calificada) (window as unknown as { pgLoadCal?: (n: string, e: string, o: string) => void }).pgLoadCal?.(String(data.nombre), String(data.email), String(data.objetivo));
+    } catch {
+      msg.className = 'text-sm text-signal';
+      msg.textContent = 'No se pudo enviar. Probá de nuevo en un rato.';
+      next.disabled = false;
+    }
+  });
+
+  render();
+</script>

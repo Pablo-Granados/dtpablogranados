@@ -1,0 +1,68 @@
+---
+import Button from '@/components/ui/Button.astro';
+import CourtBoard from '@/components/home/CourtBoard.astro';
+import { cta, intents } from '@/data/site';
+---
+
+<section class="relative overflow-hidden border-b border-line" aria-labelledby="hero-title">
+  <div class="court-grid pointer-events-none absolute inset-0 opacity-40" aria-hidden="true"></div>
+
+  <div class="page relative grid gap-12 pb-14 pt-14 md:pt-20 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16 lg:pb-20">
+    <div data-reveal>
+      <p class="tag reveal flex flex-wrap items-center gap-x-3 gap-y-1 text-mute">
+        <span>Análisis</span><span class="text-signal" aria-hidden="true">/</span>
+        <span>Fútbol y futsal</span><span class="text-signal" aria-hidden="true">/</span>
+        <span>Tecnología</span>
+      </p>
+
+      <h1 id="hero-title" class="reveal mt-6" style="--d:.06s">
+        <span class="display block text-[3.4rem] text-bone sm:text-7xl lg:text-[5.5rem]">Pablo<br />Granados</span>
+        <span class="mt-5 block font-display text-2xl font-semibold text-signal [font-variation-settings:'wdth'_85] sm:text-3xl">
+          Del partido a la decisión.
+        </span>
+      </h1>
+
+      <p class="reveal mt-6 max-w-xl text-lg leading-relaxed text-mute" style="--d:.14s">
+        Analizo el juego, construyo las herramientas para hacerlo y enseño el proceso a entrenadores y analistas
+        que quieren trabajar con método.
+      </p>
+
+      <div class="reveal mt-9 flex flex-wrap items-center gap-x-6 gap-y-4" style="--d:.22s">
+        <Button href={cta.mentoria.href} event={cta.mentoria.event} place="hero">{cta.mentoria.label}</Button>
+        <Button href={cta.proyectos.href} variant="text" event={cta.proyectos.event} place="hero">
+          {cta.proyectos.label}
+        </Button>
+      </div>
+    </div>
+
+    <CourtBoard class="lg:translate-y-2" />
+  </div>
+
+  <!-- Selector de intención -->
+  <nav aria-label="¿Qué te trae por acá?" class="relative border-t border-line bg-panel/60">
+    <div class="page">
+      <p class="tag pt-6 text-faint">¿Qué te trae por acá?</p>
+      <ul class="grid md:grid-cols-3 md:divide-x md:divide-line">
+        {
+          intents.map((it, i) => (
+            <li class="border-b border-line last:border-b-0 md:border-b-0">
+              <a
+                href={it.href}
+                class:list={['group flex h-full flex-col gap-2 py-6 transition-colors md:py-7', i === 0 ? 'md:pr-8' : 'md:px-8']}
+                data-umami-event="intencion_select"
+                data-umami-event-tipo={it.id}
+              >
+                <span class="tag text-signal">{it.kicker}</span>
+                <span class="text-lg font-medium leading-snug text-bone">{it.title}</span>
+                <span class="mt-auto flex items-center gap-2 pt-2 text-sm text-mute transition-colors group-hover:text-signal">
+                  {it.action}
+                  <svg aria-hidden="true" class="size-4 transition-transform group-hover:translate-x-1" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </nav>
+</section>

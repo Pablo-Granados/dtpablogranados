@@ -1,0 +1,37 @@
+---
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import Button from '@/components/ui/Button.astro';
+import { cta, teamServices } from '@/data/site';
+---
+
+<section id="equipos" class="border-y border-line bg-panel py-20 md:py-28" aria-labelledby="equipos-title">
+  <div class="page">
+    <SectionHeader
+      id="equipos-title"
+      index="04"
+      kicker="Para clubes, agencias y jugadores"
+      title="Análisis y herramientas"
+      lead="Trabajo a distancia con equipos de Argentina y del exterior. Puedo sumarme a tu cuerpo técnico como analista o construir la herramienta que tu organización necesita."
+    />
+
+    <div class="grid gap-px bg-line md:grid-cols-2" data-reveal>
+      {
+        teamServices.map((s, i) => (
+          <div class="reveal flex flex-col bg-panel p-7 md:p-10" style={`--d:${i * 0.1}s`}>
+            <h3 class="display text-4xl text-bone">{s.title}</h3>
+            <ul class="mt-6 space-y-3">
+              {s.items.map((item) => (
+                <li class="border-b border-line py-3 text-mute last:border-b-0">{item}</li>
+              ))}
+            </ul>
+            <div class="mt-auto pt-10">
+              <Button href={cta[s.cta].href} variant="ghost" event={cta[s.cta].event} place="home-equipos">
+                {cta[s.cta].label}
+              </Button>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,231 @@
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------
+   Tokens — "sala de análisis"
+   Un solo acento (señal), usado solo para lo que marca el analista:
+   anotaciones, datos, estados activos. Nunca como decoración.
+------------------------------------------------------------------- */
+@theme {
+  --color-ink: #0b0d10;
+  /* fondo */
+  --color-panel: #12151a;
+  /* superficies */
+  --color-panel-2: #181c22;
+  /* superficies elevadas */
+  --color-line: #262b33;
+  /* bordes, grilla */
+  --color-line-strong: #39404a;
+  --color-bone: #edebe6;
+  /* texto principal */
+  --color-mute: #9aa0a8;
+  /* texto secundario */
+  --color-faint: #6b717a;
+  /* etiquetas terciarias */
+  --color-signal: #00f2ff;
+  /* acento: la marca del analista */
+  --color-signal-dim: #c8f03c26;
+
+  --font-display: 'Archivo Variable', 'Arial Narrow', sans-serif;
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --container-page: 76rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    background: var(--color-ink);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--color-ink);
+  }
+
+
+  /* Que el header fijo no tape el título al saltar a una sección */
+  section[id] {
+    scroll-margin-top: 4rem;
+  }
+
+    /* Grano sutil, como una imagen de video */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+
+  /* Titulares condensados */
+  .display {
+    font-family: var(--font-display);
+    font-variation-settings: 'wdth' 72;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 0.92;
+    text-transform: uppercase;
+  }
+
+  /* Mayúsculas solo para el nombre (h1) y los números; títulos de sección en minúscula */
+  h2.display,
+  h3.display {
+    text-transform: none;
+    font-variation-settings: 'wdth' 88;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  /* Etiqueta tipo panel de codificación */
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Contenedor de página con gutter de 16px en mobile */
+  .page {
+    width: 100%;
+    max-width: var(--container-page);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .page {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Marcas de encuadre en las esquinas (como un visor de video) */
+  .frame {
+    position: relative;
+  }
+
+  .frame::before,
+  .frame::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: var(--color-signal);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .frame::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1.5px solid;
+    border-left: 1.5px solid;
+  }
+
+  .frame::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 1.5px solid;
+    border-right: 1.5px solid;
+  }
+
+  /* Grilla de cancha, muy sutil, para fondos de sección */
+  .court-grid {
+    background-image:
+      linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Anotaciones que se dibujan al entrar en pantalla.
+   El script /src/scripts/reveal.ts agrega .is-in al entrar.
+------------------------------------------------------------------- */
+.draw path,
+.draw line,
+.draw circle,
+.draw polyline {
+  stroke-dasharray: var(--len, 600);
+  stroke-dashoffset: var(--len, 600);
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+  transition-delay: var(--d, 0s);
+}
+
+.is-in .draw path,
+.is-in .draw line,
+.is-in .draw circle,
+.is-in .draw polyline,
+.draw.is-in path,
+.draw.is-in line,
+.draw.is-in circle,
+.draw.is-in polyline {
+  stroke-dashoffset: 0;
+}
+
+.reveal {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  transition-delay: var(--d, 0s);
+}
+
+.reveal.is-in,
+.is-in .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* Sin JS: todo visible */
+.no-js .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.no-js .draw path,
+.no-js .draw line,
+.no-js .draw circle,
+.no-js .draw polyline {
+  stroke-dashoffset: 0;
+}

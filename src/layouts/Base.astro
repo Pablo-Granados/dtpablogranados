@@ -1,0 +1,89 @@
+---
+import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { site } from '@/data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  /** JSON-LD adicional específico de la página */
+  schema?: Record<string, unknown>[];
+}
+
+const {
+  title,
+  description = site.description,
+  image = '/og-default.png',
+  noindex = false,
+  schema = [],
+} = Astro.props;
+
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — Análisis de fútbol y futsal`;
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site);
+const ogImage = new URL(image, Astro.site);
+
+const umamiId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+const umamiSrc = import.meta.env.PUBLIC_UMAMI_SRC ?? 'https://cloud.umami.is/script.js';
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  url: Astro.site?.toString(),
+  jobTitle: 'Analista de fútbol y futsal',
+  description: site.description,
+  sameAs: Object.values(site.social),
+  knowsAbout: ['Videoanálisis', 'Análisis táctico', 'Scouting', 'Futsal', 'Fútbol', 'Desarrollo web'],
+};
+---
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>document.documentElement.classList.remove('no-js');</script>
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#0b0d10" />
+    <link rel="icon" href="/media/dtpablogranados.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/media/dtpablogranados.png" />
+        <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <script type="application/ld+json" set:html={JSON.stringify([personSchema, ...schema])} />
+
+    {umamiId && <script is:inline defer src={umamiSrc} data-website-id={umamiId} />}
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#contenido"
+      class="tag sr-only z-50 bg-signal px-3 py-2 text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+    >
+      Saltar al contenido
+    </a>
+    <Header />
+    <main id="contenido" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import '@/scripts/reveal';
+    </script>
+  </body>
+</html>

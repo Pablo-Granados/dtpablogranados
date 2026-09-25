@@ -1,0 +1,299 @@
+---
+import Base from '@/layouts/Base.astro';
+import { areas, roles, questions } from '@/data/diagnostico';
+import { cta } from '@/data/site';
+---
+
+<Base
+  title="Diagnóstico del analista"
+  description="12 preguntas, 3 minutos. Descubrí en qué punto está tu proceso de análisis en fútbol o futsal y qué dos áreas te conviene trabajar primero."
+>
+  <section class="page max-w-3xl py-14 md:py-20" id="diag" aria-live="polite">
+    <!-- 1. Intro -->
+    <div data-screen="intro">
+      <p class="tag flex items-center gap-3 text-signal">
+        <span class="h-px w-6 bg-signal" aria-hidden="true"></span>
+        Gratis · {questions.length} preguntas · 3 minutos
+      </p>
+      <h1 class="display mt-5 text-5xl text-bone md:text-7xl">Diagnóstico del analista</h1>
+      <p class="mt-6 text-lg leading-relaxed text-mute">
+        Respondé cómo trabajás hoy, no cómo te gustaría trabajar. Al final vas a ver tu perfil en cinco áreas y
+        las dos que más te conviene ordenar primero, con un paso concreto para cada una.
+      </p>
+
+      <ul class="mt-10 grid gap-px bg-line sm:grid-cols-5">
+        {
+          Object.values(areas).map((a, i) => (
+            <li class="flex flex-col gap-2 bg-ink p-4 sm:py-5">
+              <span class="font-mono text-xs text-faint">{String(i + 1).padStart(2, '0')}</span>
+              <span class="text-sm leading-snug text-bone">{a.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <button
+        type="button"
+        data-start
+        class="mt-10 inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-bone"
+      >
+        Empezar
+        <svg aria-hidden="true" class="size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+      </button>
+
+      <noscript>
+        <p class="mt-6 text-sm text-mute">Para hacer el diagnóstico necesitás tener JavaScript activado.</p>
+      </noscript>
+    </div>
+
+    <!-- 2. Preguntas -->
+    <div data-screen="quiz" hidden>
+      <div class="flex items-center justify-between gap-4">
+        <p class="tag text-faint"><span data-q-num>1</span> / {questions.length} · <span class="text-signal" data-q-area></span></p>
+        <button type="button" data-back class="tag text-mute hover:text-bone disabled:invisible">← Atrás</button>
+      </div>
+      <div class="mt-3 h-1 bg-line" aria-hidden="true">
+        <div data-progress class="h-full bg-signal transition-[width] duration-300" style="width:0%"></div>
+      </div>
+
+      <h2 data-q-text tabindex="-1" class="mt-10 text-2xl font-medium leading-snug text-bone outline-none md:text-3xl"></h2>
+      <div data-q-options role="group" class="mt-8 grid gap-3"></div>
+    </div>
+
+    <!-- 3. Resultado -->
+    <div data-screen="result" hidden>
+      <p class="tag flex items-center gap-3 text-signal">
+        <span class="h-px w-6 bg-signal" aria-hidden="true"></span>
+        Tu resultado
+      </p>
+      <h2 data-r-level tabindex="-1" class="display mt-4 text-5xl text-bone outline-none md:text-6xl"></h2>
+      <p data-r-text class="mt-5 text-lg leading-relaxed text-mute"></p>
+
+      <div class="frame mt-10 border border-line bg-panel p-6 md:p-8">
+        <div class="mb-6 flex items-baseline justify-between">
+          <span class="tag text-faint">Tu perfil por área</span>
+          <span class="font-mono text-sm text-mute">Total <span data-r-total class="text-bone"></span></span>
+        </div>
+        <ul data-r-bars class="space-y-5"></ul>
+      </div>
+
+      <h3 class="display mt-14 text-3xl text-bone md:text-4xl">Por dónde empezar</h3>
+      <div data-r-priorities class="mt-6 grid gap-px bg-line md:grid-cols-2"></div>
+
+      <!-- Email -->
+      <div class="mt-14 border border-signal/40 bg-panel p-6 md:p-8" data-form-wrap>
+        <h3 class="text-xl font-semibold text-bone">Recibí el resultado por email</h3>
+        <p class="mt-2 text-mute">
+          Te mando tu perfil completo y la plantilla de informe de rival que uso, en una página. Sin spam: podés
+          darte de baja cuando quieras.
+        </p>
+
+        <form data-form class="mt-6 grid gap-4 sm:grid-cols-2" novalidate>
+          <label class="grid gap-2 text-sm text-mute">
+            Nombre
+            <input name="nombre" autocomplete="given-name" required maxlength="80"
+              class="border border-line-strong bg-ink px-3 py-3 text-base text-bone focus:border-signal focus:outline-none" />
+          </label>
+          <label class="grid gap-2 text-sm text-mute">
+            Email
+            <input name="email" type="email" autocomplete="email" required maxlength="160"
+              class="border border-line-strong bg-ink px-3 py-3 text-base text-bone focus:border-signal focus:outline-none" />
+          </label>
+          <label class="grid gap-2 text-sm text-mute sm:col-span-2">
+            Tu rol
+            <select name="rol" required
+              class="border border-line-strong bg-ink px-3 py-3 text-base text-bone focus:border-signal focus:outline-none">
+              <option value="">Elegí una opción</option>
+              {roles.map((r) => <option value={r}>{r}</option>)}
+            </select>
+          </label>
+          <!-- Trampa para bots: las personas no la ven -->
+          <input name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+          <div class="flex flex-wrap items-center gap-4 sm:col-span-2">
+            <button type="submit"
+              class="inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-bone disabled:opacity-60">
+              Enviarme el resultado
+            </button>
+            <p data-form-msg class="text-sm text-mute" role="status"></p>
+          </div>
+        </form>
+      </div>
+
+      <div data-sent hidden class="mt-14 border border-signal/40 bg-panel p-6 md:p-8">
+        <h3 class="text-xl font-semibold text-bone">Listo, revisá tu correo</h3>
+        <p class="mt-2 text-mute">Si no lo ves en unos minutos, fijate en spam o promociones.</p>
+      </div>
+
+      <div class="mt-14 border-t border-line pt-10">
+        <p class="text-lg leading-relaxed text-mute">
+          Si querés trabajar estas áreas con acompañamiento y sobre tus propios partidos, eso es lo que hacemos en{' '}
+          <span class="text-bone">Sistema Propio</span>.
+        </p>
+        <a href={cta.mentoria.href} class="mt-4 inline-flex items-center gap-2 font-medium text-bone underline decoration-line-strong underline-offset-[6px] hover:text-signal hover:decoration-signal"
+          data-umami-event="cta_mentoria" data-umami-event-ubicacion="diagnostico-resultado">
+          Ver la mentoría →
+        </a>
+        <button type="button" data-restart class="tag ml-6 text-faint hover:text-bone">Volver a empezar</button>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { areas, questions, scoreAnswers, type AreaId } from '@/data/diagnostico';
+
+  type Umami = { track: (event: string, data?: Record<string, unknown>) => void };
+  const track = (e: string, d?: Record<string, unknown>) => (window as unknown as { umami?: Umami }).umami?.track(e, d);
+
+  const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+  const screens = ['intro', 'quiz', 'result'] as const;
+  const show = (name: (typeof screens)[number]) => {
+    screens.forEach((s) => ($(`[data-screen="${s}"]`).hidden = s !== name));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+  let answers: number[] = [];
+  let current = 0;
+
+  function renderQuestion() {
+    const q = questions[current];
+    $('[data-q-num]').textContent = String(current + 1);
+    $('[data-q-area]').textContent = areas[q.area].label;
+    $('[data-progress]').style.width = `${(current / questions.length) * 100}%`;
+    $<HTMLButtonElement>('[data-back]').disabled = current === 0;
+
+    const title = $('[data-q-text]');
+    title.textContent = q.text;
+    $('[data-q-options]').setAttribute('aria-label', q.text);
+    $('[data-q-options]').innerHTML = q.options
+      .map(
+        (opt, i) => `
+        <button type="button" data-opt="${i}" aria-pressed="${answers[current] === i}"
+          class="group flex items-center gap-4 border px-5 py-4 text-left transition-colors
+            ${answers[current] === i ? 'border-signal bg-signal/10 text-bone' : 'border-line-strong text-mute hover:border-signal hover:text-bone'}">
+          <span class="font-mono text-xs text-faint group-hover:text-signal">${String.fromCharCode(65 + i)}</span>
+          <span class="text-base leading-snug">${esc(opt)}</span>
+        </button>`,
+      )
+      .join('');
+    title.focus({ preventScroll: true });
+  }
+
+  function renderResult() {
+    const r = scoreAnswers(answers);
+    $('[data-r-level]').textContent = r.level.name;
+    $('[data-r-text]').textContent = r.level.text;
+    $('[data-r-total]').textContent = `${r.total}/100`;
+
+    $('[data-r-bars]').innerHTML = (Object.keys(areas) as AreaId[])
+      .map((id) => {
+        const v = r.scores[id];
+        const prio = r.priorities.includes(id);
+        return `
+        <li class="grid grid-cols-[8.5rem_1fr_2.5rem] items-center gap-4 text-sm sm:grid-cols-[12rem_1fr_2.5rem]">
+          <span class="${prio ? 'text-bone' : 'text-mute'}">${areas[id].label}</span>
+          <span class="relative h-1.5 bg-line"><span class="absolute inset-y-0 left-0 ${prio ? 'bg-signal' : 'bg-mute'}" style="width:${v}%"></span></span>
+          <span class="text-right font-mono ${prio ? 'text-signal' : 'text-faint'}">${v}</span>
+        </li>`;
+      })
+      .join('');
+
+    $('[data-r-priorities]').innerHTML = r.priorities
+      .map(
+        (id, i) => `
+        <article class="flex flex-col bg-panel p-6">
+          <span class="tag text-signal">Prioridad ${i + 1}</span>
+          <h4 class="mt-2 text-xl font-semibold text-bone">${areas[id].label}</h4>
+          <p class="mt-3 leading-relaxed text-mute">${esc(areas[id].tip)}</p>
+          <p class="mt-4 border-t border-line pt-4 text-sm leading-relaxed text-bone"><span class="tag mb-1 block text-faint">Primer paso</span>${esc(areas[id].firstStep)}</p>
+        </article>`,
+      )
+      .join('');
+
+    track('diagnostico_complete', { nivel: r.level.name, total: r.total });
+    show('result');
+    $('[data-r-level]').focus({ preventScroll: true });
+  }
+
+  $('[data-start]').addEventListener('click', () => {
+    answers = [];
+    current = 0;
+    track('diagnostico_start');
+    renderQuestion();
+    show('quiz');
+  });
+
+  $('[data-q-options]').addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-opt]');
+    if (!btn) return;
+    answers[current] = Number(btn.dataset.opt);
+    btn.setAttribute('aria-pressed', 'true');
+    btn.classList.add('border-signal', 'bg-signal/10', 'text-bone');
+    // Pequeña pausa para que se vea la elección antes de avanzar
+    setTimeout(() => {
+      if (current < questions.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        renderResult();
+      }
+    }, 180);
+  });
+
+  $('[data-back]').addEventListener('click', () => {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    }
+  });
+
+  $('[data-restart]').addEventListener('click', () => {
+    $('[data-form-wrap]').hidden = false;
+    $('[data-sent]').hidden = true;
+    show('intro');
+  });
+
+  // Envío por email
+  const form = $<HTMLFormElement>('[data-form]');
+  const msg = $('[data-form-msg]');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const email = String(data.get('email') ?? '').trim();
+    const nombre = String(data.get('nombre') ?? '').trim();
+    const rol = String(data.get('rol') ?? '');
+
+    if (!nombre || !rol || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      msg.textContent = 'Completá nombre, un email válido y tu rol.';
+      msg.className = 'text-sm text-signal';
+      return;
+    }
+
+    const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    btn.disabled = true;
+    msg.className = 'text-sm text-mute';
+    msg.textContent = 'Enviando…';
+
+    const params = new URLSearchParams(location.search);
+    const utm = Object.fromEntries([...params].filter(([k]) => k.startsWith('utm_')));
+
+    try {
+      const res = await fetch('/api/diagnostico', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, email, rol, respuestas: answers, web: data.get('web'), utm }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      track('lead_submit', { origen: 'diagnostico', rol });
+      $('[data-form-wrap]').hidden = true;
+      $('[data-sent]').hidden = false;
+    } catch {
+      msg.className = 'text-sm text-signal';
+      msg.textContent = 'No se pudo enviar. Probá de nuevo en un rato.';
+      btn.disabled = false;
+    }
+  });
+</script>

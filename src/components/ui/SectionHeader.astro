@@ -1,0 +1,19 @@
+---
+interface Props {
+  /** Etiqueta mono arriba del título, tipo "02 — CÓMO TRABAJO" */
+  index?: string;
+  kicker: string;
+  title: string;
+  lead?: string;
+  id?: string;
+}
+const { kicker, title, lead, id } = Astro.props
+---
+
+<header class="mb-10 max-w-3xl md:mb-14" data-reveal>
+  <p class="tag reveal mb-4 text-signal">{kicker}</p>
+  <h2 id={id} class="display reveal text-[2.5rem] text-bone sm:text-5xl md:text-6xl" style="--d:.08s">
+    {title}
+  </h2>
+  {lead && <p class="reveal mt-5 max-w-2xl text-lg leading-relaxed text-mute" style="--d:.16s">{lead}</p>}
+</header>

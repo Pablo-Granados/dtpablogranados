@@ -1,0 +1,74 @@
+---
+import { nav, cta } from '@/data/site';
+const path = Astro.url.pathname.replace(/\/$/, '');
+---
+
+<header class="sticky top-0 z-40 border-b border-line/70 bg-ink/85 backdrop-blur-md">
+  <div class="page flex h-16 items-center justify-between gap-6">
+    <a href="/" class="group flex items-center gap-3" aria-label="Pablo Granados, inicio">
+      <img src="/media/dtpablogranados.png" alt="" width="32" height="32" class="size-8 object-contain" />
+            <span class="display text-lg tracking-wide text-bone">Pablo Granados</span>
+    </a>
+
+    <nav aria-label="Principal" class="hidden items-center gap-7 md:flex">
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'text-sm transition-colors hover:text-bone',
+              path === item.href ? 'text-bone' : 'text-mute',
+            ]}
+            aria-current={path === item.href ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      <a
+        href={cta.aplicar.href}
+        class="tag border border-signal px-3 py-2 text-signal transition-colors hover:bg-signal hover:text-ink"
+        data-umami-event={cta.aplicar.event}
+        data-umami-event-ubicacion="header"
+      >
+        Aplicar
+      </a>
+    </nav>
+
+    <details class="group relative md:hidden">
+      <summary class="tag flex cursor-pointer list-none items-center gap-2 border border-line-strong px-3 py-2 text-bone [&::-webkit-details-marker]:hidden">
+        <span class="group-open:hidden">Menú</span>
+        <span class="hidden group-open:inline">Cerrar</span>
+      </summary>
+      <nav aria-label="Principal (móvil)" class="fixed inset-x-0 top-16 border-b border-line bg-ink px-4 pb-6 pt-2">
+        <ul class="divide-y divide-line">
+          {
+            nav.map((item) => (
+              <li>
+                <a href={item.href} class="display block py-4 text-3xl text-bone">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a
+          href={cta.aplicar.href}
+          class="mt-4 block bg-signal px-5 py-3 text-center font-semibold text-ink"
+          data-umami-event={cta.aplicar.event}
+          data-umami-event-ubicacion="menu-movil"
+        >
+          {cta.aplicar.label}
+        </a>
+      </nav>
+    </details>
+  </div>
+</header>
+
+
+<script>
+  // Cerrar el menú móvil al tocar un link
+  document.querySelectorAll<HTMLAnchorElement>('header details a').forEach((a) =>
+    a.addEventListener('click', () => a.closest('details')?.removeAttribute('open')),
+  );
+</script>

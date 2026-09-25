@@ -1,0 +1,42 @@
+---
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import Button from '@/components/ui/Button.astro';
+import YouTube from '@/components/ui/YouTube.astro';
+import Media from '@/components/ui/Media.astro';
+import { cta, featuredVideos } from '@/data/site';
+---
+
+<section id="contenido" class="py-20 md:py-28" aria-labelledby="contenido-title">
+  <div class="page">
+    <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+      <SectionHeader
+        id="contenido-title"
+        index="05"
+        kicker="Contenido"
+        title="El proceso, a la vista"
+        lead="Análisis, metodología y herramientas, explicados con partidos reales. Contenido que sigue sirviendo dentro de un año."
+      />
+      <div class="md:mb-14">
+        <Button href={cta.youtube.href} variant="ghost" event={cta.youtube.event} place="home-contenido">
+          {cta.youtube.label}
+        </Button>
+      </div>
+    </div>
+
+    <ul class="grid gap-8 md:grid-cols-3" data-reveal>
+      {
+        featuredVideos.map((v, i) => (
+          <li class="reveal" style={`--d:${i * 0.08}s`}>
+            {v.id ? (
+              <YouTube id={v.id} title={v.title} />
+            ) : (
+              <Media label="Video · agregar ID de YouTube" ratio="16 / 9" />
+            )}
+            <p class="tag mt-4 text-signal">{v.series}</p>
+            <h3 class="mt-2 text-lg font-medium leading-snug text-bone">{v.title}</h3>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

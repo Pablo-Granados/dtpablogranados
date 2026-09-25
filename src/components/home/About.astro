@@ -1,0 +1,43 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Media from '@/components/ui/Media.astro';
+import { aboutShort, cta } from '@/data/site'
+---
+
+<section id="sobre-mi" class="py-20 md:py-28" aria-labelledby="sobre-title">
+  <div class="page grid grid-cols-[6.5rem_1fr] items-center gap-x-5 gap-y-8 sm:grid-cols-[9rem_1fr] lg:grid-cols-12 lg:items-start lg:gap-x-16 lg:gap-y-10">
+    <!-- Foto: chica en celular, 3 columnas en escritorio -->
+    <div class="lg:col-span-3 lg:row-span-2" data-reveal>
+      <Media class="reveal" label="Foto propia · banco o análisis" src="/public/media/png.jpg" alt="Pablo Granados" ratio="4 / 5" />
+    </div>
+
+    <!-- Al costado de la foto: título y recorrido -->
+    <div class="lg:col-span-9 lg:pt-2" data-reveal>
+      <p id="sobre-title" class="tag reveal text-signal">Sobre mí</p>
+
+      <ol class="reveal mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 lg:mt-6 lg:gap-x-3 lg:gap-y-2" aria-label="Recorrido" style="--d:.06s">
+        {
+          aboutShort.path.map((step, i) => (
+            <li class="flex items-center gap-2 lg:gap-3">
+              <span class="display text-xl text-bone sm:text-3xl md:text-4xl">{step}</span>
+              {i < aboutShort.path.length - 1 && (
+                <span class="text-sm text-signal lg:text-base" aria-hidden="true">→</span>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <!-- Texto en columnas: ancho completo en celular, 2 columnas al lado de la foto en escritorio -->
+    <div class="col-span-2 lg:col-span-9 lg:col-start-4" data-reveal>
+      <div class="grid gap-x-10 gap-y-4 text-base leading-relaxed text-mute sm:grid-cols-2 sm:text-lg">
+        {aboutShort.lines.map((l, i) => <p class="reveal border-l border-line pl-4" style={`--d:${0.12 + i * 0.06}s`}>{l}</p>)}
+      </div>
+
+      <div class="reveal mt-8" style="--d:.4s">
+        <Button href={cta.youtube.href} variant="text" event={cta.youtube.event} place="home-sobre-mi">Seguir el proceso en YouTube</Button>
+      </div>
+    </div>
+  </div>
+</section>

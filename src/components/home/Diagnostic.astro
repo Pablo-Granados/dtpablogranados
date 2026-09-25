@@ -1,0 +1,54 @@
+---
+import Button from '@/components/ui/Button.astro';
+import { cta } from '@/data/site';
+
+const areas = ['Qué observás', 'Cómo capturás', 'Qué medís', 'Cómo comunicás', 'Cómo organizás tu semana'];
+---
+
+<section id="diagnostico" class="border-y border-line" aria-labelledby="diag-title">
+  <div class="page grid gap-10 py-20 md:py-24 lg:grid-cols-2 lg:items-center lg:gap-16">
+    <div data-reveal>
+      <p class="tag reveal text-signal">Diagnóstico del analista · Gratis · 3 minutos</p>
+      <h2 id="diag-title" class="display reveal mt-4 text-[2.5rem] text-bone sm:text-5xl md:text-6xl" style="--d:.08s">
+        ¿Dónde está tu proceso hoy?
+      </h2>
+      <p class="reveal mt-5 max-w-xl text-lg leading-relaxed text-mute" style="--d:.16s">
+        Doce preguntas sobre cómo analizás. Te devuelvo tu perfil en cinco áreas, las dos que más te conviene
+        trabajar y la plantilla de informe de rival que uso, en una página.
+      </p>
+      <div class="reveal mt-8" style="--d:.24s">
+        <Button href={cta.diagnostico.href} event={cta.diagnostico.event} place="home-diagnostico">
+          {cta.diagnostico.label}
+        </Button>
+      </div>
+    </div>
+
+    <!-- Vista previa del resultado -->
+    <div class="frame border border-line bg-panel p-6 md:p-8" data-reveal aria-hidden="true">
+      <p class="tag mb-6 text-faint">Ejemplo de resultado</p>
+      <ul class="space-y-5">
+        {
+          areas.map((a, i) => {
+            const v = [78, 55, 32, 64, 41][i];
+            const weak = v < 45;
+            return (
+              <li class="grid grid-cols-[8.5rem_1fr_2.5rem] items-center gap-4 text-sm sm:grid-cols-[11rem_1fr_2.5rem]">
+                <span class:list={[weak ? 'text-bone' : 'text-mute']}>{a}</span>
+                <span class="relative h-1.5 bg-line">
+                  <span
+                    class:list={['absolute inset-y-0 left-0 origin-left scale-x-0 transition-transform duration-1000 [.is-in_&]:scale-x-100', weak ? 'bg-signal' : 'bg-mute']}
+                    style={`width:${v}%;transition-delay:${0.2 + i * 0.1}s`}
+                  />
+                </span>
+                <span class:list={['text-right font-mono', weak ? 'text-signal' : 'text-faint']}>{v}</span>
+              </li>
+            );
+          })
+        }
+      </ul>
+      <p class="mt-6 border-t border-line pt-4 text-sm text-mute">
+        <span class="text-signal">Prioridad:</span> qué medís y cómo organizás tu semana.
+      </p>
+    </div>
+  </div>
+</section>

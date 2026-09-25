@@ -1,0 +1,42 @@
+---
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import { method } from '@/data/site';
+---
+
+<section id="metodo" class="border-y border-line bg-panel py-20 md:py-28" aria-labelledby="metodo-title">
+  <div class="page">
+    <SectionHeader
+      id="metodo-title"
+      index="02"
+      kicker="Cómo trabajo"
+      title="Mirar no es analizar"
+      lead="Un análisis sirve cuando alguien toma una decisión distinta gracias a él. Todo mi proceso está ordenado para llegar a ese punto."
+    />
+
+    <!-- Línea de tiempo: cada paso es una marca de codificación -->
+    <ol class="relative grid gap-px bg-line md:grid-cols-5" data-reveal>
+      {
+        method.map((m, i) => (
+          <li class="reveal relative flex flex-col bg-panel p-6 md:min-h-72 md:p-7" style={`--d:${i * 0.1}s`}>
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-sm text-faint">{m.n}</span>
+              <span class="tag border border-signal/40 px-1.5 py-0.5 text-[0.625rem] text-signal">{m.tag}</span>
+            </div>
+            <h3 class="display mt-8 text-3xl text-bone">{m.title}</h3>
+            <p class="mt-3 text-[0.9375rem] leading-relaxed text-mute">{m.body}</p>
+            <span
+              class="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-signal transition-transform duration-700 [.is-in_&]:scale-x-100"
+              style={`transition-delay:${0.25 + i * 0.15}s`}
+              aria-hidden="true"
+            />
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="mt-8 max-w-2xl text-sm leading-relaxed text-faint">
+      Es el mismo proceso que uso con los clubes y el que enseño en la mentoría. Cambian las herramientas;
+      el orden de las preguntas no.
+    </p>
+  </div>
+</section>

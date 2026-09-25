@@ -1,0 +1,49 @@
+---
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import Button from '@/components/ui/Button.astro';
+import { cta, mentorshipDeliverables } from '@/data/site';
+---
+
+<section id="mentoria" class="py-20 md:py-28" aria-labelledby="ensenar-title">
+  <div class="page grid gap-12 lg:grid-cols-12 lg:gap-16">
+    <div class="lg:col-span-5">
+      <SectionHeader
+        id="ensenar-title"
+        index="03"
+        kicker="Qué puedo enseñarte"
+        title="Sistema Propio"
+        lead="Una mentoría 1:1 de 12 semanas para entrenadores y analistas de fútbol y futsal. No te llevás apuntes: te llevás tu sistema de análisis funcionando sobre tu equipo."
+      />
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-4" data-reveal>
+        <Button href={cta.mentoria.href} event={cta.mentoria.event} place="home-mentoria" class="reveal">
+          {cta.mentoria.label}
+        </Button>
+        <Button href={cta.diagnostico.href} variant="text" event={cta.diagnostico.event} place="home-mentoria" class="reveal">
+          Primero, el diagnóstico (3 min)
+        </Button>
+      </div>
+    </div>
+
+    <div class="lg:col-span-7 lg:pt-4">
+      <div class="frame border border-line bg-panel" data-reveal>
+        <div class="flex items-center justify-between border-b border-line px-5 py-3">
+          <span class="tag text-mute">Lo que tenés al terminar</span>
+          <span class="tag text-faint">12 semanas</span>
+        </div>
+        <ol class="divide-y divide-line">
+          {
+            mentorshipDeliverables.map((d, i) => (
+              <li class="reveal flex items-baseline gap-5 px-5 py-5" style={`--d:${i * 0.08}s`}>
+                <span class="font-mono text-sm text-signal">{String(i + 1).padStart(2, '0')}</span>
+                <span class="text-lg leading-snug text-bone">{d}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="border-t border-line px-5 py-4 text-sm leading-relaxed text-mute">
+          Cada entregable se construye con tus partidos y recibe mi devolución en video.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
