@@ -4,7 +4,7 @@
  *
  * Los CTA que apuntan a WhatsApp son temporales, hasta tener los formularios propios.
  */
-import { pricing, installmentsText } from './mentoria';
+import { pricing, installmentsText, session } from './mentoria';
 import { cta, wa } from './site';
 
 export type Offer = {
@@ -68,19 +68,15 @@ export const chapters: Chapter[] = [
       {
         id: 'clip',
         name: 'Análisis de un clip',
-        summary: 'Mandás un clip de tu equipo. Elijo los que dejan más enseñanza y los analizo en un video público.',
+        summary: 'Mandás un clip de tu equipo. Elijo los que dejan más enseñanza y los analizo de manera pública.',
         items: [
           'Hay cupo cada mes: no se analizan todos los clips',
-          'Un clip enviado en octubre se analiza en un video que sale en noviembre',
-          'Al enviarlo, autorizás que se use en el video',
+          'Un clip enviado este mes se analiza de manera pública (Instagram o YouTube) el mes que viene',
+          'Al enviarlo, autorizás que se use en esa publicación',
         ],
         price: 'Gratis',
         badge: 'Por cupo mensual',
-        cta: {
-          label: 'Mandar un clip',
-          href: wa('Hola Pablo, quiero mandar un clip para el análisis del mes.'),
-          event: 'cta_clip',
-        },
+        cta: { label: 'Mandar un clip', href: '/clip', event: 'cta_clip' },
       },
     ],
   },
@@ -94,11 +90,14 @@ export const chapters: Chapter[] = [
         id: 'ebook',
         name: 'Ebook "Leé el Partido"',
         summary: 'La forma de mirar un partido antes de analizarlo, con un glosario para usar los mismos términos.',
-        items: ['PDF + glosario', 'Te lo envío por mail al confirmar el pago'],
+        items: [
+          'PDF + glosario',
+          'Se coordina por WhatsApp: pagás por transferencia en pesos y te lo envío por mail al confirmar',
+        ],
         price: 'ARS 29.500',
         priceNote: 'Pago por transferencia en pesos',
         cta: {
-          label: 'Quiero el ebook',
+          label: 'Pedir el ebook por WhatsApp',
           href: wa('Hola Pablo, quiero comprar el ebook "Leé el Partido".'),
           event: 'cta_ebook',
         },
@@ -112,12 +111,14 @@ export const chapters: Chapter[] = [
           'Me mandás 3 jugadas antes de la sesión: del video que quieras (tu equipo, un rival, un partido de referencia)',
           'Te entrego el material realizado durante la sesión',
           'Incluye el ebook "Leé el Partido" y su glosario',
+          `Si en los ${session.creditDays} días siguientes entrás a Sistema Propio, los ${usd(session.price)} se descuentan del precio`,
+          'Cómo se reserva: me escribís por WhatsApp, abonás, y te mando un link privado para elegir día y horario y cargar tus 3 jugadas',
         ],
-        price: usd(80),
-        priceNote: 'Pago único',
+        price: usd(session.price),
+        priceNote: 'Pago único, bonificado si pasás a la mentoría',
         cta: {
-          label: 'Reservar la sesión',
-          href: wa('Hola Pablo, quiero reservar una sesión de análisis 1:1.'),
+          label: 'Reservar por WhatsApp',
+          href: wa('Hola Pablo, quiero reservar una sesión de análisis 1:1 (USD 80).'),
           event: 'cta_sesion',
         },
       },
@@ -130,6 +131,7 @@ export const chapters: Chapter[] = [
           '5 entregables con devolución en video',
           'Consultas de lunes a viernes, respuesta en 24 horas',
           'Plantillas, ebook y llamada de control a los 30 días',
+          `Si hiciste una sesión 1:1 en los últimos ${session.creditDays} días, se descuentan ${usd(session.price)}`,
         ],
         price: usd(pricing.full),
         priceNote: `${pricing.installments.length} cuotas: ${installmentsText(pricing.installments)}`,

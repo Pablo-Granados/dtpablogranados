@@ -1,0 +1,156 @@
+---
+import Base from '@/layouts/Base.astro';
+import { options } from '@/data/clip';
+
+const input =
+  'w-full border border-line-strong bg-ink px-3 py-3 text-base text-bone placeholder:text-faint focus:border-signal focus:outline-none';
+const chip =
+  'cursor-pointer border border-line-strong px-4 py-2.5 text-sm text-mute transition-colors hover:border-signal hover:text-bone has-[:checked]:border-signal has-[:checked]:bg-signal/10 has-[:checked]:text-bone has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-signal';
+
+const reglas = [
+  'Mandame un link al video (YouTube, Drive u otro). Tiene que poder verse sin pedirme permiso.',
+  'Cada mes elijo los clips que dejan más enseñanza: no se analizan todos.',
+  'El análisis es público (Instagram o YouTube) y sale el mes que viene.',
+  'Si tu clip queda elegido, te escribo antes de publicar.',
+];
+---
+
+<Base
+  title="Análisis de un clip"
+  description="Mandame un clip de tu equipo. Cada mes elijo los que dejan más enseñanza y los analizo de manera pública en Instagram o YouTube."
+>
+  <section class="page max-w-3xl py-14 md:py-20">
+    <a href="/trabajar-juntos#gratis" class="tag text-faint hover:text-bone">← Trabajar juntos</a>
+    <h1 class="display mt-4 text-5xl text-bone md:text-6xl">Analizo tu clip</h1>
+    <p class="mt-4 text-lg leading-relaxed text-mute">
+      Gratis, por cupo mensual. Es una forma de mostrar cómo miro una jugada, usando una situación real de tu equipo.
+    </p>
+
+    <ul class="mt-8 space-y-3 border-y border-line py-6">
+      {
+        reglas.map((r) => (
+          <li class="flex gap-3 text-bone">
+            <span class="mt-2.5 h-px w-3 shrink-0 bg-signal" aria-hidden="true" />
+            <span class="leading-relaxed">{r}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <form data-clip class="mt-10 grid gap-8" novalidate>
+      <div class="grid gap-6 sm:grid-cols-2">
+        <label class="grid gap-2 text-sm text-mute">Nombre y apellido
+          <input name="nombre" required maxlength="80" autocomplete="name" class={input} />
+        </label>
+        <label class="grid gap-2 text-sm text-mute">Email
+          <input name="email" type="email" required maxlength="160" autocomplete="email" class={input} />
+        </label>
+        <label class="grid gap-2 text-sm text-mute">Instagram <span class="text-faint">(opcional, para etiquetarte)</span>
+          <input name="instagram" maxlength="60" placeholder="@usuario" class={input} />
+        </label>
+        <div role="radiogroup" aria-label="Deporte" class="grid gap-3">
+          <p class="text-sm text-mute">Deporte</p>
+          <div class="flex flex-wrap gap-2">
+            {options.deporte.map((o) => <label class={chip}><input type="radio" name="deporte" value={o} required class="sr-only" />{o}</label>)}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-[1fr_12rem]">
+        <label class="grid gap-2 text-sm text-mute">Link del clip
+          <input name="link" type="url" required maxlength="500" placeholder="https://…" class={input} />
+        </label>
+        <label class="grid gap-2 text-sm text-mute">Minuto <span class="text-faint">(opcional)</span>
+          <input name="minuto" maxlength="40" placeholder="Ej: 12:40" class={input} />
+        </label>
+      </div>
+
+      <label class="grid gap-2 text-sm text-mute">
+        ¿Qué querés que mire en esta jugada?
+        <textarea name="pregunta" required minlength="10" maxlength="800" rows="4"
+          placeholder="Por ejemplo: perdemos la pelota en la salida y no entiendo si es un problema de posición o de decisión."
+          class={input}></textarea>
+      </label>
+
+      <label class="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-mute">
+        <input type="checkbox" name="autoriza" required class="mt-1 size-4 accent-[#00f2ff]" />
+        Autorizo que el clip se analice y se publique en Instagram o YouTube, y confirmo que es de mi equipo o que
+        tengo permiso para compartirlo.
+      </label>
+
+      <input name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+      <div class="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
+        <p data-msg class="text-sm text-signal" role="status"></p>
+        <button type="submit" class="inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-bone disabled:opacity-60">
+          Enviar clip
+        </button>
+      </div>
+    </form>
+
+    <div data-done hidden class="mt-12 border-t border-line pt-10">
+      <p class="tag text-signal">Clip recibido</p>
+      <h2 class="display mt-3 text-4xl text-bone md:text-5xl">Gracias por mandarlo</h2>
+      <p class="mt-4 text-lg leading-relaxed text-mute">
+        Te mandé un mail de confirmación. Si tu clip queda elegido, te escribo antes de publicar el análisis. Si no lo
+        ves, revisá spam.
+      </p>
+      <a href="/plantillas" class="mt-8 inline-block text-sm text-mute underline underline-offset-4 hover:text-signal">Mientras tanto, mirá las plantillas gratis</a>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { startSending } from '@/scripts/sending';
+
+  type Umami = { track: (event: string, data?: Record<string, unknown>) => void };
+  const track = (e: string, d?: Record<string, unknown>) => (window as unknown as { umami?: Umami }).umami?.track(e, d);
+
+  const form = document.querySelector<HTMLFormElement>('[data-clip]')!;
+  const msg = form.querySelector<HTMLElement>('[data-msg]')!;
+  const submit = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+
+  let started = false;
+  form.addEventListener('input', () => {
+    if (!started) { started = true; track('clip_start'); }
+  });
+
+  function fail(text: string, el?: Element | null) {
+    msg.className = 'text-sm text-signal';
+    msg.textContent = text;
+    (el as HTMLElement | null)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    (el?.matches('input,textarea') ? (el as HTMLElement) : el?.querySelector<HTMLElement>('input'))?.focus({ preventScroll: true });
+  }
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const q = (name: string) => form.querySelector<HTMLInputElement>(`[name="${name}"]`);
+
+    if (!q('nombre')!.value.trim()) return fail('Falta tu nombre.', q('nombre'));
+    if (!q('email')!.checkValidity()) return fail('Revisá el email.', q('email'));
+    if (!form.querySelector('input[name="deporte"]:checked')) return fail('Elegí el deporte.', form.querySelector('[role=radiogroup]:last-of-type'));
+    const link = q('link')!.value.trim();
+    if (!link || !/^[^\s/]+\.[^\s/]+/.test(link.replace(/^https?:\/\//i, ''))) return fail('Pegá el link del clip.', q('link'));
+    if (q('pregunta')!.value.trim().length < 10) return fail('Contame un poco más qué querés que mire.', q('pregunta'));
+    if (!q('autoriza')!.checked) return fail('Necesito tu autorización para poder analizarlo y publicarlo.', q('autoriza'));
+
+    const fd = new FormData(form);
+    const data: Record<string, unknown> = Object.fromEntries(fd);
+    data.autoriza = true;
+    data.utm = Object.fromEntries([...new URLSearchParams(location.search)].filter(([k]) => k.startsWith('utm_')));
+
+    const stop = startSending(submit, msg);
+    try {
+      const res = await fetch('/api/clip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error(await res.text());
+      track('clip_submit', { deporte: String(data.deporte) });
+      form.hidden = true;
+      document.querySelector<HTMLElement>('[data-done]')!.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      stop();
+      msg.className = 'text-sm text-signal';
+      msg.textContent = 'No se pudo enviar. Probá de nuevo en un rato.';
+    }
+  });
+</script>

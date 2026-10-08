@@ -24,6 +24,9 @@ export const pricing = {
   },
 };
 
+/** Sesión 1:1: su valor se bonifica en la mentoría si la persona entra dentro del plazo. */
+export const session = { price: 80, creditDays: 30 };
+
 /** Texto de cuotas listo para mostrar: "250 al iniciar · 250 a la mitad del programa · 190 al finalizar". */
 export const installmentsText = (list: { amount: number; when: string }[]) =>
   list.map((i) => `${pricing.currency} ${i.amount} ${i.when}`).join(' · ');
@@ -119,6 +122,10 @@ export const faq = [
   {
     q: '¿Cómo se paga?',
     a: 'En 3 cuotas: la primera al iniciar, la segunda a la mitad del programa y la última al finalizar. Desde Argentina, por transferencia. Desde otros países, por ARQ o Takenos.',
+  },
+  {
+    q: 'Hice una sesión 1:1, ¿se descuenta?',
+    a: 'Sí. La sesión queda incluida en el precio: si hacés una sesión 1:1 y entrás a Sistema Propio dentro de los 30 días, los USD 80 se descuentan de las 12 semanas, también en la cohorte fundadora. En total pagás el precio del programa y tenés una llamada más (13 en vez de 12). Avisame al aplicar y lo coordinamos.',
   },
   {
     q: '¿Qué pasa si empiezo y no es para mí?',

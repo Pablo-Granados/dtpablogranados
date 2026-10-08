@@ -1,7 +1,7 @@
 ---
 import Base from '@/layouts/Base.astro';
 import { options } from '@/data/aplicacion';
-import { pricing } from '@/data/mentoria';
+import { pricing, session } from '@/data/mentoria';
 
 const calLink = import.meta.env.PUBLIC_CAL_LINK ?? '';
 const price = `${pricing.currency} ${pricing.full.toLocaleString('es-AR')}`;
@@ -109,6 +109,9 @@ const chip =
         <div role="radiogroup" aria-label="Inversión" class="grid gap-3">
           <p class="text-sm leading-relaxed text-mute">
             Sistema Propio tiene una inversión de <span class="text-bone">{price}</span> (o {cuotas}). ¿Es viable para vos ahora?
+          </p>
+          <p class="text-sm leading-relaxed text-faint">
+            Si hiciste una sesión 1:1 en los últimos {session.creditDays} días, se descuentan {pricing.currency} {session.price}: avisame en la llamada.
           </p>
           <div class="flex flex-wrap gap-2">
             {options.inversion.map((o) => <label class={chip}><input type="radio" name="inversion" value={o} required class="sr-only" />{o}</label>)}
