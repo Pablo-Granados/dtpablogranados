@@ -1,0 +1,17 @@
+{
+  "name": "generador-plantillas",
+  "private": true,
+  "type": "module",
+  "description": "Genera los PDF y las hojas de cálculo de public/plantillas. Se corre a mano: npm install && npm run todas",
+  "scripts": {
+    "mapa": "node build-mapa.mjs",
+    "panel": "node build-panel.mjs",
+    "ficha": "node build-ficha.mjs",
+    "checklist": "node build-checklist.mjs",
+    "todas": "node build-mapa.mjs && node build-panel.mjs && node build-ficha.mjs && node build-checklist.mjs"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "pdfkit": "^0.15.0"
+  }
+}

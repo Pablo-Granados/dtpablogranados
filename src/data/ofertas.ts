@@ -55,14 +55,15 @@ export const chapters: Chapter[] = [
       {
         id: 'plantillas',
         name: 'Plantillas de trabajo',
-        summary: 'Las herramientas que uso, de a una y probadas en análisis reales. No las suelto todas juntas.',
+        summary: 'Las herramientas que uso para analizar, completas y sin versiones de prueba.',
         items: [
-          'Ya disponible: informe de rival de una página (se entrega con el diagnóstico)',
-          'Las siguientes se suman de a poco',
+          'Mapa de observación, panel de codificación, ficha de partido y checklist semanal',
+          'Cada una en PDF y en hoja de cálculo editable',
+          'Informe de rival de una página: se entrega con el diagnóstico',
         ],
         price: 'Gratis',
-        badge: 'Se amplía de a poco',
-        cta: { label: 'Recibir la primera', href: cta.diagnostico.href, event: 'cta_plantillas' },
+        badge: '4 plantillas',
+        cta: { label: 'Ver las plantillas', href: '/plantillas', event: 'cta_plantillas' },
       },
       {
         id: 'clip',

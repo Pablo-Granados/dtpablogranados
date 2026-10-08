@@ -1,0 +1,60 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/ui/Button.astro';
+import TemplateForm from '@/components/TemplateForm.astro';
+import { templates } from '@/data/plantillas';
+---
+
+<Base
+  title="Plantillas de análisis gratuitas"
+  description="Las herramientas que uso para analizar fútbol y futsal, gratis: mapa de observación, panel de codificación, ficha de partido y checklist semanal."
+>
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+    <div class="page relative py-16 md:py-24" data-reveal>
+      <p class="tag reveal text-signal">Plantillas · Gratis</p>
+      <h1 class="display reveal mt-6 max-w-4xl text-5xl text-bone sm:text-7xl lg:text-8xl" style="--d:.06s">
+        Mis herramientas, gratis
+      </h1>
+      <p class="reveal mt-6 max-w-2xl text-xl leading-relaxed text-mute" style="--d:.12s">
+        Las plantillas que uso para analizar, completas y sin versiones de prueba. Cada una en PDF y en hoja de cálculo
+        editable, escritas con ejemplos de futsal y útiles para fútbol.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-24" aria-label="Plantillas">
+    <div class="page">
+      <ul class="border-b border-line">
+        {
+          templates.map((t, i) => (
+            <li class="reveal grid gap-5 border-t border-line py-9 lg:grid-cols-12 lg:gap-10" data-reveal style={`--d:${i * 0.05}s`}>
+              <p class="tag text-faint lg:col-span-1">{t.n}</p>
+              <div class="lg:col-span-7">
+                <h2 class="text-2xl font-semibold leading-tight text-bone md:text-3xl">{t.name}</h2>
+                <p class="mt-2 leading-relaxed text-mute">{t.tagline}. {t.summary}</p>
+              </div>
+              <div class="flex items-center lg:col-span-4 lg:justify-end">
+                <Button href={`/plantillas/${t.slug}`} event="cta_plantilla" place="plantillas-indice">Descargar</Button>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="border-t border-line bg-panel py-16 md:py-24" aria-labelledby="aviso-title">
+    <div class="page grid gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <h2 id="aviso-title" class="display text-4xl text-bone md:text-5xl">Enterate de las nuevas</h2>
+        <p class="mt-4 text-lg leading-relaxed text-mute">
+          Cuando sume una plantilla nueva, te aviso por mail. Nada más.
+        </p>
+      </div>
+      <div class="lg:col-span-7">
+        <TemplateForm submitLabel="Avisarme" place="plantillas-aviso" />
+      </div>
+    </div>
+  </section>
+</Base>

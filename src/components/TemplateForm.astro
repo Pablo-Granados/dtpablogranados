@@ -1,0 +1,129 @@
+---
+/**
+ * Formulario de plantillas.
+ * Con `slug`: pide el mail y entrega los archivos. Sin `slug`: solo deja el mail para el aviso.
+ */
+interface Props {
+  slug?: string;
+  submitLabel: string;
+  place: string;
+}
+const { slug, submitLabel, place } = Astro.props;
+
+const input =
+  'w-full border border-line-strong bg-ink px-3 py-3 text-base text-bone placeholder:text-faint focus:border-signal focus:outline-none';
+---
+
+<div data-tpl-root data-slug={slug ?? ''} data-place={place}>
+  <form data-tpl-form class="grid gap-6" novalidate>
+    <div class="grid gap-6 sm:grid-cols-2">
+      <label class="grid gap-2 text-sm text-mute">Email
+        <input name="email" type="email" required maxlength="160" autocomplete="email" class={input} />
+      </label>
+      <label class="grid gap-2 text-sm text-mute">Nombre <span class="text-faint">(opcional)</span>
+        <input name="nombre" maxlength="80" autocomplete="given-name" class={input} />
+      </label>
+    </div>
+
+    {
+      slug ? (
+        <label class="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-mute">
+          <input type="checkbox" name="avisos" class="mt-1 size-4 accent-[#00f2ff]" />
+          Avisame cuando haya plantillas nuevas. Nada más.
+        </label>
+      ) : (
+        <input type="hidden" name="avisos" value="on" />
+      )
+    }
+
+    <input name="web" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+    <div class="flex flex-wrap items-center gap-4">
+      <button type="submit" class="inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-bone disabled:opacity-60">
+        {submitLabel}
+      </button>
+      <p data-tpl-msg class="text-sm text-signal" role="status"></p>
+    </div>
+  </form>
+
+  <div data-tpl-done hidden class="border-t border-line pt-8">
+    <p class="tag text-signal" data-tpl-done-kicker></p>
+    <h3 class="display mt-3 text-3xl text-bone md:text-4xl" data-tpl-done-title></h3>
+    <p class="mt-3 max-w-xl text-mute" data-tpl-done-text></p>
+    <ul class="mt-6 flex flex-wrap gap-3" data-tpl-files></ul>
+  </div>
+</div>
+
+<script>
+  import { startSending } from '@/scripts/sending';
+
+  type Umami = { track: (event: string, data?: Record<string, unknown>) => void };
+  const track = (e: string, d?: Record<string, unknown>) => (window as unknown as { umami?: Umami }).umami?.track(e, d);
+
+  document.querySelectorAll<HTMLElement>('[data-tpl-root]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('[data-tpl-form]')!;
+    const msg = root.querySelector<HTMLElement>('[data-tpl-msg]')!;
+    const btn = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    const slug = root.dataset.slug || '';
+    const place = root.dataset.place || '';
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(form);
+      const email = String(fd.get('email') ?? '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msg.className = 'text-sm text-signal';
+        msg.textContent = 'Revisá el email.';
+        form.querySelector<HTMLInputElement>('input[name=email]')!.focus();
+        return;
+      }
+
+      const stop = startSending(btn, msg, 'Enviando');
+      const data = {
+        email,
+        nombre: String(fd.get('nombre') ?? ''),
+        avisos: fd.get('avisos') === 'on',
+        plantilla: slug || undefined,
+        web: fd.get('web'),
+        utm: Object.fromEntries([...new URLSearchParams(location.search)].filter(([k]) => k.startsWith('utm_'))),
+      };
+
+      try {
+        const res = await fetch('/api/plantilla', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const { files } = (await res.json()) as { files: { label: string; href: string }[] };
+        track(slug ? 'plantilla_descarga' : 'plantilla_aviso', { plantilla: slug || 'aviso', ubicacion: place });
+
+        const done = root.querySelector<HTMLElement>('[data-tpl-done]')!;
+        const list = done.querySelector<HTMLElement>('[data-tpl-files]')!;
+        list.replaceChildren();
+        done.querySelector('[data-tpl-done-kicker]')!.textContent = slug ? 'Listo' : 'Anotado';
+        done.querySelector('[data-tpl-done-title]')!.textContent = slug ? 'Descargá tus archivos' : 'Te aviso';
+        done.querySelector('[data-tpl-done-text]')!.textContent = slug
+          ? 'También te los mandé por mail, por si los querés tener a mano. Si no lo ves, revisá spam.'
+          : 'Te escribo cuando sume una plantilla nueva.';
+        for (const f of files) {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = f.href;
+          a.download = '';
+          a.textContent = f.label;
+          a.className = 'inline-flex items-center gap-2 bg-signal px-5 py-3 font-semibold text-ink transition-colors hover:bg-bone';
+          a.addEventListener('click', () => track('plantilla_archivo', { archivo: f.href }));
+          li.append(a);
+          list.append(li);
+        }
+        form.hidden = true;
+        done.hidden = false;
+      } catch {
+        stop();
+        msg.className = 'text-sm text-signal';
+        msg.textContent = 'No se pudo enviar. Probá de nuevo en un rato.';
+      }
+    });
+  });
+</script>
