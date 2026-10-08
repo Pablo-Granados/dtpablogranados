@@ -1,0 +1,108 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/ui/Button.astro';
+import Media from '@/components/ui/Media.astro';
+import { about, path, why, credentials } from '@/data/sobre';
+import { cta, site } from '@/data/site';
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'Sobre Pablo Granados',
+    mainEntity: { '@type': 'Person', name: site.name, jobTitle: 'Analista de fútbol y futsal', sameAs: Object.values(site.social) },
+  },
+];
+---
+
+<Base
+  title="Sobre mí"
+  description="Entrenador de futsal desde 2019, videoanalista y constructor de herramientas. Mi recorrido y por qué trabajo como trabajo."
+  schema={schema}
+>
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+    <div class="page relative grid gap-12 py-16 md:py-24 lg:grid-cols-12 lg:items-end">
+      <div class="lg:col-span-8" data-reveal>
+        <p class="tag reveal text-signal">Sobre mí</p>
+        <h1 class="display reveal mt-6 text-4xl text-bone sm:text-6xl lg:text-7xl" style="--d:.06s">{about.title}</h1>
+        <p class="reveal mt-6 max-w-2xl text-xl leading-relaxed text-mute" style="--d:.12s">{about.lead}</p>
+      </div>
+      <div class="lg:col-span-4" data-reveal>
+        <Media
+          class="reveal"
+          label="Foto propia"
+          src="/media/pablo-retrato.jpg"
+          alt="Retrato de Pablo Granados en el banco durante un partido"
+          ratio="4 / 5"
+          fit="cover"
+          position="50% 20%"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Recorrido -->
+  <section class="py-16 md:py-24" aria-labelledby="recorrido-title">
+    <div class="page">
+      <h2 id="recorrido-title" class="display mb-12 text-4xl text-bone md:text-5xl">El recorrido</h2>
+      <ol class="relative border-l border-line-strong" data-reveal>
+        {
+          path.map((p, i) => (
+            <li class="reveal relative grid gap-3 pb-12 pl-8 last:pb-0 md:grid-cols-12 md:gap-8 md:pl-12" style={`--d:${i * 0.07}s`}>
+              <span class="absolute -left-[5px] top-1.5 size-2.5 bg-signal" aria-hidden="true" />
+              <p class="tag pt-1 text-faint md:col-span-3">{p.when}</p>
+              <div class="md:col-span-9">
+                <h3 class="text-2xl font-semibold text-bone">{p.title}</h3>
+                <p class="mt-2 max-w-2xl leading-relaxed text-mute">{p.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Por qué -->
+  <section class="border-y border-line bg-panel py-16 md:py-24" aria-labelledby="porque-title">
+    <div class="page grid gap-10 lg:grid-cols-12" data-reveal>
+      <h2 id="porque-title" class="display reveal text-4xl text-bone md:text-5xl lg:col-span-5">{why.title}</h2>
+      <div class="reveal space-y-4 text-2xl leading-snug text-bone lg:col-span-7" style="--d:.1s">
+        {why.body.map((p) => <p>{p}</p>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Credenciales -->
+  <section class="py-16 md:py-24" aria-labelledby="creden-title">
+    <div class="page">
+      <h2 id="creden-title" class="display mb-10 text-4xl text-bone md:text-5xl">Lo que se puede verificar</h2>
+      <ul class="border-b border-line" data-reveal>
+        {
+          credentials.map((c, i) => (
+            <li class="reveal flex flex-col gap-1 border-t border-line py-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8" style={`--d:${i * 0.06}s`}>
+              <span class="text-lg font-medium text-bone">{c.label}</span>
+              <span class="text-mute">{c.detail}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section class="border-t border-line">
+    <div class="page flex flex-col items-start gap-8 py-20 md:flex-row md:items-end md:justify-between md:py-24">
+      <div class="max-w-2xl">
+        <h2 class="display text-5xl text-bone md:text-6xl">Trabajemos juntos</h2>
+        <p class="mt-4 text-lg leading-relaxed text-mute">
+          Si querés mejorar tu proceso de análisis, o tu club necesita análisis o una herramienta, mirá las opciones.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <Button href={cta.trabajar.href} event={cta.trabajar.event} place="sobre-mi">Ver las opciones</Button>
+        <Button href={cta.diagnostico.href} variant="ghost" event={cta.diagnostico.event} place="sobre-mi">Hacer el diagnóstico</Button>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -3,7 +3,7 @@ import SectionHeader from '@/components/ui/SectionHeader.astro';
 import Button from '@/components/ui/Button.astro';
 import YouTube from '@/components/ui/YouTube.astro';
 import Media from '@/components/ui/Media.astro';
-import { cta, featuredVideos } from '@/data/site';
+import { cta, featuredVideos, audienceVideos } from '@/data/site';
 ---
 
 <section id="contenido" class="py-20 md:py-28" aria-labelledby="contenido-title">
@@ -13,13 +13,16 @@ import { cta, featuredVideos } from '@/data/site';
         id="contenido-title"
         index="05"
         kicker="Contenido"
-        title="El proceso, a la vista"
-        lead="Análisis, metodología y herramientas, explicados con partidos reales. Contenido que sigue sirviendo dentro de un año."
+        title="El análisis, a la vista"
+        lead="Jugadas y situaciones de futsal explicadas en pocos minutos, y los resúmenes de la AFA que miles de personas ven cada semana."
       />
       <div class="md:mb-14">
-        <Button href={cta.youtube.href} variant="ghost" event={cta.youtube.event} place="home-contenido">
-          {cta.youtube.label}
-        </Button>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <Button href="/contenido" event="cta_contenido" place="home-contenido">Ver todo el contenido</Button>
+          <Button href={cta.youtube.href} variant="ghost" event={cta.youtube.event} place="home-contenido">
+            {cta.youtube.label}
+          </Button>
+        </div>
       </div>
     </div>
 
@@ -38,5 +41,21 @@ import { cta, featuredVideos } from '@/data/site';
         ))
       }
     </ul>
+
+    <!-- Audiencia: prueba de alcance -->
+    <div class="mt-16 border-t border-line pt-10" data-reveal>
+      <p class="tag reveal text-faint">Lo que más ve la gente</p>
+      <ul class="mt-6 grid gap-8 md:grid-cols-3">
+        {
+          audienceVideos.map((v, i) => (
+            <li class="reveal" style={`--d:${i * 0.08}s`}>
+              <YouTube id={v.id} title={v.title} />
+              <p class="tag mt-4 text-signal">{v.views}</p>
+              <h3 class="mt-2 text-base font-medium leading-snug text-mute">{v.title}</h3>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
   </div>
 </section>

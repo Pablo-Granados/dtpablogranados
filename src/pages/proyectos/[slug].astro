@@ -1,0 +1,192 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/ui/Button.astro';
+import Media from '@/components/ui/Media.astro';
+import { cases } from '@/data/casos';
+
+export function getStaticPaths() {
+  return cases.map((c) => ({ params: { slug: c.slug }, props: { c } }));
+}
+
+const { c } = Astro.props;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: c.name,
+    description: c.intro,
+    creator: { '@type': 'Person', name: 'Pablo Granados' },
+    url: c.external,
+  },
+];
+---
+
+<Base title={`${c.name} · caso de estudio`} description={`${c.tagline}. ${c.intro}`} schema={schema}>
+  <!-- Cabecera -->
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+    <div class="page relative py-16 md:py-24" data-reveal>
+      <a href="/#proyectos" class="tag reveal text-faint hover:text-bone">← Lo que construí</a>
+      <p class="tag reveal mt-8 flex flex-wrap gap-x-3 text-faint" style="--d:.04s">
+        <span class="text-signal">{c.kind}</span><span>{c.year}</span>
+      </p>
+      <h1 class="display reveal mt-5 text-6xl text-bone sm:text-7xl lg:text-8xl" style="--d:.08s">{c.name}</h1>
+      <p class="reveal mt-5 max-w-3xl text-2xl leading-snug text-bone" style="--d:.12s">{c.tagline}</p>
+      <p class="reveal mt-5 max-w-2xl text-lg leading-relaxed text-mute" style="--d:.16s">{c.intro}</p>
+      <div class="reveal mt-9" style="--d:.2s">
+        <Button href={c.external} event={`out_${c.slug}`} place="caso-cabecera">{c.externalLabel}</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resultados -->
+  <section aria-label="Resultados" class="border-b border-line">
+    <div class="page">
+      <dl class="grid grid-cols-2 gap-px bg-line lg:grid-cols-4" data-reveal>
+        {
+          c.results.map((r, i) => (
+            <div class="reveal flex flex-col gap-2 bg-ink px-1 py-8 sm:px-5 lg:first:pl-0" style={`--d:${i * 0.07}s`}>
+              <dd class="display order-1 text-4xl text-bone md:text-5xl">{r.value}</dd>
+              <dt class="order-2 text-sm leading-snug text-mute">
+                {r.label}
+                {r.note && <span class="text-faint"> · {r.note}</span>}
+              </dt>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <!-- Problema y motivo -->
+  <section class="py-16 md:py-24">
+    <div class="page grid gap-12 lg:grid-cols-12" data-reveal>
+      <div class="reveal lg:col-span-5">
+        <p class="tag text-signal">El problema</p>
+        <div class="mt-4 space-y-4 text-xl leading-relaxed text-bone">
+          {c.problem.map((p) => <p>{p}</p>)}
+        </div>
+      </div>
+      <div class="reveal lg:col-span-6 lg:col-start-7" style="--d:.1s">
+        <p class="tag text-signal">{c.whyTitle ?? 'Por qué lo hice'}</p>
+        <div class="mt-4 space-y-4 text-lg leading-relaxed text-mute">
+          {c.why.map((p) => <p>{p}</p>)}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Qué construí -->
+  <section class="border-y border-line bg-panel py-16 md:py-24" aria-labelledby="construi-title">
+    <div class="page">
+      <h2 id="construi-title" class="display mb-10 text-4xl text-bone md:text-5xl">Qué construí</h2>
+      <div class="grid gap-px bg-line md:grid-cols-3" data-reveal>
+        {
+          c.built.map((g, i) => (
+            <div class="reveal bg-panel p-7 md:p-8" style={`--d:${i * 0.08}s`}>
+              <h3 class="tag text-signal">{g.title}</h3>
+              <ul class="mt-5 space-y-3">
+                {g.items.map((it) => (
+                  <li class="flex gap-3 text-bone">
+                    <span class="mt-2.5 h-px w-3 shrink-0 bg-signal" aria-hidden="true" />
+                    <span class="leading-relaxed">{it}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+
+      {
+        c.shots.length > 0 && (
+          <div class:list={['mt-12 grid grid-cols-2 gap-x-4 gap-y-8 md:gap-x-6', c.shots.length > 6 ? 'md:grid-cols-4' : 'md:grid-cols-3']} data-reveal>
+            {c.shots.map((s, i) => (
+              <figure class="reveal" style={`--d:${(i % 4) * 0.06}s`}>
+                <Media label={s.caption} src={s.src} alt={s.alt} ratio={s.ratio ?? '5 / 8'} fit={s.fit ?? 'cover'} position="top" />
+                <figcaption class="tag mt-3 text-faint">{s.caption}</figcaption>
+              </figure>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- Lo difícil -->
+  {
+    c.hard && (
+      <section class="py-16 md:py-24">
+        <div class="page grid gap-12 lg:grid-cols-12" data-reveal>
+          <div class="reveal lg:col-span-5">
+            <p class="tag text-signal">Lo más difícil</p>
+            <h2 class="display mt-4 text-4xl text-bone md:text-5xl">{c.hard.title}</h2>
+          </div>
+          <div class="reveal space-y-4 text-lg leading-relaxed text-mute lg:col-span-6 lg:col-start-7" style="--d:.1s">
+            {c.hard.body.map((p) => <p>{p}</p>)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Qué cambió -->
+  {
+    c.after && (
+      <section class="py-16 md:py-24">
+        <div class="page grid gap-12 lg:grid-cols-12" data-reveal>
+          <div class="reveal lg:col-span-5">
+            <p class="tag text-signal">Qué cambió</p>
+          </div>
+          <div class="reveal space-y-4 text-xl leading-relaxed text-bone lg:col-span-6 lg:col-start-7" style="--d:.1s">
+            {c.after.map((p) => <p>{p}</p>)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Quién lo usa -->
+  <section class="border-y border-line py-16 md:py-24" aria-labelledby="usa-title">
+    <div class="page">
+      <h2 id="usa-title" class="display mb-10 text-4xl text-bone md:text-5xl">Quién lo usa</h2>
+      <ul class="grid gap-8 md:grid-cols-3" data-reveal>
+        {
+          c.users.map((u, i) => (
+            <li class="reveal border-t border-line pt-5" style={`--d:${i * 0.08}s`}>
+              <h3 class="text-xl font-semibold text-bone">{u.who}</h3>
+              <p class="mt-2 leading-relaxed text-mute">{u.uses}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        c.quote && (
+          <blockquote class="reveal mt-14 max-w-3xl border-l-2 border-signal pl-6" data-reveal>
+            <p class="text-2xl leading-snug text-bone">“{c.quote.text}”</p>
+            <footer class="tag mt-4 text-faint">{c.quote.who}</footer>
+          </blockquote>
+        )
+      }
+
+      <p class="tag mt-12 text-faint">
+        <span class="sr-only">Tecnologías: </span>{c.stack.join('  ·  ')}
+      </p>
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section>
+    <div class="page flex flex-col items-start gap-8 py-20 md:flex-row md:items-end md:justify-between md:py-24">
+      <div class="max-w-2xl">
+        <h2 class="display text-5xl text-bone md:text-6xl">¿Necesitás algo así?</h2>
+        <p class="mt-4 text-lg leading-relaxed text-mute">
+          Plataformas, paneles y bases de datos para clubes, ligas y agencias. Contame qué necesitás y te respondo en 24 horas.
+        </p>
+      </div>
+      <Button href="/equipos?necesidad=herramientas" event="cta_proyecto" place={`caso-${c.slug}`}>Contarme el proyecto</Button>
+    </div>
+  </section>
+</Base>

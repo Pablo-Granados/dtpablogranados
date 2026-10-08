@@ -44,7 +44,10 @@ import { aboutShort, cta } from '@/data/site'
       </div>
 
       <div class="reveal mt-8" style="--d:.4s">
-        <Button href={cta.youtube.href} variant="text" event={cta.youtube.event} place="home-sobre-mi">Seguir el proceso en YouTube</Button>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <Button href="/sobre-mi" event="cta_sobre_mi" place="home-sobre-mi">Leer mi recorrido</Button>
+          <Button href={cta.youtube.href} variant="text" event={cta.youtube.event} place="home-sobre-mi">Seguir el proceso en YouTube</Button>
+        </div>
       </div>
     </div>
   </div>

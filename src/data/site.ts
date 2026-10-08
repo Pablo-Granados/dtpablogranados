@@ -25,8 +25,8 @@ export const nav = [
   { label: 'Mentoría', href: '/mentoria' },
   { label: 'Equipos', href: '/trabajar-juntos#equipos' },
   { label: 'Proyectos', href: '/#proyectos' },
-  { label: 'Contenido', href: '/#contenido' },
-  { label: 'Sobre mí', href: '/#sobre-mi' },
+  { label: 'Contenido', href: '/contenido' },
+  { label: 'Sobre mí', href: '/sobre-mi' },
 ] as const;
 
 /** Link de WhatsApp con mensaje precargado (temporal, hasta tener formularios). */
@@ -91,11 +91,11 @@ export const projects: Project[] = [
     kind: 'Plataforma a medida · Cliente',
     year: '2026',
     problem:
-      'Una agencia de representación necesitaba mostrar a más de 45 jugadores de forma profesional ante clubes y actualizar sus datos sin depender de nadie.',
+      'Una agencia de representación reunía a más de 50 jugadores y necesitaba mostrar todo en un solo lugar: trayectoria, ficha, foto y video de cada uno.',
     built:
-      'Un plantel filtrable por posición, perfiles con trayectoria en línea de tiempo y video, y un panel privado para que la agencia gestione cada jugador.',
+      'Un sitio con el plantel filtrable por posición y un perfil por jugador, más un panel de administración para editar más rápido. Lo desarrollé en menos de una semana.',
     result:
-      'La agencia presenta a su plantel con un link y lo mantiene actualizado por su cuenta.',
+      'La agencia se presenta ante clubes y jugadores con un sitio propio que reúne todo su plantel en un solo link.',
     stack: ['JavaScript', 'Supabase Auth', 'Vercel'],
     href: '/proyectos/laa-sports',
     external: 'https://laasports.vercel.app/',
@@ -152,9 +152,16 @@ export const mentorshipDeliverables = [
  * Mientras el id esté vacío, se muestra un placeholder.
  */
 export const featuredVideos = [
-  { id: '9ojI3L4ZYvI', series: 'Oficio de analista', title: 'Cómo hago un informe de rival' },
-  { id: 'hJmOFP4WZPQ', series: 'Construido para el análisis', title: 'Construí una plataforma para analizar la liga de mi ciudad' },
-  { id: 'wLZow1vNiPk', series: 'Lo que no se ve', title: 'Por qué este cierre nunca pierde la marca' },
+  { id: 'zpXVzPVo1Cs', series: 'Análisis · Penales', title: 'Estudio Penales' },
+  { id: '5751Kb_yHLs', series: 'Táctica en un minuto', title: 'Sobreposición en Futsal' },
+  { id: '-YULaBSm9So', series: 'Táctica en un minuto', title: 'La Gitana en Futsal argentino' },
+] as const;
+
+/** Resúmenes con mucha audiencia: prueba de alcance, no de método. Las vistas son aproximadas y "más de". */
+export const audienceVideos = [
+  { id: '9ojI3L4ZYvI', title: '¡BOCA vs RIVER! Fecha 5, Futsal AFA 2026', views: 'Más de 40 mil vistas' },
+  { id: '-0Va1V4Ip38', title: '¡RIVER vs BOCA! Final de la Supercopa de Futsal AFA 2025', views: 'Más de 24 mil vistas' },
+  { id: 'hJmOFP4WZPQ', title: '36 PENALES | Boca vs Independiente, pase a semifinales AFA 2025', views: 'Más de 17 mil vistas' },
 ] as const;
 
 export const aboutShort = {

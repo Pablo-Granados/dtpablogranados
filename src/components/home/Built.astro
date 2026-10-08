@@ -3,6 +3,7 @@ import SectionHeader from '@/components/ui/SectionHeader.astro';
 import Media from '@/components/ui/Media.astro';
 import Button from '@/components/ui/Button.astro';
 import { projects } from '@/data/site';
+import { findCase } from '@/data/casos';
 ---
 
 <section id="proyectos" class="py-20 md:py-28" aria-labelledby="construi-title">
@@ -66,7 +67,11 @@ import { projects } from '@/data/site';
               </p>
 
               <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-                <Button href={p.external} variant="ghost" event={`out_${p.slug}`} place="home">                  {p.externalLabel}
+                {findCase(p.slug) && (
+                  <Button href={p.href} event={`caso_${p.slug}`} place="home">Leer el caso</Button>
+                )}
+                <Button href={p.external} variant="ghost" event={`out_${p.slug}`} place="home">
+                  {p.externalLabel}
                 </Button>
               </div>
             </div>
