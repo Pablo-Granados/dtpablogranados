@@ -150,7 +150,7 @@ function buildPdf(file) {
   doc.moveDown(1);
   categorias.forEach((c, i) => {
     const h = 40 + c.desc.length * 16 + doc.heightOfString(c.pregunta, { width: CW - 14 });
-    ctx.need(h + 40);
+    ctx.need(h + 20);
     P.bar(ctx, `${String(i + 1).padStart(2, '0')}  ${c.nombre}`);
     const top = doc.y;
     P.field(ctx, 'Responde', c.pregunta);

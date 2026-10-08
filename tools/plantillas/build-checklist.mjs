@@ -51,7 +51,7 @@ const adaptar = [
 ];
 
 const sum = (list) => list.reduce((a, t) => a + t.min, 0);
-const horas = (min) => `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min`;
+const horas = (min) => (min % 60 === 0 ? `${min / 60} h` : `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min`);
 
 /* ------------------------------ PDF ------------------------------ */
 function drawTable(ctx, rows) {
@@ -59,7 +59,8 @@ function drawTable(ctx, rows) {
   const colDia = 82, colMin = 52, colEnt = 130;
   const colTarea = CW - 20 - colDia - colMin - colEnt;
   rows.forEach((t, i) => {
-    const h = Math.max(doc.heightOfString(t.tarea, { width: colTarea, lineGap: 1.5 }), doc.heightOfString(t.entrega, { width: colEnt })) + 16;
+    doc.font('Helvetica').fontSize(10);
+    const h = Math.max(doc.heightOfString(t.tarea, { width: colTarea - 8, lineGap: 1.5 }), doc.heightOfString(t.entrega, { width: colEnt })) + 18;
     ctx.need(h);
     const y = doc.y;
     doc.rect(L, y, CW, 0.7).fill(C.LINE);

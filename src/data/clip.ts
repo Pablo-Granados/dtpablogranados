@@ -45,6 +45,8 @@ export function parseClip(body: Record<string, unknown>): ClipRequest | null {
     deporte,
   };
   if (!r.nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) || !r.link || !r.deporte || r.pregunta.length < 10) return null;
+  // El minuto es obligatorio: sin él no se sabe dónde está la jugada
+  if (!/\d/.test(r.minuto)) return null;
   // Sin autorización explícita no se guarda: es lo que habilita la publicación
   if (body.autoriza !== true) return null;
   return r as ClipRequest;

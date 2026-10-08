@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request, url }) => {
           `${clip.nombre} <${clip.email}>${clip.instagram ? `  ·  @${clip.instagram}` : ''}`,
           `Deporte: ${clip.deporte}`,
           `Clip: ${clip.link}`,
-          clip.minuto ? `Minuto: ${clip.minuto}` : '',
+          `Minuto: ${clip.minuto}`,
           '',
           'Qué quiere que analice:',
           clip.pregunta,

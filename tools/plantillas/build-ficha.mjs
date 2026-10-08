@@ -72,8 +72,8 @@ function buildPdf(file) {
   doc.addPage();
   let y = 44;
   doc.fillColor(C.INK).font('Helvetica-Bold').fontSize(18).text('FICHA DE PARTIDO', L, y, { characterSpacing: 1 });
-  doc.rect(L, y + 26, 40, 3).fill(C.SIGNAL);
-  y = 66;
+  doc.rect(L, y + 24, 40, 3).fill(C.SIGNAL);
+  y = 90;
 
   const tag = (t, x, yy, w) => doc.fillColor(C.MUTE).font('Helvetica-Bold').fontSize(7).text(t.toUpperCase(), x, yy, { width: w, characterSpacing: 1, lineBreak: false });
   const head8 = (t, yy) => doc.fillColor(C.INK).font('Helvetica-Bold').fontSize(8).text(t.toUpperCase(), L, yy, { characterSpacing: 1.3, lineBreak: false });
@@ -133,8 +133,8 @@ function buildPdf(file) {
     P.box(doc, L, yy + 4, 10);
     tag('Min', L + 18, yy + 8, 30);
     P.writeLine(doc, L + 42, yy + 16, 38);
-    tag('Qué mostrar y qué decir', L + 92, yy + 8, 120);
-    P.writeLine(doc, L + 212, yy + 16, CW - 212);
+    tag('Qué mostrar y qué decir', L + 92, yy + 8, 170);
+    P.writeLine(doc, L + 252, yy + 16, CW - 252);
   }
 
   /* Ejemplo */

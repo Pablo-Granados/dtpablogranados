@@ -8,7 +8,7 @@ const chip =
   'cursor-pointer border border-line-strong px-4 py-2.5 text-sm text-mute transition-colors hover:border-signal hover:text-bone has-[:checked]:border-signal has-[:checked]:bg-signal/10 has-[:checked]:text-bone has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-signal';
 
 const reglas = [
-  'Mandame un link al video (YouTube, Drive u otro). Tiene que poder verse sin pedirme permiso.',
+  'Mandame un link al video (YouTube, Drive u otro) y el minuto exacto de la jugada. Tiene que poder verse sin pedirme permiso.',
   'Cada mes elijo los clips que dejan más enseñanza: no se analizan todos.',
   'El análisis es público (Instagram o YouTube) y sale el mes que viene.',
   'Si tu clip queda elegido, te escribo antes de publicar.',
@@ -60,8 +60,8 @@ const reglas = [
         <label class="grid gap-2 text-sm text-mute">Link del clip
           <input name="link" type="url" required maxlength="500" placeholder="https://…" class={input} />
         </label>
-        <label class="grid gap-2 text-sm text-mute">Minuto <span class="text-faint">(opcional)</span>
-          <input name="minuto" maxlength="40" placeholder="Ej: 12:40" class={input} />
+        <label class="grid gap-2 text-sm text-mute">Minuto de la jugada
+          <input name="minuto" required maxlength="40" placeholder="Ej: 12:40" class={input} />
         </label>
       </div>
 
@@ -131,6 +131,7 @@ const reglas = [
     if (!form.querySelector('input[name="deporte"]:checked')) return fail('Elegí el deporte.', form.querySelector('[role=radiogroup]:last-of-type'));
     const link = q('link')!.value.trim();
     if (!link || !/^[^\s/]+\.[^\s/]+/.test(link.replace(/^https?:\/\//i, ''))) return fail('Pegá el link del clip.', q('link'));
+    if (!/\d/.test(q('minuto')!.value)) return fail('Indicá el minuto de la jugada, por ejemplo 12:40.', q('minuto'));
     if (q('pregunta')!.value.trim().length < 10) return fail('Contame un poco más qué querés que mire.', q('pregunta'));
     if (!q('autoriza')!.checked) return fail('Necesito tu autorización para poder analizarlo y publicarlo.', q('autoriza'));
 
