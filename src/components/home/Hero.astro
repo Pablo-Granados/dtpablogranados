@@ -8,27 +8,21 @@ import { cta } from '@/data/site';
 
   <div class="page relative grid gap-10 pt-14 md:pt-20 lg:grid-cols-12 lg:gap-8">
     <div class="lg:col-span-7 lg:pb-24 lg:pt-6" data-reveal>
-      <p class="tag reveal flex flex-wrap items-center gap-x-3 gap-y-1 text-mute">
-        <span>Pablo Granados</span><span class="text-signal" aria-hidden="true">/</span>
-        <span>Analista de fútbol y futsal</span>
-      </p>
+      <p class="tag reveal text-mute">Pablo Granados · Analista de fútbol y futsal</p>
 
       <h1 id="hero-title" class="display reveal mt-6 text-[3.6rem] text-bone sm:text-8xl lg:text-[5.5rem] xl:text-[6.5rem]" style="--d:.06s">
         Del partido<br />a la <span class="text-signal">decisión.</span>
       </h1>
 
       <p class="reveal mt-7 max-w-xl text-lg leading-relaxed text-mute md:text-xl" style="--d:.14s">
-        Analizo el juego, construyo las herramientas para hacerlo y enseño el proceso. Para entrenadores y analistas
-        que quieren trabajar con método, y para clubes que necesitan decidir con información.
+        Analizo el juego, construyo las herramientas y enseño el proceso a entrenadores y analistas.
       </p>
 
-      <div class="reveal mt-10 flex flex-wrap items-center gap-x-6 gap-y-4" style="--d:.22s">
-        <Button href={cta.mentoria.href} event={cta.mentoria.event} place="hero">{cta.mentoria.label}</Button>
-        <Button href={cta.diagnostico.href} variant="ghost" event={cta.diagnostico.event} place="hero">
-          Diagnóstico gratis · 3 min
-        </Button>
-        <Button href="/equipos" variant="text" event="cta_equipos" place="hero">Soy un club o agencia</Button>
+      <div class="reveal mt-10 flex flex-wrap items-center gap-x-5 gap-y-4" style="--d:.22s">
+        <Button href={cta.diagnostico.href} event={cta.diagnostico.event} place="hero">Hacer el diagnóstico gratis</Button>
+        <Button href={cta.mentoria.href} variant="ghost" event={cta.mentoria.event} place="hero">Ver Sistema Propio</Button>
       </div>
+      <p class="reveal mt-4 text-sm text-faint" style="--d:.28s">El diagnóstico dura 3 minutos y te devuelve tu perfil de analista.</p>
     </div>
 
     <!-- Foto propia: se funde con el fondo por abajo y por la izquierda -->

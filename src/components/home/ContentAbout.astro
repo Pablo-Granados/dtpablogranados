@@ -1,0 +1,59 @@
+---
+import Button from '@/components/ui/Button.astro';
+import YouTube from '@/components/ui/YouTube.astro';
+import Media from '@/components/ui/Media.astro';
+import { cta, featuredVideos, aboutShort } from '@/data/site';
+---
+
+<section id="contenido" class="border-y border-line bg-panel py-14 md:py-28" aria-labelledby="contenido-title">
+  <div class="page">
+    <!-- Contenido -->
+    <header class="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end" data-reveal>
+      <div class="max-w-2xl">
+        <h2 id="contenido-title" class="display reveal text-[2.5rem] text-bone sm:text-5xl md:text-6xl">El análisis, a la vista</h2>
+        <p class="reveal mt-4 text-lg leading-relaxed text-mute" style="--d:.08s">
+          Jugadas de futsal explicadas en pocos minutos, en YouTube e Instagram.
+        </p>
+      </div>
+      <div class="reveal" style="--d:.12s">
+        <Button href="/contenido" variant="ghost" event="cta_contenido" place="home-contenido">Ver todo el contenido</Button>
+      </div>
+    </header>
+
+    <ul class="grid gap-8 md:grid-cols-3" data-reveal>
+      {
+        featuredVideos.map((v, i) => (
+          <li class:list={['reveal', i === 2 && 'hidden md:block']} style={`--d:${i * 0.08}s`}>
+            {v.id ? <YouTube id={v.id} title={v.title} /> : <Media label="Video" ratio="16 / 9" />}
+            <p class="tag mt-4 text-signal">{v.series}</p>
+            <h3 class="mt-2 text-lg font-medium leading-snug text-bone">{v.title}</h3>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- Sobre mí, en corto -->
+    <div id="sobre-mi" class="mt-14 grid items-center gap-8 border-t border-line pt-10 md:mt-20 md:pt-14 md:grid-cols-12 md:gap-12" data-reveal>
+      <div class="reveal md:col-span-3">
+        <Media
+          label="Foto propia"
+          src="/media/pablo-retrato.jpg"
+          alt="Retrato de Pablo Granados en el banco durante un partido"
+          ratio="4 / 5"
+          fit="cover"
+          position="50% 20%"
+          class="max-w-[14rem] md:max-w-none"
+        />
+      </div>
+      <div class="reveal md:col-span-9" style="--d:.1s">
+        <p class="tag text-signal">Sobre mí</p>
+        <p class="mt-4 max-w-2xl text-2xl leading-snug text-bone">{aboutShort.lines[0]}</p>
+        <p class="mt-4 max-w-2xl text-lg leading-relaxed text-mute">{aboutShort.lines[1]} {aboutShort.lines[3]}</p>
+        <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <Button href="/sobre-mi" event="cta_sobre_mi" place="home-sobre-mi">Leer mi recorrido</Button>
+          <Button href={cta.youtube.href} variant="text" event={cta.youtube.event} place="home-sobre-mi">Seguir en YouTube</Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

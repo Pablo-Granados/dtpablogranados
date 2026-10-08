@@ -14,6 +14,8 @@ const year = new Date().getFullYear();
       <p class="tag mb-4 text-faint">Secciones</p>
       <ul class="space-y-2">
         {nav.map((item) => <li><a href={item.href} class="text-mute hover:text-bone">{item.label}</a></li>)}
+        <li><a href="/mentoria" class="text-mute hover:text-bone">Sistema Propio</a></li>
+        <li><a href="/trabajar-juntos#equipos" class="text-mute hover:text-bone">Clubes y agencias</a></li>
         <li><a href={cta.diagnostico.href} class="text-mute hover:text-bone">Diagnóstico</a></li>
         <li><a href="/plantillas" class="text-mute hover:text-bone">Plantillas gratis</a></li>
       </ul>

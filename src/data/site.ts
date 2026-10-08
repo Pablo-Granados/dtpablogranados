@@ -22,9 +22,7 @@ export const site = {
 /** Mientras no existan las páginas internas, el menú navega a las secciones de la Home. */
 export const nav = [
   { label: 'Trabajar juntos', href: '/trabajar-juntos' },
-  { label: 'Mentoría', href: '/mentoria' },
-  { label: 'Equipos', href: '/trabajar-juntos#equipos' },
-  { label: 'Proyectos', href: '/#proyectos' },
+  { label: 'Casos', href: '/#proyectos' },
   { label: 'Contenido', href: '/contenido' },
   { label: 'Sobre mí', href: '/sobre-mi' },
 ] as const;
