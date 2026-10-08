@@ -1,0 +1,22 @@
+---
+import Button from '@/components/ui/Button.astro';
+import { cta } from '@/data/site';
+---
+
+<section class="border-t border-line" aria-labelledby="cierre-title">
+  <div class="page grid gap-10 py-20 md:py-28 lg:grid-cols-12 lg:items-end">
+    <div class="lg:col-span-8" data-reveal>
+      <h2 id="cierre-title" class="display reveal text-5xl text-bone md:text-7xl">
+        ¿Por dónde empezamos?
+      </h2>
+      <p class="reveal mt-5 max-w-xl text-lg leading-relaxed text-mute" style="--d:.1s">
+        Si no sabés cuál es tu punto de partida, el diagnóstico te lo dice en tres minutos. Si ya lo sabés, elegí el
+        camino que te corresponde.
+      </p>
+    </div>
+    <div class="reveal flex flex-wrap items-center gap-x-6 gap-y-4 lg:col-span-4 lg:justify-end" data-reveal style="--d:.18s">
+      <Button href={cta.diagnostico.href} event={cta.diagnostico.event} place="home-cierre">{cta.diagnostico.label}</Button>
+      <Button href={cta.trabajar.href} variant="ghost" event={cta.trabajar.event} place="home-cierre">Ver las opciones</Button>
+    </div>
+  </div>
+</section>

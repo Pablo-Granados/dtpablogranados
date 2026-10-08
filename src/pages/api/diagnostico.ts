@@ -1,16 +1,10 @@
 import type { APIRoute } from 'astro';
-import nodemailer from 'nodemailer';
 import { areas, questions, roles, scoreAnswers, type AreaId } from '@/data/diagnostico';
+import { emailLayout, mailButton, mailCallout, mailH2, mailP } from '@/lib/email';
+import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/server';
 
 /** Esta ruta corre en el servidor (Vercel), no se genera como HTML estático. */
 export const prerender = false;
-
-const env = (key: string) => process.env[key] ?? (import.meta.env[key] as string | undefined);
-
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 export const POST: APIRoute = async ({ request, url }) => {
   let body: Record<string, unknown>;
@@ -42,19 +36,8 @@ export const POST: APIRoute = async ({ request, url }) => {
   }
 
   // 1. Guardar en Supabase
-  const supabaseUrl = env('SUPABASE_URL');
-  const serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
-  if (!supabaseUrl || !serviceKey) return json(500, { error: 'Falta configurar Supabase' });
-
-  const insert = await fetch(`${supabaseUrl}/rest/v1/diagnosticos`, {
-    method: 'POST',
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
-    },
-    body: JSON.stringify({
+  try {
+    const saved = await supabaseInsert('diagnosticos', {
       nombre,
       email,
       rol,
@@ -64,90 +47,79 @@ export const POST: APIRoute = async ({ request, url }) => {
       nivel: result.level.name,
       prioridades: result.priorities,
       utm,
-    }),
-  });
-  if (!insert.ok) {
-    console.error('Supabase', insert.status, await insert.text());
-    return json(500, { error: 'No se pudo guardar' });
+    });
+    if (!saved) return json(500, { error: 'No se pudo guardar' });
+  } catch (e) {
+    return json(500, { error: (e as Error).message });
   }
 
-  // 2. Enviar el email (Gmail con contraseña de aplicación)
-  const user = env('GMAIL_USER');
-  const pass = env('GMAIL_APP_PASSWORD');
-  if (!user || !pass) return json(500, { error: 'Falta configurar el email' });
-
+  // 2. Mails (el lead ya quedó guardado, así que no se pierde si fallan)
   const site = env('SITE_URL') ?? url.origin;
   const plantilla = `${site}/plantillas/informe-rival-1-pagina.pdf`;
-  const mentoria = `${site}/#mentoria`;
 
   const bars = (Object.keys(areas) as AreaId[])
     .map((id) => {
       const v = result.scores[id];
       const prio = result.priorities.includes(id);
       return `<tr>
-        <td style="padding:6px 12px 6px 0;color:${prio ? '#111' : '#666'};font-weight:${prio ? 700 : 400}">${areas[id].label}</td>
-        <td style="padding:6px 0;width:100%"><div style="background:#e6e6e6;height:8px"><div style="background:${prio ? '#111' : '#999'};height:8px;width:${v}%"></div></div></td>
-        <td style="padding:6px 0 6px 12px;font-family:monospace;color:#111">${v}</td>
+        <td style="padding:7px 14px 7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${prio ? '#0b0d10' : '#5d646d'};font-weight:${prio ? 700 : 400};white-space:nowrap">${areas[id].label}</td>
+        <td style="padding:7px 0;width:100%"><div style="background:#e3e7ea;height:8px"><div style="background:${prio ? '#0b0d10' : '#a9b0b7'};height:8px;width:${v}%"></div></div></td>
+        <td style="padding:7px 0 7px 14px;font-family:'Courier New',monospace;font-size:14px;color:#0b0d10">${v}</td>
       </tr>`;
     })
     .join('');
 
   const prios = result.priorities
     .map(
-      (id, i) => `<div style="margin:0 0 20px;padding:16px;border-left:3px solid #111;background:#f6f6f6">
-        <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#666">Prioridad ${i + 1}</div>
-        <div style="font-size:18px;font-weight:700;margin:4px 0 8px">${areas[id].label}</div>
-        <div style="color:#333;line-height:1.5">${areas[id].tip}</div>
-        <div style="margin-top:10px;line-height:1.5"><strong>Primer paso:</strong> ${areas[id].firstStep}</div>
-      </div>`,
+      (id, i) =>
+        mailCallout(`<div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#5d646d">Prioridad ${i + 1}</div>
+        <div style="font-size:19px;font-weight:700;margin:4px 0 8px">${areas[id].label}</div>
+        <div>${areas[id].tip}</div>
+        <div style="margin-top:10px"><strong>Primer paso:</strong> ${areas[id].firstStep}</div>`),
     )
     .join('');
 
-  const html = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#111;font-size:15px">
-    <p>Hola ${esc(nombre)},</p>
-    <p>Este es el resultado de tu diagnóstico del analista.</p>
-    <h1 style="font-size:26px;margin:24px 0 8px">${result.level.name}</h1>
-    <p style="line-height:1.5;color:#333">${result.level.text}</p>
-    <p style="font-family:monospace;color:#666">Total: ${result.total}/100</p>
-    <table style="width:100%;border-collapse:collapse;margin:16px 0 28px;font-size:14px">${bars}</table>
-    <h2 style="font-size:20px;margin:0 0 12px">Por dónde empezar</h2>
-    ${prios}
-    <h2 style="font-size:20px;margin:28px 0 8px">Tu plantilla</h2>
-    <p style="line-height:1.5">Es la estructura de informe de rival que uso: todo en una página, pensada para que el cuerpo técnico la lea en 5 minutos.</p>
-    <p><a href="${plantilla}" style="display:inline-block;background:#111;color:#fff;padding:12px 18px;text-decoration:none;font-weight:700">Descargar la plantilla</a></p>
-    <p style="line-height:1.5;margin-top:28px">Si querés trabajar estas áreas sobre tus propios partidos y con acompañamiento, eso es lo que hacemos en <a href="${mentoria}">Sistema Propio</a>. Y si tenés alguna duda sobre tu resultado, respondé este mail: lo leo yo.</p>
-    <p>Pablo Granados</p>
-  </div>`;
-
-  const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
+  const html = emailLayout({
+    site,
+    preheader: `Tu nivel: ${result.level.name} (${result.total}/100). Acá están tus prioridades y la plantilla.`,
+    kicker: 'Diagnóstico del analista',
+    title: result.level.name,
+    body: `
+      ${mailP(`Hola ${esc(nombre)}, este es el resultado de tu diagnóstico.`)}
+      <div style="margin:0 0 6px;font-family:'Arial Narrow',Arial,sans-serif;font-size:56px;line-height:1;font-weight:800;color:#0b0d10">${result.total}<span style="font-size:22px;color:#5d646d;font-weight:400"> / 100</span></div>
+      ${mailP(result.level.text)}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 8px">${bars}</table>
+      ${mailH2('Por dónde empezar')}
+      ${prios}
+      ${mailH2('Tu plantilla')}
+      ${mailP('Es la estructura de informe de rival que uso: todo en una página, pensada para que el cuerpo técnico la lea en 5 minutos.')}
+      ${mailButton(plantilla, 'Descargar la plantilla')}
+      ${mailP(`Si querés trabajar estas áreas sobre tus propios partidos y con acompañamiento, eso es lo que hacemos en <a href="${site}/mentoria" style="color:#0b0d10;font-weight:700">Sistema Propio</a>. Y si tenés alguna duda sobre tu resultado, respondé este mail: lo leo yo.`)}
+      ${mailP('Pablo Granados')}`,
+  });
 
   try {
-    await transporter.sendMail({
-      from: `Pablo Granados <${user}>`,
-      to: email,
-      replyTo: user,
-      subject: `Tu diagnóstico: ${result.level.name}`,
-      html,
-    });
-
-    // Aviso para vos
-    await transporter.sendMail({
-      from: `Web <${user}>`,
-      to: user,
-      subject: `Nuevo diagnóstico: ${nombre} (${rol}) · ${result.total}/100`,
-      text: [
-        `${nombre} <${email}> · ${rol}`,
-        `Nivel: ${result.level.name} (${result.total}/100)`,
-        `Prioridades: ${result.priorities.map((p) => areas[p].label).join(', ')}`,
-        '',
-        ...questions.map((q, i) => `${i + 1}. ${q.text}\n   → ${q.options[respuestas[i]]}`),
-        '',
-        `UTM: ${JSON.stringify(utm)}`,
-      ].join('\n'),
-    });
+    await Promise.all([
+      sendMail({ to: email, subject: `Tu diagnóstico: ${result.level.name}`, html }),
+      // Aviso para vos
+      sendMail({
+        to: ownerEmail(),
+        fromName: 'Web',
+        replyTo: email,
+        subject: `Nuevo diagnóstico: ${nombre} (${rol}) · ${result.total}/100`,
+        text: [
+          `${nombre} <${email}> · ${rol}`,
+          `Nivel: ${result.level.name} (${result.total}/100)`,
+          `Prioridades: ${result.priorities.map((p) => areas[p].label).join(', ')}`,
+          '',
+          ...questions.map((q, i) => `${i + 1}. ${q.text}\n   → ${q.options[respuestas[i]]}`),
+          '',
+          `UTM: ${JSON.stringify(utm)}`,
+        ].join('\n'),
+      }),
+    ]);
   } catch (err) {
     console.error('Email', err);
-    // El lead ya quedó guardado, así que no se pierde aunque falle el mail.
     return json(502, { error: 'No se pudo enviar el email' });
   }
 

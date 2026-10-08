@@ -142,6 +142,7 @@ import { cta } from '@/data/site';
 
 <script>
   import { areas, questions, scoreAnswers, type AreaId } from '@/data/diagnostico';
+  import { startSending } from '@/scripts/sending';
 
   type Umami = { track: (event: string, data?: Record<string, unknown>) => void };
   const track = (e: string, d?: Record<string, unknown>) => (window as unknown as { umami?: Umami }).umami?.track(e, d);
@@ -273,9 +274,7 @@ import { cta } from '@/data/site';
     }
 
     const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-    btn.disabled = true;
-    msg.className = 'text-sm text-mute';
-    msg.textContent = 'Enviando…';
+    const stopSending = startSending(btn, msg);
 
     const params = new URLSearchParams(location.search);
     const utm = Object.fromEntries([...params].filter(([k]) => k.startsWith('utm_')));
@@ -291,9 +290,9 @@ import { cta } from '@/data/site';
       $('[data-form-wrap]').hidden = true;
       $('[data-sent]').hidden = false;
     } catch {
+      stopSending();
       msg.className = 'text-sm text-signal';
       msg.textContent = 'No se pudo enviar. Probá de nuevo en un rato.';
-      btn.disabled = false;
     }
   });
 </script>

@@ -1,17 +1,21 @@
 ---
 import SectionHeader from '@/components/ui/SectionHeader.astro';
+import CourtBoard from '@/components/home/CourtBoard.astro';
 import { method } from '@/data/site';
 ---
 
 <section id="metodo" class="border-y border-line bg-panel py-20 md:py-28" aria-labelledby="metodo-title">
   <div class="page">
-    <SectionHeader
-      id="metodo-title"
-      index="02"
-      kicker="Cómo trabajo"
-      title="Mirar no es analizar"
-      lead="Un análisis sirve cuando alguien toma una decisión distinta gracias a él. Todo mi proceso está ordenado para llegar a ese punto."
-    />
+    <div class="mb-12 grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+      <SectionHeader
+        id="metodo-title"
+        index="02"
+        kicker="Cómo trabajo"
+        title="Mirar no es analizar"
+        lead="Un análisis sirve cuando alguien toma una decisión distinta gracias a él. Todo mi proceso está ordenado para llegar a ese punto."
+      />
+      <CourtBoard class="lg:-mt-6" />
+    </div>
 
     <!-- Línea de tiempo: cada paso es una marca de codificación -->
     <ol class="relative grid gap-px bg-line md:grid-cols-5" data-reveal>

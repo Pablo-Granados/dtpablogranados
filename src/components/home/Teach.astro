@@ -2,6 +2,10 @@
 import SectionHeader from '@/components/ui/SectionHeader.astro';
 import Button from '@/components/ui/Button.astro';
 import { cta, mentorshipDeliverables } from '@/data/site';
+import { pricing } from '@/data/mentoria';
+
+const usd = (n: number) => `${pricing.currency} ${n.toLocaleString('es-AR')}`;
+const hasFounders = pricing.founders.spots > 0;
 ---
 
 <section id="mentoria" class="py-20 md:py-28" aria-labelledby="ensenar-title">
@@ -10,16 +14,33 @@ import { cta, mentorshipDeliverables } from '@/data/site';
       <SectionHeader
         id="ensenar-title"
         index="03"
-        kicker="Qué puedo enseñarte"
+        kicker="Mentoría 1:1 · 12 semanas"
         title="Sistema Propio"
-        lead="Una mentoría 1:1 de 12 semanas para entrenadores y analistas de fútbol y futsal. No te llevás apuntes: te llevás tu sistema de análisis funcionando sobre tu equipo."
+        lead="Para entrenadores y analistas de fútbol y futsal. No te llevás apuntes: te llevás tu sistema de análisis funcionando sobre tu equipo, con mi devolución en cada etapa."
       />
+
+      <div class="reveal mb-8 border-l-2 border-signal pl-5" data-reveal>
+        <p class="display text-5xl text-bone">{usd(pricing.full)}</p>
+        <p class="mt-2 text-mute">
+          {pricing.installments.length} cuotas: al iniciar, a la mitad y al finalizar.
+        </p>
+        {
+          hasFounders && (
+            <p class="mt-4 text-sm leading-relaxed text-bone">
+              <span class="tag mr-2 text-signal">Cohorte fundadora</span>
+              {usd(pricing.founders.price)} para los primeros {pricing.founders.spots}.
+            </p>
+          )
+        }
+        <p class="tag mt-4 text-faint">Máximo 3 mentorados a la vez</p>
+      </div>
+
       <div class="flex flex-wrap items-center gap-x-6 gap-y-4" data-reveal>
-        <Button href={cta.mentoria.href} event={cta.mentoria.event} place="home-mentoria" class="reveal">
-          {cta.mentoria.label}
+        <Button href={cta.aplicar.href} event={cta.aplicar.event} place="home-mentoria" class="reveal">
+          {cta.aplicar.label}
         </Button>
-        <Button href={cta.diagnostico.href} variant="text" event={cta.diagnostico.event} place="home-mentoria" class="reveal">
-          Primero, el diagnóstico (3 min)
+        <Button href={cta.mentoria.href} variant="text" event={cta.mentoria.event} place="home-mentoria" class="reveal">
+          Ver el programa completo
         </Button>
       </div>
     </div>
@@ -41,7 +62,8 @@ import { cta, mentorshipDeliverables } from '@/data/site';
           }
         </ol>
         <p class="border-t border-line px-5 py-4 text-sm leading-relaxed text-mute">
-          Cada entregable se construye con tus partidos y recibe mi devolución en video.
+          Cada entregable se construye con tus partidos. Si en las primeras 2 semanas no es para vos, pagás solo las
+          semanas cursadas.
         </p>
       </div>
     </div>

@@ -5,10 +5,33 @@
 
 export const pricing = {
   currency: 'USD',
-  full: 490,
-  installments: { count: 3, amount: 180 },
+  weeks: 12,
+  full: 690,
+  /** Cuotas en orden. `when` es el momento de cada pago. */
+  installments: [
+    { amount: 250, when: 'al iniciar' },
+    { amount: 250, when: 'a la mitad del programa' },
+    { amount: 190, when: 'al finalizar' },
+  ],
   /** Cohorte fundadora: precio reducido a cambio de testimonio y caso de estudio. Poner `spots: 0` para ocultarla. */
-  founders: { price: 250, spots: 3, installments: { count: 2, amount: 140 } },
+  founders: {
+    price: 350,
+    spots: 3,
+    installments: [
+      { amount: 175, when: 'al iniciar' },
+      { amount: 175, when: 'a la mitad del programa' },
+    ],
+  },
+};
+
+/** Texto de cuotas listo para mostrar: "250 al iniciar · 250 a la mitad del programa · 190 al finalizar". */
+export const installmentsText = (list: { amount: number; when: string }[]) =>
+  list.map((i) => `${pricing.currency} ${i.amount} ${i.when}`).join(' · ');
+
+/** Garantía: cada semana cursada se cobra a valor proporcional; el resto se devuelve. */
+export const guarantee = {
+  windowWeeks: 2,
+  weekValue: (price: number) => Math.round((price / pricing.weeks) * 100) / 100,
 };
 
 export const problem = {
@@ -95,10 +118,10 @@ export const faq = [
   },
   {
     q: '¿Cómo se paga?',
-    a: 'En un pago o en 3 cuotas. Desde Argentina, con Mercado Pago en pesos. Desde otros países, por PayPal o transferencia internacional.',
+    a: 'En 3 cuotas: la primera al iniciar, la segunda a la mitad del programa y la última al finalizar. Desde Argentina, por transferencia. Desde otros países, por ARQ o Takenos.',
   },
   {
     q: '¿Qué pasa si empiezo y no es para mí?',
-    a: 'Si después de las 2 primeras semanas sentís que no te sirve, te devuelvo lo que pagaste, menos esas dos sesiones.',
+    a: 'Podés pedir la devolución dentro de las 2 primeras semanas. Cada semana que cursaste se cobra a valor proporcional (el precio dividido 12) y el resto te lo devuelvo. Ejemplo: si pagaste USD 690 y hiciste 1 semana, esa semana son USD 57,50 y te devuelvo USD 632,50.',
   },
 ] as const;

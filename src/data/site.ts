@@ -21,51 +21,28 @@ export const site = {
 
 /** Mientras no existan las páginas internas, el menú navega a las secciones de la Home. */
 export const nav = [
+  { label: 'Trabajar juntos', href: '/trabajar-juntos' },
   { label: 'Mentoría', href: '/mentoria' },
-  { label: 'Equipos', href: '/#equipos' },
+  { label: 'Equipos', href: '/trabajar-juntos#equipos' },
   { label: 'Proyectos', href: '/#proyectos' },
   { label: 'Contenido', href: '/#contenido' },
   { label: 'Sobre mí', href: '/#sobre-mi' },
 ] as const;
 
 /** Link de WhatsApp con mensaje precargado (temporal, hasta tener formularios). */
-const wa = (msg: string) => `https://wa.me/543416287921?text=${encodeURIComponent(msg)}`;
+export const wa = (msg: string) => `https://wa.me/543416287921?text=${encodeURIComponent(msg)}`;
 
 /** Rutas de conversión. Un CTA por intención, nunca "Contactame" genérico. */
 export const cta = {
+  trabajar: { label: 'Ver cómo trabajamos', href: '/trabajar-juntos', event: 'cta_trabajar' },
   mentoria: { label: 'Ver la mentoría', href: '/mentoria', event: 'cta_mentoria' },
   aplicar: { label: 'Aplicar a Sistema Propio', href: '/mentoria/aplicar', event: 'cta_aplicar' },
   diagnostico: { label: 'Hacer el diagnóstico', href: '/diagnostico', event: 'cta_diagnostico' },
-  propuesta: { label: 'Solicitar propuesta', href: wa('Hola Pablo, quiero pedirte una propuesta de análisis para mi equipo.'), event: 'cta_propuesta' },
-  proyecto: { label: 'Contarme el proyecto', href: wa('Hola Pablo, quiero contarte un proyecto digital.'), event: 'cta_proyecto' },
+  propuesta: { label: 'Solicitar propuesta', href: '/equipos?necesidad=acompanamiento', event: 'cta_propuesta' },
+  proyecto: { label: 'Contarme el proyecto', href: '/equipos?necesidad=herramientas', event: 'cta_proyecto' },
   proyectos: { label: 'Ver lo que construí', href: '/#proyectos', event: 'cta_proyectos' },
   youtube: { label: 'Ver en YouTube', href: site.social.youtube, event: 'out_youtube' },
 } as const;
-
-/** Selector de intención del hero. */
-export const intents = [
-  {
-    id: 'aprender',
-    kicker: 'Entreno o analizo',
-    title: 'Quiero mejorar mi proceso de análisis',
-    href: '/diagnostico',
-    action: 'Empezar por el diagnóstico',
-  },
-  {
-    id: 'equipo',
-    kicker: 'Club · Agencia · Jugador',
-    title: 'Necesito análisis o una herramienta',
-    href: '#equipos',
-    action: 'Ver cómo trabajo con equipos',
-  },
-  {
-    id: 'ver',
-    kicker: 'Primero quiero ver',
-    title: 'Mostrame lo que construiste',
-    href: '/#proyectos',
-    action: 'Ver proyectos',
-  },
-] as const;
 
 /** Franja de evidencia: solo datos verificables, sin adjetivos. */
 export const evidence = [
@@ -168,29 +145,6 @@ export const mentorshipDeliverables = [
   'Informe de rival real, listo para presentar',
   'Tablero de seguimiento con los datos que importan',
   'Tu sistema semanal documentado: flujo, plantillas y checklist',
-] as const;
-
-export const teamServices = [
-  {
-    title: 'Análisis',
-    items: [
-      'Análisis de rival y scouting',
-      'Análisis propio y seguimiento semanal',
-      'Análisis individual de jugadores',
-      'Pelota parada (ABP)',
-    ],
-    cta: 'propuesta' as const,
-  },
-  {
-    title: 'Herramientas',
-    items: [
-      'Sitios para clubes, agencias y jugadores',
-      'Dashboards para cuerpos técnicos',
-      'Bases de datos de partidos y rendimiento',
-      'Herramientas internas a medida',
-    ],
-    cta: 'proyecto' as const,
-  },
 ] as const;
 
 /**

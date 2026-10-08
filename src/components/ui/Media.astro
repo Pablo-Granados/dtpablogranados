@@ -10,9 +10,13 @@ interface Props {
   label: string;
   ratio?: string;
   video?: boolean;
+  /** `contain` para capturas de pantalla; `cover` para fotos que llenan el marco. */
+  fit?: 'contain' | 'cover';
+  /** Encuadre de la foto cuando `fit` es `cover` (CSS object-position). */
+  position?: string;
   class?: string;
 }
-const { src, alt = '', label, ratio = '16 / 10', video = false, class: className } = Astro.props;
+const { src, alt = '', label, ratio = '16 / 10', video = false, fit = 'contain', position = 'center', class: className } = Astro.props;
 ---
 
 <figure class:list={['frame relative border border-line bg-panel', className]} style={`aspect-ratio:${ratio}`}>
@@ -21,7 +25,14 @@ const { src, alt = '', label, ratio = '16 / 10', video = false, class: className
     src && video ? (
       <video class="absolute inset-0 size-full object-contain" src={src} autoplay muted loop playsinline preload="metadata" aria-label={alt} />
     ) : src ? (
-      <img class="absolute inset-0 size-full object-contain" src={src} alt={alt} loading="lazy" decoding="async" />
+      <img
+        class:list={['absolute inset-0 size-full', fit === 'cover' ? 'object-cover' : 'object-contain']}
+        style={fit === 'cover' ? `object-position:${position}` : undefined}
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+      />
           ) : (
       <div class="relative flex size-full items-end p-4">
         <div class="court-grid absolute inset-0 opacity-60" aria-hidden="true" />

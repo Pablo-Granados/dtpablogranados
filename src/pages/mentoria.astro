@@ -2,9 +2,10 @@
 import Base from '@/layouts/Base.astro';
 import Button from '@/components/ui/Button.astro';
 import { cta, site } from '@/data/site';
-import { pricing, problem, forWho, stages, includes, faq } from '@/data/mentoria';
+import { pricing, installmentsText, guarantee, problem, forWho, stages, includes, faq } from '@/data/mentoria';
 
-const fmt = (n: number) => `${pricing.currency} ${n.toLocaleString('es-AR')}`;
+const fmt = (n: number) =>
+  `${pricing.currency} ${n.toLocaleString('es-AR', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2 })}`;
 const hasFounders = pricing.founders.spots > 0;
 
 const schema = [
@@ -166,7 +167,7 @@ const schema = [
           <p class="tag text-faint">Programa completo</p>
           <p class="display mt-3 text-6xl text-bone">{fmt(pricing.full)}</p>
           <p class="mt-2 text-mute">
-            o {pricing.installments.count} cuotas de {fmt(pricing.installments.amount)}
+            o en {pricing.installments.length} cuotas: {installmentsText(pricing.installments)}
           </p>
           <div class="mt-7">
             <Button href={cta.aplicar.href} event={cta.aplicar.event} place="mentoria-precio">{cta.aplicar.label}</Button>
@@ -179,9 +180,9 @@ const schema = [
               <p class="tag text-signal">Cohorte fundadora · {pricing.founders.spots} lugares</p>
               <p class="mt-3 text-3xl font-semibold text-bone">{fmt(pricing.founders.price)}</p>
               <p class="mt-1 text-mute">
-                o {pricing.founders.installments.count} cuotas de {fmt(pricing.founders.installments.amount)}
+                o en {pricing.founders.installments.length} cuotas: {installmentsText(pricing.founders.installments)}
               </p>
-                            <p class="mt-3 leading-relaxed text-mute">
+              <p class="mt-3 leading-relaxed text-mute">
                 Para las primeras personas que entren. A cambio, te pido permiso para usar tus entregables (sin
                 datos sensibles) como caso de estudio, y tu opinión sincera al terminar.
               </p>
@@ -189,10 +190,15 @@ const schema = [
           )
         }
 
-        <p class="text-sm leading-relaxed text-faint">
-          Garantía: si después de las 2 primeras semanas sentís que no es para vos, te devuelvo lo que pagaste, menos
-          esas dos sesiones.
-        </p>
+        <div class="border-t border-line pt-6">
+          <p class="tag text-faint">Garantía de las {guarantee.windowWeeks} primeras semanas</p>
+          <p class="mt-3 leading-relaxed text-mute">
+            Si no es para vos, podés pedir la devolución dentro de las primeras {guarantee.windowWeeks} semanas. Cada
+            semana que cursaste se cobra a valor proporcional (el precio dividido {pricing.weeks}) y te devuelvo el
+            resto. Con el precio estándar, cada semana vale {fmt(guarantee.weekValue(pricing.full))}: si hiciste una,
+            pagás esa y te devuelvo {fmt(pricing.full - guarantee.weekValue(pricing.full))}.
+          </p>
+        </div>
       </div>
     </div>
   </section>

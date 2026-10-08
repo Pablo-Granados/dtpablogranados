@@ -1,0 +1,161 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/ui/Button.astro';
+import { chapters, chooser, payment } from '@/data/ofertas';
+import { pricing, guarantee } from '@/data/mentoria';
+
+const usd = (n: number) =>
+  `${pricing.currency} ${n.toLocaleString('es-AR', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2 })}`;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Formas de trabajar con Pablo Granados',
+    itemListElement: chapters.flatMap((c) => c.offers).map((o, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: o.name,
+    })),
+  },
+];
+---
+
+<Base
+  title="Trabajar juntos"
+  description="Recursos gratuitos, sesiones 1:1, la mentoría Sistema Propio y servicios de análisis y herramientas para clubes y agencias."
+  schema={schema}
+>
+  <!-- Entrada -->
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+    <div class="page relative grid gap-12 py-16 md:py-24 lg:grid-cols-12 lg:items-end">
+      <div class="lg:col-span-7" data-reveal>
+        <p class="tag reveal text-signal">Trabajar juntos</p>
+        <h1 class="display reveal mt-6 text-6xl text-bone sm:text-7xl lg:text-8xl" style="--d:.06s">
+          Elegí por dónde empezar
+        </h1>
+        <p class="reveal mt-6 max-w-xl text-xl leading-relaxed text-mute" style="--d:.12s">
+          Hay cosas gratis, sesiones puntuales, una mentoría de 12 semanas y trabajo para equipos. Cada una resuelve un
+          problema distinto: acá está cuál es cuál y cuánto cuesta.
+        </p>
+      </div>
+
+      <ul class="lg:col-span-5" data-reveal>
+        {
+          chooser.map((c, i) => (
+            <li class="reveal" style={`--d:${0.1 + i * 0.06}s`}>
+              <a
+                href={`#${c.to}`}
+                class="group flex items-start justify-between gap-6 border-t border-line py-5 transition-colors hover:border-signal"
+                data-umami-event="trabajar_elegir"
+                data-umami-event-tipo={c.to}
+              >
+                <span>
+                  <span class="tag block text-faint">{c.label}</span>
+                  <span class="mt-1 block text-lg text-bone">{c.situation}</span>
+                </span>
+                <span class="mt-1 font-mono text-signal transition-transform group-hover:translate-y-0.5" aria-hidden="true">↓</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Capítulos -->
+  {
+    chapters.map((ch, ci) => (
+      <section
+        id={ch.id}
+        class:list={['scroll-mt-20 py-20 md:py-28', ci % 2 === 1 && 'border-y border-line bg-panel']}
+        aria-labelledby={`${ch.id}-title`}
+      >
+        <div class="page">
+          <div class="mb-12 grid gap-6 lg:grid-cols-12" data-reveal>
+            <p class="tag reveal text-faint lg:col-span-1">{ch.n}</p>
+            <h2 id={`${ch.id}-title`} class="display reveal text-5xl text-bone md:text-6xl lg:col-span-6" style="--d:.06s">
+              {ch.title}
+            </h2>
+            <p class="reveal text-lg leading-relaxed text-mute lg:col-span-5 lg:pt-3" style="--d:.12s">{ch.lead}</p>
+          </div>
+
+          <ul class="border-b border-line">
+            {ch.offers.map((o, i) => (
+              <li class="reveal grid gap-6 border-t border-line py-9 lg:grid-cols-12 lg:gap-10" data-reveal style={`--d:${i * 0.06}s`}>
+                <div class="lg:col-span-4">
+                  {o.badge && <p class="tag mb-3 text-signal">{o.badge}</p>}
+                  <h3 class="text-2xl font-semibold leading-tight text-bone md:text-3xl">{o.name}</h3>
+                  <p class="mt-3 leading-relaxed text-mute">{o.summary}</p>
+                </div>
+
+                <ul class="space-y-2.5 lg:col-span-4">
+                  {o.items.map((it) => (
+                    <li class="flex gap-3 text-bone">
+                      <span class="mt-2.5 h-px w-3 shrink-0 bg-signal" aria-hidden="true" />
+                      <span class="leading-relaxed">{it}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div class="flex flex-col items-start gap-5 lg:col-span-4 lg:items-end lg:text-right">
+                  <div>
+                    <p class="display text-4xl text-bone md:text-5xl">{o.price}</p>
+                    {o.priceNote && <p class="mt-2 max-w-xs text-sm leading-relaxed text-mute lg:ml-auto">{o.priceNote}</p>}
+                  </div>
+                  {o.extra && (
+                    <div class="max-w-xs border border-signal/40 p-4 text-left">
+                      <p class="tag text-signal">{o.extra.label}</p>
+                      <p class="mt-2 text-sm leading-relaxed text-mute">{o.extra.text}</p>
+                    </div>
+                  )}
+                  <Button href={o.cta.href} variant={o.id === 'mentoria' ? 'primary' : 'ghost'} event={o.cta.event} place={`trabajar-${o.id}`}>
+                    {o.cta.label}
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    ))
+  }
+
+  <!-- Condiciones -->
+  <section class="border-t border-line py-20 md:py-28" aria-labelledby="condiciones-title">
+    <div class="page grid gap-12 lg:grid-cols-12">
+      <h2 id="condiciones-title" class="display text-4xl text-bone md:text-5xl lg:col-span-4">Condiciones</h2>
+
+      <div class="grid gap-10 md:grid-cols-2 lg:col-span-8">
+        <div>
+          <h3 class="tag text-signal">{payment.title}</h3>
+          <ul class="mt-4 space-y-3 leading-relaxed text-mute">
+            {payment.items.map((t) => <li>{t}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h3 class="tag text-signal">Garantía de la mentoría</h3>
+          <p class="mt-4 leading-relaxed text-mute">
+            Podés pedir la devolución dentro de las primeras {guarantee.windowWeeks} semanas. Cada semana que cursaste
+            se cobra a valor proporcional (el precio dividido {pricing.weeks}) y el resto se devuelve. Con
+            {usd(pricing.full)}, cada semana vale {usd(guarantee.weekValue(pricing.full))}.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section class="border-t border-line">
+    <div class="page flex flex-col items-start gap-8 py-20 md:flex-row md:items-end md:justify-between md:py-24">
+      <div class="max-w-2xl">
+        <h2 class="display text-5xl text-bone md:text-6xl">¿No sabés cuál te conviene?</h2>
+        <p class="mt-4 text-lg leading-relaxed text-mute">
+          Hacé el diagnóstico. En tres minutos te digo qué te falta y cuál de estas opciones tiene sentido para vos.
+        </p>
+      </div>
+      <Button href="/diagnostico" event="cta_diagnostico" place="trabajar-cierre">Hacer el diagnóstico</Button>
+    </div>
+  </section>
+</Base>

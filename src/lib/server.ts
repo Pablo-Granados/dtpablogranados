@@ -32,16 +32,32 @@ export async function supabaseInsert(table: string, row: Record<string, unknown>
   return res.ok;
 }
 
+/** Una sola conexión a Gmail, reutilizada entre envíos (cada conexión nueva suma varios segundos). */
+let cached: { key: string; t: ReturnType<typeof nodemailer.createTransport> } | null = null;
+function transporter(user: string, pass: string) {
+  const key = `${user}:${pass}`;
+  if (!cached || cached.key !== key) {
+    cached = { key, t: nodemailer.createTransport({ service: 'gmail', pool: true, auth: { user, pass } }) };
+  }
+  return cached.t;
+}
+
 /** Envía un mail desde el Gmail configurado. */
-export async function sendMail(opts: { to: string; subject: string; html?: string; text?: string; fromName?: string }) {
+export async function sendMail(opts: {
+  to: string;
+  subject: string;
+  html?: string;
+  text?: string;
+  fromName?: string;
+  replyTo?: string;
+}) {
   const user = env('GMAIL_USER');
   const pass = env('GMAIL_APP_PASSWORD');
   if (!user || !pass) throw new Error('Falta configurar el email');
 
-  const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-  await transporter.sendMail({
+  await transporter(user, pass).sendMail({
     from: `${opts.fromName ?? 'Pablo Granados'} <${user}>`,
-    replyTo: user,
+    replyTo: opts.replyTo ?? user,
     to: opts.to,
     subject: opts.subject,
     html: opts.html,

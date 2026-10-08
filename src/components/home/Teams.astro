@@ -1,37 +1,41 @@
 ---
-import SectionHeader from '@/components/ui/SectionHeader.astro';
 import Button from '@/components/ui/Button.astro';
-import { cta, teamServices } from '@/data/site';
+import { chapters } from '@/data/ofertas';
+
+const equipos = chapters.find((c) => c.id === 'equipos')!;
 ---
 
 <section id="equipos" class="border-y border-line bg-panel py-20 md:py-28" aria-labelledby="equipos-title">
-  <div class="page">
-    <SectionHeader
-      id="equipos-title"
-      index="04"
-      kicker="Para clubes, agencias y jugadores"
-      title="Análisis y herramientas"
-      lead="Trabajo a distancia con equipos de Argentina y del exterior. Puedo sumarme a tu cuerpo técnico como analista o construir la herramienta que tu organización necesita."
-    />
+  <div class="page grid gap-12 lg:grid-cols-12 lg:gap-16">
+    <header class="lg:col-span-4" data-reveal>
+      <p class="tag reveal mb-4 text-signal">Para clubes y agencias</p>
+      <h2 id="equipos-title" class="display reveal text-[2.5rem] text-bone sm:text-5xl md:text-6xl" style="--d:.08s">
+        Un analista en tu cuerpo técnico
+      </h2>
+      <p class="reveal mt-5 text-lg leading-relaxed text-mute" style="--d:.16s">
+        Trabajo a distancia con equipos de Argentina y del exterior. Parto de una pregunta concreta del cuerpo técnico
+        y entrego algo que se usa el domingo, no un archivo más.
+      </p>
+      <div class="reveal mt-8" style="--d:.24s">
+        <Button href="/equipos" event="cta_equipos" place="home-equipos">Contame qué necesitás</Button>
+      </div>
+    </header>
 
-    <div class="grid gap-px bg-line md:grid-cols-2" data-reveal>
+    <ul class="border-b border-line lg:col-span-8" data-reveal>
       {
-        teamServices.map((s, i) => (
-          <div class="reveal flex flex-col bg-panel p-7 md:p-10" style={`--d:${i * 0.1}s`}>
-            <h3 class="display text-4xl text-bone">{s.title}</h3>
-            <ul class="mt-6 space-y-3">
-              {s.items.map((item) => (
-                <li class="border-b border-line py-3 text-mute last:border-b-0">{item}</li>
-              ))}
-            </ul>
-            <div class="mt-auto pt-10">
-              <Button href={cta[s.cta].href} variant="ghost" event={cta[s.cta].event} place="home-equipos">
-                {cta[s.cta].label}
-              </Button>
+        equipos.offers.map((o, i) => (
+          <li class="reveal grid gap-4 border-t border-line py-7 md:grid-cols-12 md:gap-8" style={`--d:${i * 0.08}s`}>
+            <div class="md:col-span-8">
+              <h3 class="text-2xl font-semibold text-bone">{o.name}</h3>
+              <p class="mt-2 leading-relaxed text-mute">{o.summary}</p>
             </div>
-          </div>
+            <div class="flex items-start justify-between gap-4 md:col-span-4 md:flex-col md:items-end">
+              <p class="font-mono text-sm text-signal">{o.price}</p>
+              <Button href={o.cta.href} variant="text" event={o.cta.event} place="home-equipos">Consultar</Button>
+            </div>
+          </li>
         ))
       }
-    </div>
+    </ul>
   </div>
 </section>

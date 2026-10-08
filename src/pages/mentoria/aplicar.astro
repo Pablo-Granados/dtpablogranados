@@ -5,7 +5,7 @@ import { pricing } from '@/data/mentoria';
 
 const calLink = import.meta.env.PUBLIC_CAL_LINK ?? '';
 const price = `${pricing.currency} ${pricing.full.toLocaleString('es-AR')}`;
-const cuotas = `${pricing.installments.count} cuotas de ${pricing.currency} ${pricing.installments.amount}`;
+const cuotas = `${pricing.installments.length} cuotas`;
 
 const steps = ['Quién sos', 'Tu situación', 'Compromiso'];
 
@@ -191,6 +191,8 @@ const chip =
 </script>
 
 <script>
+  import { startSending } from '@/scripts/sending';
+
   type Umami = { track: (event: string, data?: Record<string, unknown>) => void };
   const track = (e: string, d?: Record<string, unknown>) => (window as unknown as { umami?: Umami }).umami?.track(e, d);
 
@@ -254,9 +256,7 @@ const chip =
     data.herramientas = fd.getAll('herramientas');
     data.utm = Object.fromEntries([...new URLSearchParams(location.search)].filter(([k]) => k.startsWith('utm_')));
 
-    next.disabled = true;
-    msg.className = 'text-sm text-mute';
-    msg.textContent = 'Enviando…';
+    const stopSending = startSending(next, msg);
 
     try {
       const res = await fetch('/api/aplicacion', {
@@ -275,9 +275,9 @@ const chip =
 
       if (calificada) (window as unknown as { pgLoadCal?: (n: string, e: string, o: string) => void }).pgLoadCal?.(String(data.nombre), String(data.email), String(data.objetivo));
     } catch {
+      stopSending();
       msg.className = 'text-sm text-signal';
       msg.textContent = 'No se pudo enviar. Probá de nuevo en un rato.';
-      next.disabled = false;
     }
   });
 
