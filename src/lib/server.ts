@@ -12,22 +12,30 @@ export const json = (status: number, body: unknown) =>
 export const esc = (s: string) =>
   s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-/** Inserta una fila en Supabase con la service key. Devuelve true si salió bien. */
+/**
+ * Inserta una fila de un formulario público. Usa la clave pública (SUPABASE_ANON_KEY), que solo puede insertar;
+ * si no está configurada, o la base todavía no tiene la política (supabase/seguridad.sql), usa la service key.
+ * Devuelve true si salió bien.
+ */
 export async function supabaseInsert(table: string, row: Record<string, unknown>) {
   const url = env('SUPABASE_URL');
-  const key = env('SUPABASE_SERVICE_ROLE_KEY');
-  if (!url || !key) throw new Error('Falta configurar Supabase');
+  const service = env('SUPABASE_SERVICE_ROLE_KEY');
+  const anon = env('SUPABASE_ANON_KEY');
+  if (!url || !(service || anon)) throw new Error('Falta configurar Supabase');
 
-  const res = await fetch(`${url}/rest/v1/${table}`, {
-    method: 'POST',
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
-    },
-    body: JSON.stringify(row),
-  });
+  const enviar = (key: string) =>
+    fetch(`${url}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(row),
+    });
+
+  let res = await enviar((anon ?? service)!);
+  // La clave pública fue rechazada (política sin crear): se reintenta con la service key para no perder el contacto
+  if (!res.ok && anon && service && (res.status === 401 || res.status === 403)) {
+    console.error('Supabase: la clave pública no pudo insertar en', table, '— corré supabase/seguridad.sql');
+    res = await enviar(service);
+  }
   if (!res.ok) console.error('Supabase', table, res.status, await res.text());
   return res.ok;
 }

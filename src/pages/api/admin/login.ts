@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { adminConfigured, isLocal, passwordLogin, sessionCookies } from '@/lib/admin';
+import { limitar } from '@/lib/rate';
 import { json } from '@/lib/server';
 
 export const prerender = false;
@@ -9,6 +10,8 @@ let fails: number[] = [];
 
 export const POST: APIRoute = async ({ request, url }) => {
   if (!adminConfigured()) return json(500, { error: 'Falta configurar el panel' });
+  const frenado = await limitar(request, 'admin', 10, 600);
+  if (frenado) return frenado;
 
   const now = Date.now();
   fails = fails.filter((t) => now - t < 60_000);

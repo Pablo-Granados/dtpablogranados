@@ -1,12 +1,16 @@
 import type { APIRoute } from 'astro';
 import { parseTeamRequest } from '@/data/equipos';
 import { emailLayout, mailCallout, mailP } from '@/lib/email';
+import { limitar } from '@/lib/rate';
 import { firstName } from '@/lib/nombre';
 import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/server';
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, url }) => {
+  const frenado = await limitar(request, 'equipos');
+  if (frenado) return frenado;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();

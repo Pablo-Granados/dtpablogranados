@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { areas, questions, roles, scoreAnswers, type AreaId } from '@/data/diagnostico';
 import { emailLayout, mailButton, mailCallout, mailH2, mailP } from '@/lib/email';
+import { limitar } from '@/lib/rate';
 import { firstName, hasFullName } from '@/lib/nombre';
 import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/server';
 
@@ -8,6 +9,9 @@ import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/serv
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, url }) => {
+  const frenado = await limitar(request, 'diagnostico');
+  if (frenado) return frenado;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();

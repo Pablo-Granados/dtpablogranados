@@ -47,7 +47,8 @@ export const problem = {
 
 export const forWho = {
   yes: [
-    'Entrenás o analizás en fútbol o futsal, en cualquier nivel competitivo',
+    'Sos entrenador (con o sin experiencia en tecnología), analista, preparador físico que quiere sumar análisis o aficionado que quiere introducirse',
+    'Trabajás fútbol o futsal, en cualquier nivel',
     'Tenés acceso a video de tu equipo, o podés conseguirlo',
     'Podés dedicarle al menos 4 horas por semana',
     'Querés un proceso propio, no copiar el de otro',
@@ -63,30 +64,30 @@ export const forWho = {
 export const stages = [
   {
     weeks: 'Semana 1',
-    title: 'Diagnóstico',
-    body: 'Vemos cómo analizás hoy, tu contexto y qué querés tener resuelto en 12 semanas.',
-    deliverable: 'Punto de partida y objetivo',
+    title: 'Diagnóstico y plan a medida',
+    body: 'Vemos cómo analizás hoy, tu nivel y tu contexto, y armamos tu ruta. El ritmo y la profundidad se ajustan a vos, no al revés.',
+    deliverable: 'Plan personal de una página',
   },
   {
     weeks: 'Semanas 2–3',
     title: 'Qué mirar',
-    body: 'Fases, principios y preguntas según el modelo de juego de tu equipo. Separar lo que pasó de cómo lo interpretás.',
-    deliverable: 'Mapa de observación',
+    body: 'Vocabulario, fases, principios y preguntas según el modelo de juego de tu equipo. Separar lo que pasó de cómo lo interpretás.',
+    deliverable: 'Principios y mapa de observación',
   },
   {
     weeks: 'Semanas 4–6',
-    title: 'Capturar',
-    body: 'Categorías, codificación y selección de clips en tu herramienta: Nacsport, LongoMatch, Once Sport o una opción gratuita.',
-    deliverable: 'Panel propio y un partido analizado',
+    title: 'Herramientas',
+    body: 'Armás tu panel, codificás un partido completo y cortás los clips. Trabajamos con LongoMatch y te muestro cómo hacer lo mismo en Nacsport y Once Sport, y cómo editar con Premiere o CapCut.',
+    deliverable: 'Panel propio, un partido analizado y un pack de clips',
   },
   {
-    weeks: 'Semanas 7–9',
-    title: 'Rival y datos',
-    body: 'Scouting de rival e individual. Qué medir, qué no y cómo mostrarlo sin que el número tape al video.',
-    deliverable: 'Informe de rival real y tablero de seguimiento',
+    weeks: 'Semanas 7–10',
+    title: 'Informes y datos',
+    body: 'Tu informe propio, el informe de rival, un tablero de seguimiento y el scout de un jugador. Qué medir, qué no y cómo mostrarlo sin que el número tape al video.',
+    deliverable: 'Informe propio, informe de rival, tablero y ficha individual',
   },
   {
-    weeks: 'Semanas 10–12',
+    weeks: 'Semanas 11–12',
     title: 'Comunicar y sostener',
     body: 'Presentar en 10 minutos, priorizar y armar tu semana de trabajo para que el proceso no dependa del tiempo que sobre.',
     deliverable: 'Presentación grabada y tu sistema documentado',
@@ -94,7 +95,7 @@ export const stages = [
 ] as const;
 
 export const includes = [
-  { title: '12 llamadas 1:1', body: 'Una por semana, de 45 minutos, por videollamada.' },
+  { title: '12 llamadas 1:1', body: 'Una por semana, de 45 minutos, por videollamada. Armadas a tu medida desde la primera.' },
   { title: 'Devolución en video', body: 'Reviso cada entregable y te mando un video con mis anotaciones sobre tu trabajo.' },
   { title: 'Consultas entre sesiones', body: 'Por mensaje, de lunes a viernes, con respuesta dentro de las 24 horas.' },
   { title: 'Plantillas', body: 'Informe de rival, panel base, tablero y checklist semanal, listos para adaptar.' },
@@ -109,7 +110,11 @@ export const faq = [
   },
   {
     q: '¿Necesito Nacsport u otro software pago?',
-    a: 'No. Si ya usás uno, trabajamos ahí. Si no, arrancamos con herramientas gratuitas y, si en algún momento conviene pasar a una paga, lo vemos juntos.',
+    a: 'No hace falta que compres nada para empezar. Trabajo con LongoMatch y te muestro cómo se hace lo mismo en Nacsport y Once Sport. Para editar los clips usamos Premiere o CapCut, que es gratis. Si ya usás una herramienta, trabajamos ahí. Si no tenés ninguna, arrancamos con opciones gratuitas y, si conviene pasar a una paga, lo vemos juntos.',
+  },
+  {
+    q: '¿Sirve si recién empiezo o si no sé de tecnología?',
+    a: 'Sí. En la primera llamada definimos tu nivel y tu ruta: si recién empezás, vamos paso a paso y con plantillas listas; si ya analizás, vamos más directo a lo avanzado. Son las mismas 12 semanas, con la profundidad que necesitás.',
   },
   {
     q: '¿Y si no trabajo en un club ahora?',

@@ -157,6 +157,23 @@ export const POST: APIRoute = async ({ request, params }) => {
     }
   }
 
+  // Varias filas de una vez (las 12 semanas de un mentorado)
+  if (Array.isArray(body)) {
+    if (resource!.key !== 'semanas' || body.length > 60) return json(400, { error: 'Datos inválidos' });
+    const rows: Record<string, string | number | boolean | null>[] = [];
+    for (const item of body as Record<string, unknown>[]) {
+      const b = build(resource!, item, false);
+      if ('error' in b) return json(400, { error: b.error });
+      rows.push(b.row);
+    }
+    try {
+      const r = await sb<Record<string, unknown>[]>('POST', resource!.table, rows);
+      return r.ok ? json(200, { rows: r.data ?? [] }) : json(500, { error: 'No se pudieron crear las semanas' });
+    } catch (e) {
+      return json(500, { error: (e as Error).message });
+    }
+  }
+
   const built = build(resource!, body, false);
   if ('error' in built) return json(400, { error: built.error });
 

@@ -5,9 +5,11 @@
 import { mensajes, pasos, type Mensaje } from '@/data/mensajes';
 import { entrantes, etapasEmbudo, metaTypes, origenesContacto, plazosSeguimiento, productos, resources, type EntranteOrigen, type Field, type Producto, type Resource, type ResourceKey } from '@/data/admin';
 
+import { enlacesView, mentoradoFichaView, mentoradosView, planInicial, progreso, resumenTexto, semanaActual, semanasDe, semanasIniciales } from './admin-mentorados';
+import { programaView, type ProgramaFiltro } from './admin-programa';
 import { contenidoResultadosView, agruparPersonas, datosView, exportar, proyeccionView, renovacionesPendientes, semanaInicial, semanaView, type Proy } from './admin-reports';
-import { addDays, addMonths, btn, esc, fechaHora, monthStart, num, pct, shortDate, sumUsd, today, weekStart, type Row } from './admin-utils';
-type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos';
+import { addDays, addMonths, btn, esc, fechaHora, iso, monthStart, num, pct, shortDate, sumUsd, today, weekStart, type Row } from './admin-utils';
+type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos' | 'programa' | 'mentorados' | 'enlaces';
 
 const root = document.querySelector<HTMLElement>('[data-app]')!;
 const view = root.querySelector<HTMLElement>('[data-view]')!;
@@ -18,11 +20,25 @@ const confirmDialog = root.querySelector<HTMLDialogElement>('[data-confirm]')!;
 const ficha = root.querySelector<HTMLDialogElement>('[data-ficha]')!;
 const fichaBody = ficha.querySelector<HTMLElement>('[data-ficha-body]')!;
 let fichaId = '';
+const mentDlg = root.querySelector<HTMLDialogElement>('[data-mentorado]')!;
+const mentBody = mentDlg.querySelector<HTMLElement>('[data-mentorado-body]')!;
+let mentId = '';
+let mentSemana = 1;
+let mentFiltro = 'activos';
+let enlacesQuery = '';
 
 /** Pregunta antes de borrar, con un modal propio (el confirm del navegador puede estar bloqueado). */
-function confirmar(nombre: string, aviso = 'Esta acción no se puede deshacer.'): Promise<boolean> {
-  confirmDialog.querySelector<HTMLElement>('[data-confirm-name]')!.textContent = nombre;
-  confirmDialog.querySelector<HTMLElement>('[data-confirm-note]')!.textContent = aviso;
+type OpcionesConfirmar = { titulo?: string; verbo?: string; boton?: string; peligro?: boolean };
+
+function confirmar(nombre: string, aviso = 'Esta acción no se puede deshacer.', op: OpcionesConfirmar = {}): Promise<boolean> {
+  const set = (sel: string, texto: string) => (confirmDialog.querySelector<HTMLElement>(sel)!.textContent = texto);
+  set('[data-confirm-title]', op.titulo ?? '¿Estás seguro?');
+  set('[data-confirm-verb]', op.verbo ?? 'eliminar');
+  set('[data-confirm-name]', nombre);
+  set('[data-confirm-note]', aviso);
+  const ok = confirmDialog.querySelector<HTMLElement>('[data-confirm-ok]')!;
+  ok.textContent = op.boton ?? 'Sí, eliminar';
+  ok.className = `px-4 py-2.5 text-sm font-semibold text-ink hover:bg-bone ${op.peligro === false ? 'bg-signal' : 'bg-[#ff7a7a]'}`;
   confirmDialog.returnValue = '';
   return new Promise((resolve) => {
     confirmDialog.addEventListener('close', () => resolve(confirmDialog.returnValue === 'ok'), { once: true });
@@ -43,16 +59,28 @@ function nombreDe(key: ResourceKey, row?: Row): string {
     case 'contenido':
       return String(row.titulo);
     case 'contactos':
+    case 'mentorados':
       return String(row.nombre);
     default:
       return 'este elemento';
   }
 }
 
-const data: Record<ResourceKey | 'entrantes', Row[]> = { tareas: [], contenido: [], contactos: [], registro: [], metas: [], ventas: [], cobros: [], historial: [], entrantes: [] };
+const data: Record<ResourceKey | 'entrantes', Row[]> = { tareas: [], contenido: [], contactos: [], registro: [], metas: [], ventas: [], cobros: [], historial: [], mentorados: [], semanas: [], enlaces: [], reservas: [], entrantes: [] };
 let tab: Tab = 'hoy';
 let contactSub: 'prospectos' | 'entrantes' | 'personas' = 'prospectos';
 let personasQuery = '';
+let progFiltro: ProgramaFiltro = { perfil: 'todos', tipo: 'todos' };
+
+/** Menú en dos niveles: grupos arriba y, dentro del grupo activo, sus secciones. */
+const grupos: readonly { id: string; label: string; tabs: readonly (readonly [Tab, string])[] }[] = [
+  { id: 'dia', label: 'Hoy', tabs: [['hoy', 'Hoy'], ['semana', 'Semana'], ['resumen', 'Metas']] },
+  { id: 'vender', label: 'Vender', tabs: [['embudo', 'Embudo'], ['contactos', 'Contactos'], ['ventas', 'Ventas'], ['proyeccion', 'Proyección']] },
+  { id: 'contenido', label: 'Contenido', tabs: [['contenido', 'Calendario']] },
+  { id: 'mentoria', label: 'Mentoría', tabs: [['mentorados', 'Mentorados'], ['enlaces', 'Enlaces'], ['programa', 'Programa']] },
+  { id: 'gestion', label: 'Gestión', tabs: [['tareas', 'Tareas'], ['datos', 'Datos']] },
+];
+const ultimaPestana: Record<string, Tab> = {};
 let semanaWs = semanaInicial();
 const proy: Proy = { nuevos: 3, ticket: 350 };
 const filters = { tareas: 'abiertas', contenido: 'todas', contactos: 'activos', ventas: 'saldo' };
@@ -175,7 +203,42 @@ function hoyData() {
     buttons: btn('generar-cobro', 'Generar cobro', { id: v.id }) + btn('baja-venta', 'Dar de baja', { id: v.id }),
   }));
 
-  return { seguir, cobros, renovar, tareas, piezas, nuevos };
+  // Mentoría: llamadas que tocan, entregables sin recibir y llamadas de control
+  const mentoria: Item[] = [];
+  for (const m of data.mentorados.filter((x) => x.estado === 'activo')) {
+    const ss = semanasDe(data, m.id);
+    const sig = ss.find((s) => s.estado === 'pendiente');
+    if (sig?.fecha_llamada && String(sig.fecha_llamada) <= t) {
+      mentoria.push({
+        html: `<strong>${esc(m.nombre)}</strong> <span class="text-mute">· llamada de la semana ${sig.semana} · ${shortDate(sig.fecha_llamada)}</span>`,
+        buttons: btn('ment-open', 'Abrir', { id: m.id }) + btn('ment-hecha', 'Hecha', { id: sig.id }),
+      });
+    }
+    for (const s of ss.filter((x) => x.estado === 'hecha' && !x.entregable_en && x.fecha_llamada && String(x.fecha_llamada) <= addDays(t, -7))) {
+      mentoria.push({
+        html: `<strong>${esc(m.nombre)}</strong> <span class="text-mute">· entregable de la semana ${s.semana} sin recibir${''}</span>`,
+        buttons: btn('ment-open', 'Abrir', { id: m.id }) + btn('ment-recibido', 'Recibido', { id: s.id }),
+      });
+    }
+  }
+  for (const m of data.mentorados.filter((x) => x.estado === 'terminado' && x.control_fecha && String(x.control_fecha) <= t)) {
+    mentoria.push({
+      html: `<strong>${esc(m.nombre)}</strong> <span class="text-mute">· llamada de control (${shortDate(m.control_fecha)})</span>`,
+      buttons: btn('ment-open', 'Abrir', { id: m.id }) + btn('ment-control-hecha', 'Hecha', { id: m.id }),
+    });
+  }
+
+  // Reservas de Cal.com de hoy y de mañana
+  const mañana = addDays(t, 1);
+  const reservas: Item[] = data.reservas
+    .filter((r) => r.estado !== 'cancelada' && [t, mañana].includes(iso(new Date(r.inicio))))
+    .sort((a, b) => String(a.inicio).localeCompare(String(b.inicio)))
+    .map((r) => ({
+      html: `<strong>${new Date(r.inicio).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong> <span class="text-mute">${iso(new Date(r.inicio)) === t ? 'hoy' : 'mañana'} · ${esc(r.nombre || r.email || 'Reserva')} · ${esc(r.evento)}</span>`,
+      buttons: r.mentorado_id ? btn('ment-open', 'Abrir', { id: r.mentorado_id }) : r.contacto_id ? btn('open', 'Abrir', { res: 'contactos', id: r.contacto_id }) : '',
+    }));
+
+  return { reservas, seguir, cobros, renovar, mentoria, tareas, piezas, nuevos };
 }
 
 const hoyCount = () => Object.values(hoyData()).reduce((a, l) => a + l.length, 0);
@@ -213,9 +276,11 @@ function hoyView() {
   ${lunes ? `<div class="mb-6 flex flex-wrap items-center justify-between gap-3 border border-signal/60 bg-signal/5 p-4"><p class="text-sm text-bone">Es lunes: mirá cómo cerró la semana pasada y qué viene.</p>${btn('tab', 'Ver resumen semanal', { tab: 'semana' })}</div>` : ''}
   <p class="mb-5 text-mute">${hoyCount() ? 'Esto es lo que pide atención hoy.' : 'No hay nada pendiente para hoy.'}</p>
   <div class="grid gap-4 md:grid-cols-2">
+    ${hoyBlock('Reservas de hoy y mañana', h.reservas, 'No hay reservas para hoy ni mañana.')}
     ${hoyBlock('Seguimientos', h.seguir, 'Nadie para seguir hoy.', 'contactos')}
     ${hoyBlock('Cobros vencidos o de hoy', h.cobros, 'No hay cobros vencidos.', 'ventas')}
     ${hoyBlock('Renovaciones de planes', h.renovar, 'Ningún plan para renovar todavía.', 'ventas')}
+    ${hoyBlock('Mentoría', h.mentoria, 'Sin llamadas ni entregables pendientes.', 'mentorados')}
     ${hoyBlock('Tareas para hoy o vencidas', h.tareas, 'Sin tareas vencidas.', 'tareas')}
     ${hoyBlock('Contenido para publicar', h.piezas, 'No hay piezas atrasadas ni para hoy.', 'contenido')}
     ${hoyBlock('Contactos nuevos sin atender', h.nuevos, 'No hay contactos nuevos.')}
@@ -371,7 +436,7 @@ function ventasView() {
         <div class="flex flex-wrap items-baseline justify-between gap-3">
           <div><p class="font-medium text-bone">${esc(v.cliente)} <span class="text-mute">· ${esc(v.producto)}</span></p>
             <p class="mt-1 text-sm text-faint">${shortDate(v.fecha)}${v.origen ? ` · ${esc(v.origen)}` : ''} · cobrado USD ${num(cobrado)} de ${num(total)}${v.recurrente === true ? (v.activa === false ? ' · <span class="text-[#ff7a7a]">De baja</span>' : ' · <span class="text-signal">Se renueva cada mes</span>') : ''}</p></div>
-          <span class="flex flex-wrap gap-2">${v.recurrente === true ? (v.activa === false ? btn('reactivar-venta', 'Reactivar', { id: v.id }) : btn('baja-venta', 'Dar de baja', { id: v.id })) : ''}${btn('open', 'Editar venta', { res: 'ventas', id: v.id })}${btn('del-venta', 'Eliminar venta', { id: v.id })}</span>
+          <span class="flex flex-wrap gap-2">${v.recurrente === true ? (v.activa === false ? btn('reactivar-venta', 'Reactivar', { id: v.id }) : btn('baja-venta', 'Dar de baja', { id: v.id })) : ''}${(String(v.producto).startsWith('Sistema Propio') ? (data.mentorados.find((x) => x.venta_id === v.id) ? btn('ment-open', 'Ver mentorado', { id: data.mentorados.find((x) => x.venta_id === v.id)!.id }) : btn('nuevo-mentorado', 'Crear mentorado', { id: v.id })) : '') + btn('open', 'Editar venta', { res: 'ventas', id: v.id })}${btn('del-venta', 'Eliminar venta', { id: v.id })}</span>
         </div>
         <ul class="mt-3 divide-y divide-line border-t border-line">${lines || '<li class="py-3 text-sm text-faint">Sin cobros cargados.</li>'}</ul>
         ${cs.length && cs.every((c) => c.cobrado_en) ? (v.recurrente === true && v.activa !== false ? `<div class="mt-3">${btn('generar-cobro', '+ Generar cobro del mes siguiente', { id: v.id })}</div>` : '') : `<div class="mt-3">${btn('new-cobro', '+ Agregar cobro', { id: v.id })}</div>`}
@@ -594,19 +659,35 @@ function contactosView() {
   );
 }
 
+/** Dibuja el menú. Los números marcan lo que está sin atender. */
+function renderTabs(hoy: number, nuevos: number) {
+  const nav = root.querySelector<HTMLElement>('[data-tabs]')!;
+  const activo = grupos.find((g) => g.tabs.some(([id]) => id === tab))!;
+  ultimaPestana[activo.id] = tab;
+
+  const badge = (n: number) => (n ? `<span class="ml-2 bg-signal px-1.5 py-0.5 text-xs font-semibold text-ink">${n}</span>` : '');
+  const cuenta: Record<string, number> = { dia: hoy, vender: nuevos };
+  const subCuenta: Record<string, number> = { hoy, contactos: nuevos };
+
+  const principal = grupos
+    .map((g) => `<button type="button" data-group="${g.id}" class="shrink-0 border px-4 py-3 text-sm transition-colors md:py-2.5 ${g.id === activo.id ? 'border-signal bg-signal/10 text-bone' : 'border-line-strong text-mute hover:text-bone'}">${esc(g.label)}${badge(cuenta[g.id] ?? 0)}</button>`)
+    .join('');
+  const secundario = activo.tabs.length > 1
+    ? `<div class="flex gap-5 overflow-x-auto border-b border-line px-1">${activo.tabs
+        .map(([id, label]) => `<button type="button" data-tab="${id}" class="-mb-px shrink-0 border-b-2 py-3 text-sm transition-colors md:py-2.5 ${id === tab ? 'border-signal text-bone' : 'border-transparent text-mute hover:text-bone'}">${esc(label)}${badge(subCuenta[id] ?? 0)}</button>`)
+        .join('')}</div>`
+    : '';
+  nav.innerHTML = `<div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">${principal}</div>${secundario}`;
+}
+
 function render() {
-  root.querySelectorAll<HTMLElement>('[data-tab]').forEach((b) => {
-    if (b.closest('[data-tabs]')) b.toggleAttribute('data-active', b.dataset.tab === tab);
-  });
-  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, proyeccion: () => proyeccionView(data, proy, conversionContactadoCliente()), semana: () => semanaView(data, semanaWs), contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView, datos: () => datosView(data) }[tab]();
+  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, proyeccion: () => proyeccionView(data, proy, conversionContactadoCliente()), semana: () => semanaView(data, semanaWs), contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView, datos: () => datosView(data), programa: () => programaView(progFiltro), mentorados: () => mentoradosView(data, mentFiltro), enlaces: () => enlacesView(data, enlacesQuery) }[tab]();
   const n = hoyCount();
-  const hoyTab = root.querySelector<HTMLElement>('[data-tabs] [data-tab="hoy"]');
-  if (hoyTab) hoyTab.textContent = n ? `Hoy · ${n}` : 'Hoy';
-  // Aviso de contactos nuevos sin atender, también en la pestaña y en el título de la ventana
+  // Aviso de contactos nuevos sin atender, también en el título de la ventana
   const nuevos = data.entrantes.filter((e) => e.estado === entrantes[e.origen as EntranteOrigen]?.estados[0]).length;
-  const contactosTab = root.querySelector<HTMLElement>('[data-tabs] [data-tab="contactos"]');
-  if (contactosTab) contactosTab.textContent = nuevos ? `Contactos · ${nuevos} nuevos` : 'Contactos';
+  renderTabs(n, nuevos);
   document.title = nuevos + n ? `(${nuevos + n}) Panel` : 'Panel';
+  if (mentDlg.open && mentId) renderMentorado();
 }
 
 /* ------------------------------ formulario ------------------------------ */
@@ -622,7 +703,7 @@ function fieldInput(f: Field, v: unknown) {
 
 function openForm(res: Resource, id?: string, parent?: string) {
   const row = id ? data[res.key].find((r) => String(r[res.pk]) === id) : undefined;
-  const values: Row = row ?? { ...(res.defaults ?? {}), ...(res.key === 'registro' ? { fecha: today() } : {}), ...(res.key === 'cobros' ? { vencimiento: today() } : {}) };
+  const values: Row = row ?? { ...(res.defaults ?? {}), ...(res.key === 'registro' ? { fecha: today() } : {}), ...(res.key === 'cobros' ? { vencimiento: today() } : {}), ...(res.key === 'mentorados' ? { inicio: today() } : {}) };
 
   form.innerHTML = `
     <div class="flex items-start justify-between gap-4">
@@ -641,7 +722,7 @@ function openForm(res: Resource, id?: string, parent?: string) {
 
   form.dataset.res = res.key;
   form.dataset.id = id ?? '';
-  form.dataset.parent = parent ?? row?.venta_id ?? '';
+  form.dataset.parent = parent ?? row?.venta_id ?? row?.mentorado_id ?? '';
   dialog.showModal();
   form.querySelector<HTMLElement>('input,select,textarea')?.focus();
 }
@@ -656,6 +737,7 @@ form.addEventListener('click', (e) => {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (form.dataset.res === 'venta-nueva') return void submitVenta();
+  if (form.dataset.res === 'mentorado-nuevo') return void submitMentoradoNuevo();
   const res = resources[form.dataset.res as ResourceKey];
   const id = form.dataset.id || '';
   const msg = form.querySelector<HTMLElement>('[data-form-msg]')!;
@@ -664,7 +746,7 @@ form.addEventListener('submit', async (e) => {
   const body: Row = {};
   for (const f of res.fields) {
     if (f.hidden) {
-      if (f.name === 'venta_id') body[f.name] = form.dataset.parent ?? '';
+      if (f.name === 'venta_id' || f.name === 'mentorado_id') body[f.name] = form.dataset.parent ?? '';
       continue;
     }
     const v = (form.elements.namedItem(f.name) as HTMLInputElement | null)?.value ?? '';
@@ -675,6 +757,7 @@ form.addEventListener('submit', async (e) => {
     body[f.name] = f.type === 'number' && v !== '' ? Number(v) : v;
   }
 
+  if (res.key === 'mentorados' && !id && !body.control_fecha && body.inicio) body.control_fecha = addDays(String(body.inicio), 7 * 12 + 30);
   let aviso = '';
   if (res.key === 'contactos') {
     // Si cambió el estado y no tocaste la fecha, el próximo seguimiento se agenda solo
@@ -691,12 +774,29 @@ form.addEventListener('submit', async (e) => {
   btn.disabled = true;
   msg.textContent = 'Guardando…';
   try {
-    await api(id ? `${res.key}?id=${encodeURIComponent(id)}` : res.key, id ? 'PATCH' : 'POST', body);
+    if (res.key === 'mentorados' && !id) {
+      const v = data.ventas.find((x) => x.id === form.dataset.parent);
+      body.contacto_id = await asegurarProspecto({ nombre: String(body.nombre), email: String(body.email ?? ''), origen: v?.origen, contactoId: v?.contacto_id });
+      await Promise.all([reload('contactos'), reload('historial')]);
+    }
+    const out = await api<{ row?: Row }>(id ? `${res.key}?id=${encodeURIComponent(id)}` : res.key, id ? 'PATCH' : 'POST', body);
     if (res.key === 'contactos') await reload('historial');
+    // Un mentorado nuevo arranca con sus 12 semanas armadas a partir del esqueleto
+    let nuevoMentorado = '';
+    if (res.key === 'mentorados' && !id && out.row) {
+      await api('semanas', 'POST', semanasIniciales(out.row));
+      await reload('semanas');
+      nuevoMentorado = out.row.id;
+    }
     await reload(res.key);
     dialog.close();
     render();
     say('Guardado.' + aviso);
+    if (nuevoMentorado) {
+      tab = 'mentorados';
+      render();
+      openMentorado(nuevoMentorado);
+    }
   } catch (err) {
     say((err as Error).message, true);
     msg.textContent = '';
@@ -715,6 +815,10 @@ async function removeCurrent() {
     await api(`${res.key}?id=${encodeURIComponent(id)}`, 'DELETE');
     await reload(res.key);
     if (res.key === 'ventas') await reload('cobros');
+    if (res.key === 'mentorados') {
+      await reload('semanas');
+      if (mentDlg.open) mentDlg.close();
+    }
     dialog.close();
     render();
     say('Eliminado.');
@@ -752,7 +856,7 @@ function toClient() {
   openVenta({ contactoId: c.id, cliente: c.nombre, origen: c.origen });
 }
 
-function openVenta(prefill?: { contactoId: string; cliente: string; origen?: string }) {
+function openVenta(prefill?: { contactoId: string; cliente: string; origen?: string; mentoradoId?: string; productoId?: string }) {
   const first = productos[0];
   form.innerHTML = `
     <div class="flex items-start justify-between gap-4">
@@ -782,6 +886,11 @@ function openVenta(prefill?: { contactoId: string; cliente: string; origen?: str
   form.dataset.res = 'venta-nueva';
   form.dataset.id = '';
   form.dataset.parent = prefill?.contactoId ?? '';
+  form.dataset.mentorado = prefill?.mentoradoId ?? '';
+  if (prefill?.productoId) {
+    (form.elements.namedItem('producto_id') as HTMLSelectElement).value = prefill.productoId;
+    field('total').value = String(productoDe().cobros.reduce((a, c) => a + c.usd, 0));
+  }
   showPlan();
   dialog.showModal();
   form.querySelector<HTMLElement>('input')?.focus();
@@ -863,6 +972,12 @@ async function submitVenta() {
     tab = 'ventas';
     render();
     say('Venta guardada.');
+    if (form.dataset.mentorado) {
+      // Venta creada desde la ficha de un mentorado que todavía no tenía: queda vinculada
+      await api(`mentorados?id=${encodeURIComponent(form.dataset.mentorado)}`, 'PATCH', { venta_id: row.id, ...(form.dataset.parent ? { contacto_id: form.dataset.parent } : {}) });
+      await reload('mentorados');
+      render();
+    } else if (nombre.startsWith('Sistema Propio')) void ofrecerMentorado(row.id, cliente);
   } catch (err) {
     say((err as Error).message, true);
     msg.textContent = '';
@@ -929,6 +1044,229 @@ function openCobroRapido() {
   form.dataset.id = '';
   form.dataset.parent = '';
   dialog.showModal();
+}
+
+/* ------------------------------ mentorados: alta conectada ------------------------------ */
+/** Deja a la persona como prospecto en estado Cliente: usa el que ya existe (por mail) o crea uno nuevo. */
+async function asegurarProspecto(p: { nombre: string; email?: string; origen?: string | null; contactoId?: string | null }): Promise<string> {
+  const email = (p.email ?? '').trim().toLowerCase();
+  const ya = (p.contactoId ? data.contactos.find((c) => c.id === p.contactoId) : undefined) ?? (email ? data.contactos.find((c) => String(c.email ?? '').toLowerCase() === email) : undefined);
+  if (ya) {
+    if (ya.estado !== 'Cliente') await api(`contactos?id=${encodeURIComponent(ya.id)}`, 'PATCH', { estado: 'Cliente', ...seguimientoPara('Cliente') });
+    return ya.id;
+  }
+  const r = await api<{ row: Row }>('contactos', 'POST', { nombre: p.nombre, email: email || null, tipo: 'Entrenador o analista', canal: email ? 'Mail' : 'Otro', estado: 'Cliente', origen: p.origen || null });
+  return r.row.id;
+}
+
+const productoSistema = (cohorte: string) => productos.find((p) => p.id === (cohorte === 'Fundadora' ? 'fundadora' : 'sistema'))!;
+const totalSistema = (cohorte: string) => productoSistema(cohorte).cobros.reduce((a, c) => a + c.usd, 0);
+
+function openMentoradoNuevo() {
+  const perfilesOpts = ['', ...resources.mentorados.fields.find((f) => f.name === 'perfil')!.options!];
+  form.innerHTML = `
+    <div class="flex items-start justify-between gap-4">
+      <h2 class="display text-3xl text-bone">Nuevo mentorado</h2>
+      <button type="button" data-close class="tag text-signal hover:text-bone" aria-label="Cerrar">Cerrar</button>
+    </div>
+    <p class="text-sm leading-relaxed text-faint">Al guardar se crean juntos: su prospecto (como cliente), su venta con las cuotas y sus 12 semanas.</p>
+    <label class="grid gap-2 text-sm text-mute">Nombre y apellido<input name="nombre" maxlength="120" class="${fieldCls}" /></label>
+    <label class="grid gap-2 text-sm text-mute">Mail <span class="text-faint">(evita duplicados en prospectos)</span><input name="email" type="email" maxlength="160" class="${fieldCls}" /></label>
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="grid gap-2 text-sm text-mute">Perfil<select name="perfil" class="${fieldCls}">${perfilesOpts.map((o) => `<option value="${esc(o)}">${esc(o || '—')}</option>`).join('')}</select></label>
+      <label class="grid gap-2 text-sm text-mute">Cohorte<select name="cohorte" class="${fieldCls}"><option>Estándar</option><option>Fundadora</option></select></label>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="grid gap-2 text-sm text-mute">Primera llamada<input name="inicio" type="date" value="${today()}" class="${fieldCls}" /></label>
+      <label class="grid gap-2 text-sm text-mute">Fecha de la venta<input name="fecha" type="date" value="${today()}" class="${fieldCls}" /></label>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2">
+      <label class="grid gap-2 text-sm text-mute">Total en USD<input name="total" type="number" step="any" value="${totalSistema('Estándar')}" class="${fieldCls}" /></label>
+      <label class="grid gap-2 text-sm text-mute">Cómo llegó <span class="text-faint">(opcional)</span><select name="origen" class="${fieldCls}"><option value="">—</option>${origenesContacto.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select></label>
+    </div>
+    <label class="flex items-center gap-3 text-sm text-mute"><input name="cobrado" type="checkbox" class="size-4 accent-[#00f2ff]" /> Ya cobré el primer pago</label>
+    <label class="grid gap-2 text-sm text-mute">Equipo y video con los que trabaja <span class="text-faint">(opcional)</span><input name="equipo" maxlength="200" class="${fieldCls}" /></label>
+    <label class="grid gap-2 text-sm text-mute">Resultado que quiere en la semana 12 <span class="text-faint">(opcional)</span><textarea name="objetivo" rows="3" maxlength="1500" class="${fieldCls}"></textarea></label>
+    <p class="text-sm text-faint" data-plan></p>
+    <p data-form-msg class="min-h-5 text-sm text-signal" role="status"></p>
+    <div class="flex justify-end border-t border-line pt-5">
+      <button type="submit" class="bg-signal px-6 py-3 font-semibold text-ink hover:bg-bone disabled:opacity-60">Crear mentorado</button>
+    </div>`;
+  form.dataset.res = 'mentorado-nuevo';
+  form.dataset.id = '';
+  form.dataset.parent = '';
+  showPlanMentorado();
+  dialog.showModal();
+  form.querySelector<HTMLElement>('input')?.focus();
+}
+
+function showPlanMentorado() {
+  const total = Number(field('total').value);
+  const el = form.querySelector<HTMLElement>('[data-plan]');
+  if (!el) return;
+  const cuotas = planCobros(productoSistema(field('cohorte').value), total);
+  el.textContent = total > 0 ? 'Cobros: ' + cuotas.map((c) => `${c.concepto} USD ${num(c.usd)}`).join(' · ') + '. Se pueden editar después en Ventas.' : '';
+}
+
+form.addEventListener('change', (e) => {
+  if (form.dataset.res !== 'mentorado-nuevo') return;
+  if ((e.target as HTMLInputElement).name === 'cohorte') field('total').value = String(totalSistema(field('cohorte').value));
+  showPlanMentorado();
+});
+form.addEventListener('input', (e) => {
+  if (form.dataset.res === 'mentorado-nuevo' && (e.target as HTMLInputElement).name === 'total') showPlanMentorado();
+});
+
+async function submitMentoradoNuevo() {
+  const msg = form.querySelector<HTMLElement>('[data-form-msg]')!;
+  const boton = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+  const sel = (n: string) => (form.elements.namedItem(n) as HTMLSelectElement).value;
+  const nombre = field('nombre').value.trim();
+  const email = field('email').value.trim();
+  const cohorte = sel('cohorte');
+  const total = Number(field('total').value);
+  const inicio = field('inicio').value;
+  const fecha = field('fecha').value;
+
+  if (!/\S+\s+\S+/.test(nombre)) return void (msg.textContent = 'Escribí nombre y apellido.');
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return void (msg.textContent = 'Revisá el mail.');
+  if (!(total > 0)) return void (msg.textContent = 'Falta el total en USD.');
+  if (!inicio || !fecha) return void (msg.textContent = 'Faltan las fechas.');
+  if (data.mentorados.some((m) => email && String(m.email ?? '').toLowerCase() === email.toLowerCase())) return void (msg.textContent = 'Ya hay un mentorado con ese mail.');
+
+  boton.disabled = true;
+  msg.textContent = 'Creando…';
+  try {
+    const origen = sel('origen') || null;
+    const prospecto = await asegurarProspecto({ nombre, email, origen });
+    const producto = productoSistema(cohorte);
+    const { row: venta } = await api<{ row: Row }>('ventas', 'POST', { cliente: nombre, producto: producto.nombre, fecha, origen, recurrente: false, activa: true, contacto_id: prospecto });
+    const cobros = planCobros(producto, total);
+    for (const [i, c] of cobros.entries()) {
+      await api('cobros', 'POST', { venta_id: venta.id, concepto: c.concepto, monto_usd: c.usd, monto_ars: null, vencimiento: addDays(fecha, c.dias), cobrado_en: i === 0 && field('cobrado').checked ? today() : null });
+    }
+    const { row: m } = await api<{ row: Row }>('mentorados', 'POST', {
+      nombre,
+      email: email || null,
+      perfil: sel('perfil') || null,
+      cohorte,
+      inicio,
+      estado: 'activo',
+      equipo: field('equipo').value.trim() || null,
+      objetivo: (form.elements.namedItem('objetivo') as HTMLTextAreaElement).value.trim() || null,
+      control_fecha: addDays(inicio, 7 * 12 + 30),
+      venta_id: venta.id,
+      contacto_id: prospecto,
+    });
+    await api('semanas', 'POST', semanasIniciales(m));
+    await Promise.all([reload('contactos'), reload('historial'), reload('ventas'), reload('cobros'), reload('mentorados'), reload('semanas')]);
+    dialog.close();
+    tab = 'mentorados';
+    render();
+    openMentorado(m.id);
+    say(`Listo: prospecto (cliente), venta con ${cobros.length} cobros y 12 semanas.`);
+  } catch (err) {
+    say((err as Error).message, true);
+    msg.textContent = '';
+    await Promise.all([reload('contactos'), reload('ventas'), reload('cobros'), reload('mentorados'), reload('semanas')]).catch(() => undefined);
+    render();
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+/** Ficha de mentorado a partir de una venta que ya existe. */
+function crearMentoradoDesdeVenta(ventaId: string) {
+  const v = data.ventas.find((x) => x.id === ventaId);
+  if (!v) return;
+  const existente = data.mentorados.find((m) => m.venta_id === v.id);
+  if (existente) return void openMentorado(existente.id);
+  openForm(resources.mentorados, undefined, v.id);
+  const c = data.contactos.find((x) => x.id === v.contacto_id);
+  (form.elements.namedItem('nombre') as HTMLInputElement).value = c?.nombre ?? v.cliente;
+  if (c?.email) (form.elements.namedItem('email') as HTMLInputElement).value = c.email;
+  if (String(v.producto).includes('Fundadora')) (form.elements.namedItem('cohorte') as HTMLSelectElement).value = 'Fundadora';
+}
+
+async function ofrecerMentorado(ventaId: string, cliente: string) {
+  const si = await confirmar(cliente, 'Se arma con sus 12 semanas a partir del esqueleto y queda vinculada a esta venta.', { titulo: '¿Crear su ficha de mentorado?', verbo: 'crear la ficha de mentorado de', boton: 'Sí, crear ficha', peligro: false });
+  if (si) crearMentoradoDesdeVenta(ventaId);
+}
+
+/* ------------------------------ enlaces de entregables ------------------------------ */
+async function agregarEnlace() {
+  const campo = (n: string) => mentBody.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-enlace="${n}"]`)!;
+  const titulo = campo('titulo').value.trim();
+  const url = campo('url').value.trim();
+  if (!titulo) return void say('Falta el título del enlace.', true);
+  if (!/^https?:\/\/\S+/i.test(url)) return void say('El enlace tiene que empezar con http:// o https://', true);
+  try {
+    await api('enlaces', 'POST', { mentorado_id: mentId, titulo, url, tipo: campo('tipo').value, semana: campo('semana').value === '' ? null : Number(campo('semana').value) });
+    await reload('enlaces');
+    render();
+    say('Enlace agregado.');
+  } catch (err) {
+    say((err as Error).message, true);
+  }
+}
+
+async function borrarEnlace(id: string) {
+  const l = data.enlaces.find((x) => x.id === id);
+  if (!(await confirmar(l?.titulo ?? 'este enlace'))) return;
+  try {
+    await api(`enlaces?id=${encodeURIComponent(id)}`, 'DELETE');
+    await reload('enlaces');
+    render();
+    say('Enlace eliminado.');
+  } catch (err) {
+    say((err as Error).message, true);
+  }
+}
+
+/* ------------------------------ mentorados ------------------------------ */
+function renderMentorado() {
+  const html = mentoradoFichaView(data, mentId, mentSemana);
+  if (!html) return void mentDlg.close();
+  const scroll = mentDlg.scrollTop;
+  mentBody.innerHTML = html;
+  mentDlg.scrollTop = scroll;
+}
+
+function openMentorado(id: string) {
+  mentId = id;
+  mentSemana = semanaActual(semanasDe(data, id))?.semana ?? 1;
+  renderMentorado();
+  if (!mentDlg.open) mentDlg.showModal();
+}
+
+mentDlg.addEventListener('close', () => (mentId = ''));
+
+/** Guarda un cambio de una semana y, si ya están todas hechas, pasa al mentorado a "terminado". */
+async function mentPatch(semanaId: string, patch: Row) {
+  await patchField('semanas', semanaId, patch);
+  const s = data.semanas.find((x) => x.id === semanaId);
+  const m = s && data.mentorados.find((x) => x.id === s.mentorado_id);
+  if (m && m.estado === 'activo') {
+    const ss = semanasDe(data, m.id);
+    if (progreso(ss).terminadas) {
+      await patchField('mentorados', m.id, { estado: 'terminado' });
+      say('Completó las 12 semanas: pasó a terminado. Agendá la llamada de control.');
+    }
+  }
+}
+
+async function eliminarMentorado(id: string) {
+  const m = data.mentorados.find((x) => x.id === id);
+  if (!(await confirmar(`${m?.nombre ?? 'este mentorado'} y sus 12 semanas`, 'Se borra todo lo que cargaste de sus semanas. Esta acción no se puede deshacer.'))) return;
+  try {
+    await api(`mentorados?id=${encodeURIComponent(id)}`, 'DELETE');
+    await Promise.all([reload('mentorados'), reload('semanas')]);
+    mentDlg.close();
+    render();
+    say('Eliminado.');
+  } catch (err) {
+    say((err as Error).message, true);
+  }
 }
 
 /* ------------------------------ ficha del prospecto ------------------------------ */
@@ -1012,6 +1350,7 @@ function renderFicha() {
     <div class="flex flex-wrap gap-2">
       ${btn('ficha-editar', 'Editar datos', {})}
       ${['Cliente', 'Descartado'].includes(c.estado) ? '' : btn('ficha-cliente', 'Pasar a cliente', {})}
+      ${data.mentorados.some((m) => m.contacto_id === c.id) ? btn('ment-open', 'Ver mentorado', { id: data.mentorados.find((m) => m.contacto_id === c.id)!.id }) : ''}
     </div>
 
     <section>
@@ -1256,6 +1595,106 @@ root.addEventListener('click', async (e) => {
       else if (q === 'prospecto') openForm(resources.contactos);
       break;
     }
+    case 'ment-open':
+      openMentorado(el.dataset.id!);
+      break;
+    case 'ment-cerrar':
+      mentDlg.close();
+      break;
+    case 'ment-semana':
+      mentSemana = Number(el.dataset.n);
+      renderMentorado();
+      break;
+    case 'ment-nuevo':
+      openMentoradoNuevo();
+      break;
+    case 'nuevo-mentorado':
+      crearMentoradoDesdeVenta(el.dataset.id!);
+      break;
+    case 'ment-prospecto': {
+      const m = data.mentorados.find((x) => x.id === el.dataset.id);
+      if (!m) break;
+      try {
+        const contacto = await asegurarProspecto({ nombre: m.nombre, email: m.email });
+        await api(`mentorados?id=${encodeURIComponent(m.id)}`, 'PATCH', { contacto_id: contacto });
+        await Promise.all([reload('mentorados'), reload('contactos'), reload('historial')]);
+        render();
+        say('Prospecto conectado (como cliente).');
+      } catch (err) {
+        say((err as Error).message, true);
+      }
+      break;
+    }
+    case 'ment-venta-nueva': {
+      const m = data.mentorados.find((x) => x.id === el.dataset.id);
+      if (m) openVenta({ contactoId: m.contacto_id ?? '', cliente: m.nombre, mentoradoId: m.id, productoId: m.cohorte === 'Fundadora' ? 'fundadora' : 'sistema' });
+      break;
+    }
+    case 'enlace-agregar':
+      await agregarEnlace();
+      break;
+    case 'enlace-copiar':
+      await copiar(el.dataset.url ?? '');
+      say('Enlace copiado.');
+      break;
+    case 'del-enlace':
+      await borrarEnlace(el.dataset.id!);
+      break;
+    case 'ment-editar':
+      openForm(resources.mentorados, mentId);
+      break;
+    case 'del-mentorado':
+      await eliminarMentorado(el.dataset.id!);
+      break;
+    case 'ment-hecha': {
+      const s = data.semanas.find((x) => x.id === el.dataset.id);
+      if (!s) break;
+      const quien = data.mentorados.find((x) => x.id === s.mentorado_id)?.nombre ?? 'el mentorado';
+      const si = await confirmar(`la llamada de la semana ${s.semana} con ${quien}`, 'Queda registrada y pasa a la semana siguiente.', { titulo: '¿Marcar como hecha?', verbo: 'marcar como hecha', boton: 'Sí, marcar como hecha', peligro: false });
+      if (!si) break;
+      await mentPatch(s.id, { estado: 'hecha', fecha_llamada: s.fecha_llamada ?? today() });
+      if (mentId === s.mentorado_id) {
+        mentSemana = Math.min(12, s.semana + 1);
+        renderMentorado();
+      }
+      say('Llamada registrada.');
+      break;
+    }
+    case 'ment-agenda': {
+      const s = data.semanas.find((x) => x.id === el.dataset.id);
+      const m = s && data.mentorados.find((x) => x.id === s.mentorado_id);
+      if (!s || !m) break;
+      const base = String(import.meta.env.PUBLIC_CAL_MENTORIA_LINK);
+      const params = new URLSearchParams({ name: m.nombre, ...(m.email ? { email: m.email } : {}), notes: `Semana ${s.semana}` });
+      const link = `${base.startsWith('http') ? base : `https://cal.com/${base}`}?${params}`;
+      await copiar(`Hola ${String(m.nombre).trim().split(/\s+/)[0]}, para tu llamada de la semana ${s.semana} elegí el horario que mejor te quede: ${link}`);
+      say('Mensaje con el link para agendar copiado.');
+      break;
+    }
+    case 'ment-recibido':
+      await mentPatch(el.dataset.id!, { entregable_en: today() });
+      say('Entregable registrado.');
+      break;
+    case 'ment-esqueleto': {
+      const s = data.semanas.find((x) => x.id === el.dataset.id);
+      const m = s && data.mentorados.find((x) => x.id === s.mentorado_id);
+      if (!s || !m) break;
+      await mentPatch(s.id, { plan: (s.plan ? s.plan + '\n\n— Esqueleto —\n' : '') + planInicial(s.semana, m.perfil) });
+      say('Esqueleto agregado al plan.');
+      break;
+    }
+    case 'ment-resumen': {
+      const m = data.mentorados.find((x) => x.id === el.dataset.id);
+      if (m) {
+        await copiar(resumenTexto(m, semanasDe(data, m.id)));
+        say('Resumen copiado.');
+      }
+      break;
+    }
+    case 'ment-control-hecha':
+      await patchField('mentorados', el.dataset.id!, { control_fecha: null });
+      say('Llamada de control registrada.');
+      break;
     case 'to-prospect':
       await toProspect(el.dataset.email!);
       break;
@@ -1326,6 +1765,19 @@ root.addEventListener('change', async (e) => {
   const action = el.dataset.action;
   const value = (el as HTMLInputElement).value;
 
+  if (action === 'ment-filtro') {
+    mentFiltro = value;
+    return void render();
+  }
+  if (action === 'ment-campo') return void (await mentPatch(el.dataset.id!, { [el.dataset.campo!]: value === '' ? null : value }));
+  if (action === 'ment-estado') return void (await patchField('mentorados', el.dataset.id!, { estado: value }));
+  if (action === 'ment-trabado') return void (await patchField('mentorados', el.dataset.id!, { trabado: value.trim() || null }));
+  if (action === 'ment-venta') return void (await patchField('mentorados', el.dataset.id!, { venta_id: value || null }));
+  if (action === 'ment-control') return void (await patchField('mentorados', el.dataset.id!, { control_fecha: value || null }));
+  if (action === 'programa-perfil' || action === 'programa-tipo') {
+    progFiltro = { ...progFiltro, [action === 'programa-perfil' ? 'perfil' : 'tipo']: value } as ProgramaFiltro;
+    return void render();
+  }
   if (action === 'proy') {
     proy[el.dataset.campo as keyof Proy] = Math.max(0, Number(value) || 0);
     return void render();
@@ -1363,6 +1815,15 @@ root.addEventListener('change', async (e) => {
 
 root.addEventListener('input', (e) => {
   const el = e.target as HTMLInputElement;
+  if (el.dataset.action === 'enlaces-q') {
+    enlacesQuery = el.value;
+    const caret = el.selectionStart;
+    render();
+    const next = view.querySelector<HTMLInputElement>('[data-action="enlaces-q"]');
+    next?.focus();
+    if (caret != null) next?.setSelectionRange(caret, caret);
+    return;
+  }
   if (el.dataset.action !== 'personas-q') return;
   personasQuery = el.value;
   const caret = el.selectionStart;
@@ -1373,16 +1834,24 @@ root.addEventListener('input', (e) => {
 });
 
 root.querySelector('[data-tabs]')!.addEventListener('click', (e) => {
-  const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]');
+  const target = e.target as HTMLElement;
+  const g = target.closest<HTMLElement>('[data-group]');
+  if (g) {
+    const grupo = grupos.find((x) => x.id === g.dataset.group)!;
+    tab = ultimaPestana[grupo.id] ?? grupo.tabs[0][0];
+    return void render();
+  }
+  const b = target.closest<HTMLElement>('[data-tab]');
   if (!b) return;
   tab = b.dataset.tab as Tab;
   render();
 });
 
 /* ------------------------------ arranque ------------------------------ */
+renderTabs(0, 0);
 (async () => {
   try {
-    await Promise.all((['tareas', 'contenido', 'contactos', 'registro', 'metas', 'ventas', 'cobros', 'historial', 'entrantes'] as const).map((k) => reload(k)));
+    await Promise.all((['tareas', 'contenido', 'contactos', 'registro', 'metas', 'ventas', 'cobros', 'historial', 'mentorados', 'semanas', 'enlaces', 'reservas', 'entrantes'] as const).map((k) => reload(k)));
     render();
   } catch (err) {
     view.innerHTML = `<p class="border border-line p-6 text-mute">No se pudo cargar el panel: ${esc((err as Error).message)}. Revisá que ejecutaste supabase/admin.sql en Supabase.</p>`;

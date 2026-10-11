@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { findTemplate, templates } from '@/data/plantillas';
 import { emailLayout, mailButton, mailCallout, mailP } from '@/lib/email';
+import { limitar } from '@/lib/rate';
 import { firstName, hasFullName } from '@/lib/nombre';
 import { env, esc, json, sendMail, supabaseInsert } from '@/lib/server';
 
@@ -11,6 +12,9 @@ export const prerender = false;
  * Los archivos salen de src/data/plantillas.ts, nunca del navegador.
  */
 export const POST: APIRoute = async ({ request, url }) => {
+  const frenado = await limitar(request, 'plantilla');
+  if (frenado) return frenado;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();

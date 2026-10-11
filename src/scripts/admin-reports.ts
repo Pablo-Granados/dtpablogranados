@@ -207,6 +207,13 @@ export function semanaView(d: Data, ws: string) {
   const cobrosProx = d.cobros.filter((c) => !c.cobrado_en && enProx(c.vencimiento));
   const piezasProx = d.contenido.filter((c) => enProx(c.fecha) && c.estado !== 'publicada');
 
+  // Mentoría
+  const semanasMent = d.semanas ?? [];
+  const nombreMent = (s: Row) => d.mentorados?.find((m) => m.id === s.mentorado_id)?.nombre ?? '';
+  const llamadas = semanasMent.filter((s) => s.estado === 'hecha' && en(s.fecha_llamada));
+  const entregables = semanasMent.filter((s) => en(s.entregable_en));
+  const llamadasProx = semanasMent.filter((s) => s.estado === 'pendiente' && enProx(s.fecha_llamada));
+
   const lista = (items: string[], vacio: string) =>
     items.length ? `<ul class="mt-3 space-y-2 text-sm text-bone">${items.slice(0, 8).map((i) => `<li>${i}</li>`).join('')}${items.length > 8 ? `<li class="text-faint">y ${items.length - 8} más</li>` : ''}</ul>` : `<p class="mt-3 text-sm text-faint">${vacio}</p>`;
 
@@ -227,11 +234,16 @@ export function semanaView(d: Data, ws: string) {
     ${stat('Ventas nuevas', String(ventas.length), ventas.map((v) => esc(v.cliente)).join(', '))}
   </div>
 
-  <div class="mt-8 grid gap-4 md:grid-cols-2">
+  <div class="mt-8 grid gap-4 md:grid-cols-3">
     ${bloque(
       'Prospectos',
       `<p class="mt-3 text-sm text-mute">Nuevos: <strong class="text-bone">${nuevosPros}</strong> · Entraron por la web: <strong class="text-bone">${entrantesSemana}</strong></p>
       <p class="mt-2 text-sm text-mute">Contactados <strong class="text-bone">${cuenta('Contactado')}</strong> · Respondieron <strong class="text-bone">${cuenta('Respondió')}</strong> · Informes <strong class="text-bone">${cuenta('Informe enviado')}</strong> · Propuestas <strong class="text-bone">${cuenta('Propuesta')}</strong> · Clientes <strong class="text-bone">${cuenta('Cliente')}</strong></p>`,
+    )}
+    ${bloque(
+      'Mentoría',
+      `<p class="mt-3 text-sm text-mute">Llamadas hechas: <strong class="text-bone">${llamadas.length}</strong> · Entregables recibidos: <strong class="text-bone">${entregables.length}</strong></p>` +
+        lista(llamadas.map((s) => `${esc(nombreMent(s))} <span class="text-mute">· semana ${s.semana}</span>`), 'No hubo llamadas esta semana.'),
     )}
     ${bloque(
       'Contenido',
@@ -244,7 +256,8 @@ export function semanaView(d: Data, ws: string) {
   </div>
 
   <h3 class="tag mt-8 text-faint">La semana que viene</h3>
-  <div class="mt-3 grid gap-4 md:grid-cols-3">
+  <div class="mt-3 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    ${bloque('Llamadas de mentoría', lista(llamadasProx.map((s) => `<strong>${esc(nombreMent(s))}</strong> <span class="text-mute">· semana ${s.semana} · ${shortDate(s.fecha_llamada)}</span>`), 'Ninguna agendada.'))}
     ${bloque('Seguimientos', lista(seguir.map((c) => `<strong>${esc(c.nombre)}</strong> <span class="text-mute">· ${shortDate(c.proximo_seguimiento)}</span>`), 'Ninguno agendado.'))}
     ${bloque('Cobros por vencer', lista(cobrosProx.map((c) => `${esc(d.ventas.find((v) => v.id === c.venta_id)?.cliente ?? '')} <span class="text-mute">· USD ${num(Number(c.monto_usd))} · ${shortDate(c.vencimiento)}</span>`), 'Ninguno.'))}
     ${bloque('Contenido planificado', lista(piezasProx.map((c) => `${esc(c.titulo)} <span class="text-mute">· ${shortDate(c.fecha)}</span>`), 'No hay piezas agendadas.'))}
@@ -342,6 +355,7 @@ export const exportaciones = [
   { id: 'prospectos', titulo: 'Prospectos', detalle: 'Contactos de tu red con estado, origen y seguimiento.' },
   { id: 'personas', titulo: 'Personas de la web', detalle: 'Una fila por mail, con lo que hizo en el sitio.' },
   { id: 'entrantes', titulo: 'Formularios recibidos', detalle: 'Cada formulario, diagnóstico o descarga.' },
+  { id: 'mentorados', titulo: 'Mentorados', detalle: 'Avance de cada persona en las 12 semanas.' },
   { id: 'ventas', titulo: 'Ventas y cobros', detalle: 'Una fila por cobro, con su cliente y producto.' },
   { id: 'contenido', titulo: 'Contenido', detalle: 'Calendario y resultados de cada pieza.' },
   { id: 'tareas', titulo: 'Tareas', detalle: 'Pendientes y hechas.' },
@@ -364,6 +378,11 @@ export function exportar(que: string, d: Data): Archivo | null {
       })));
     case 'contenido':
       return mk('contenido', csv(['Título', 'Tipo', 'Canal', 'Fecha', 'Estado', 'Enlace', 'Vistas', 'Interacciones', 'Mensajes', 'Comentario', 'Notas'], d.contenido.map((c) => [c.titulo, c.tipo, c.canal, c.fecha, c.estado, c.enlace, c.vistas, c.interacciones, c.mensajes, c.resultado, c.notas])));
+    case 'mentorados':
+      return mk('mentorados', csv(['Nombre', 'Mail', 'Perfil', 'Cohorte', 'Inicio', 'Estado', 'Equipo', 'Objetivo', 'Trabado', 'Semanas hechas', 'Entregables recibidos', 'Notas'], (d.mentorados ?? []).map((m) => {
+        const ss = (d.semanas ?? []).filter((s) => s.mentorado_id === m.id);
+        return [m.nombre, m.email, m.perfil, m.cohorte, m.inicio, m.estado, m.equipo, m.objetivo, m.trabado, ss.filter((s) => s.estado === 'hecha').length, ss.filter((s) => s.entregable_en).length, m.notas];
+      })));
     case 'tareas':
       return mk('tareas', csv(['Tarea', 'Estado', 'Prioridad', 'Fecha límite', 'Detalle'], d.tareas.map((t) => [t.titulo, t.estado, t.prioridad, t.fecha_limite, t.detalle])));
     case 'backup':
@@ -374,7 +393,7 @@ export function exportar(que: string, d: Data): Archivo | null {
 }
 
 export function datosView(d: Data) {
-  const cuentas: Record<string, number> = { prospectos: d.contactos.length, personas: agruparPersonas(d.entrantes).length, entrantes: d.entrantes.length, ventas: d.cobros.length, contenido: d.contenido.length, tareas: d.tareas.length };
+  const cuentas: Record<string, number> = { prospectos: d.contactos.length, personas: agruparPersonas(d.entrantes).length, entrantes: d.entrantes.length, mentorados: (d.mentorados ?? []).length, ventas: d.cobros.length, contenido: d.contenido.length, tareas: d.tareas.length };
   const total = Object.keys(resources).reduce((a, k) => a + (d[k]?.length ?? 0), 0) + d.entrantes.length;
   return `<section class="border border-line p-5 md:p-6">
     <h3 class="tag text-signal">Copia de seguridad completa</h3>

@@ -34,24 +34,7 @@ const input =
           <button type="button" data-logout class="tag text-faint hover:text-bone">Salir</button>
         </header>
 
-        <nav class="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0" aria-label="Secciones del panel" data-tabs>
-          {[
-            ['hoy', 'Hoy'],
-            ['resumen', 'Resumen'],
-            ['embudo', 'Embudo'],
-            ['contactos', 'Contactos'],
-            ['ventas', 'Ventas'],
-            ['proyeccion', 'Proyección'],
-            ['semana', 'Semana'],
-            ['tareas', 'Tareas'],
-            ['contenido', 'Contenido'],
-            ['datos', 'Datos'],
-          ].map(([id, label]) => (
-            <button type="button" data-tab={id} class="shrink-0 border border-line-strong px-4 py-3 text-sm text-mute transition-colors md:py-2 hover:text-bone data-[active]:border-signal data-[active]:bg-signal/10 data-[active]:text-bone">
-              {label}
-            </button>
-          ))}
-        </nav>
+        <nav class="mt-5 grid gap-3" aria-label="Secciones del panel" data-tabs></nav>
 
         <div popover="manual" data-toast role="status"></div>
         <div data-view class="mt-4"><p class="text-mute">Cargando…</p></div>
@@ -64,16 +47,20 @@ const input =
           <div data-ficha-body class="grid gap-7 p-5 md:p-8"></div>
         </dialog>
 
+        <dialog data-mentorado class="m-auto max-h-[94vh] w-[min(56rem,calc(100vw-2rem))] overflow-y-auto border border-line-strong bg-panel p-0 text-bone backdrop:bg-black/70">
+          <div data-mentorado-body class="grid gap-6 p-5 md:p-8"></div>
+        </dialog>
+
         <dialog data-confirm class="m-auto w-[min(26rem,calc(100vw-2rem))] border border-line-strong bg-panel p-0 text-bone backdrop:bg-black/70">
           <form method="dialog" class="grid gap-5 p-6">
-            <h2 class="display text-2xl text-bone">¿Estás seguro?</h2>
+            <h2 class="display text-2xl text-bone" data-confirm-title>¿Estás seguro?</h2>
             <p class="leading-relaxed text-mute">
-              ¿Querés eliminar <strong class="text-bone" data-confirm-name></strong>?
+              ¿Querés <span data-confirm-verb>eliminar</span> <strong class="text-bone" data-confirm-name></strong>?
               <span class="mt-2 block text-sm" data-confirm-note></span>
             </p>
             <div class="flex justify-end gap-3">
               <button value="cancel" class="border border-line-strong px-4 py-2.5 text-sm text-bone hover:border-signal">Cancelar</button>
-              <button value="ok" class="bg-[#ff7a7a] px-4 py-2.5 text-sm font-semibold text-ink hover:bg-bone">Sí, eliminar</button>
+              <button value="ok" data-confirm-ok class="bg-[#ff7a7a] px-4 py-2.5 text-sm font-semibold text-ink hover:bg-bone">Sí, eliminar</button>
             </div>
           </form>
         </dialog>

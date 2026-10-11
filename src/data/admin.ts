@@ -3,6 +3,8 @@
  * tablas y formularios). Para sumar un módulo o un campo: se agrega acá y en supabase/admin.sql.
  */
 
+import { perfiles } from './programa';
+
 export type FieldType = 'text' | 'longtext' | 'select' | 'date' | 'number' | 'url' | 'uuid' | 'email' | 'bool';
 
 export type Field = {
@@ -19,7 +21,7 @@ export type Field = {
   hidden?: boolean;
 };
 
-export type ResourceKey = 'tareas' | 'contenido' | 'contactos' | 'registro' | 'metas' | 'ventas' | 'cobros' | 'historial';
+export type ResourceKey = 'tareas' | 'contenido' | 'contactos' | 'registro' | 'metas' | 'ventas' | 'cobros' | 'historial' | 'mentorados' | 'semanas' | 'enlaces' | 'reservas';
 
 export type Resource = {
   key: ResourceKey;
@@ -44,7 +46,11 @@ export const estadosContenido = ['idea', 'guion', 'grabada', 'editada', 'publica
 export const tiposContacto = ['Club local', 'Club del exterior', 'Agencia', 'Entrenador o analista', 'Otro'] as const;
 export const canalesContacto = ['Instagram', 'WhatsApp', 'Mail', 'Otro'] as const;
 export const estadosContacto = ['Por contactar', 'Contactado', 'Respondió', 'Informe enviado', 'Propuesta', 'Cliente', 'Descartado'] as const;
-export const origenesContacto = ['Instagram', 'YouTube', 'Diagnóstico', 'Plantillas', 'Formulario web', 'Red personal', 'Recomendación', 'Otro'] as const;
+export const estadosMentorado = ['activo', 'pausado', 'terminado'] as const;
+export const estadosSemana = ['pendiente', 'hecha', 'saltada'] as const;
+export const tiposEnlace = ['Entregable', 'Devolución', 'Material', 'Otro'] as const;
+export const cohortes = ['Estándar', 'Fundadora'] as const;
+export const origenesContacto = ['Instagram', 'YouTube', 'Diagnóstico', 'Plantillas', 'Formulario web', 'Cal.com', 'Red personal', 'Recomendación', 'Otro'] as const;
 
 /** Etapas del embudo, en orden. "Descartado" queda afuera: no es una etapa. */
 export const etapasEmbudo = ['Por contactar', 'Contactado', 'Respondió', 'Informe enviado', 'Propuesta', 'Cliente'] as const;
@@ -228,6 +234,82 @@ export const resources: Record<ResourceKey, Resource> = {
       { name: 'tipo', label: 'Tipo', type: 'text' },
       { name: 'estado', label: 'Estado', type: 'text' },
       { name: 'texto', label: 'Texto', type: 'text' },
+    ],
+  },
+  mentorados: {
+    key: 'mentorados',
+    table: 'admin_mentorados',
+    label: 'Mentorados',
+    singular: 'mentorado',
+    pk: 'id',
+    order: 'inicio.desc,created_at.desc',
+    defaults: { estado: 'activo', cohorte: 'Estándar' },
+    fields: [
+      { name: 'nombre', label: 'Nombre y apellido', type: 'text', required: true, max: 120, list: true },
+      { name: 'email', label: 'Mail', type: 'email', max: 160 },
+      { name: 'perfil', label: 'Perfil', type: 'select', options: perfiles.map((p) => p.label) },
+      { name: 'cohorte', label: 'Cohorte', type: 'select', options: cohortes, required: true },
+      { name: 'inicio', label: 'Fecha de la primera llamada', type: 'date', required: true, list: true },
+      { name: 'estado', label: 'Estado', type: 'select', options: estadosMentorado, required: true, list: true },
+      { name: 'equipo', label: 'Equipo y video con los que trabaja', type: 'text', max: 200 },
+      { name: 'objetivo', label: 'Resultado que quiere en la semana 12', type: 'longtext', max: 1500 },
+      { name: 'trabado', label: 'Dónde está trabado hoy', type: 'text', max: 300 },
+      { name: 'control_fecha', label: 'Llamada de control (30 días después)', type: 'date' },
+      { name: 'venta_id', label: 'Venta', type: 'uuid', hidden: true },
+      { name: 'contacto_id', label: 'Prospecto', type: 'uuid', hidden: true },
+      { name: 'notas', label: 'Notas generales', type: 'longtext', max: 1500 },
+    ],
+  },
+  semanas: {
+    key: 'semanas',
+    table: 'admin_mentorado_semanas',
+    label: 'Semanas',
+    singular: 'semana',
+    pk: 'id',
+    order: 'semana.asc',
+    fields: [
+      { name: 'mentorado_id', label: 'Mentorado', type: 'uuid', required: true, hidden: true },
+      { name: 'semana', label: 'Semana', type: 'number', required: true, list: true },
+      { name: 'estado', label: 'Estado', type: 'select', options: estadosSemana, required: true, list: true },
+      { name: 'fecha_llamada', label: 'Fecha de la llamada', type: 'date', list: true },
+      { name: 'hora_llamada', label: 'Hora de la llamada', type: 'text', max: 5 },
+      { name: 'cal_uid', label: 'Reserva en Cal.com', type: 'text', hidden: true },
+      { name: 'plan', label: 'Plan para esta persona', type: 'longtext', max: 4000 },
+      { name: 'notas', label: 'Lo que se vio', type: 'longtext', max: 4000 },
+      { name: 'tarea', label: 'Tarea acordada', type: 'text', max: 600 },
+      { name: 'entregable_en', label: 'Entregable recibido el', type: 'date' },
+      { name: 'devolucion_url', label: 'Enlace a la devolución en video', type: 'url', max: 500 },
+    ],
+  },
+  reservas: {
+    key: 'reservas',
+    table: 'admin_reservas',
+    label: 'Reservas',
+    singular: 'reserva',
+    pk: 'id',
+    order: 'inicio.desc',
+    readonly: true,
+    fields: [
+      { name: 'evento', label: 'Evento', type: 'text' },
+      { name: 'nombre', label: 'Nombre', type: 'text' },
+      { name: 'email', label: 'Mail', type: 'text' },
+      { name: 'estado', label: 'Estado', type: 'text' },
+    ],
+  },
+  enlaces: {
+    key: 'enlaces',
+    table: 'admin_mentorado_links',
+    label: 'Enlaces',
+    singular: 'enlace',
+    pk: 'id',
+    order: 'created_at.desc',
+    defaults: { tipo: 'Entregable' },
+    fields: [
+      { name: 'mentorado_id', label: 'Mentorado', type: 'uuid', required: true, hidden: true },
+      { name: 'semana', label: 'Semana', type: 'number' },
+      { name: 'titulo', label: 'Título', type: 'text', required: true, max: 160, list: true },
+      { name: 'url', label: 'Enlace', type: 'url', required: true, max: 500 },
+      { name: 'tipo', label: 'Tipo', type: 'select', options: tiposEnlace, required: true, list: true },
     ],
   },
   metas: {
