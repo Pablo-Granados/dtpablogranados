@@ -25,19 +25,29 @@ import { cta } from '@/data/site';
       <p class="reveal mt-4 text-sm text-faint" style="--d:.28s">El diagnóstico dura 3 minutos y te devuelve tu perfil de analista.</p>
     </div>
 
-    <!-- Foto propia: se funde con el fondo por abajo y por la izquierda -->
+    <!-- Foto propia: se difumina hacia los costados y hacia abajo para integrarse con el fondo -->
     <figure class="relative -mx-4 self-end sm:mx-0 lg:col-span-5">
       <img
         src="/media/hero-pizarra.jpg"
         alt="Pablo Granados con una pizarra táctica de futsal durante un partido"
         width="1398"
         height="1365"
-        class="aspect-[5/4] w-full object-cover object-[60%_30%] lg:aspect-[4/5]"
+        class="hero-foto aspect-[5/4] w-full object-cover object-[60%_30%] lg:aspect-[4/5]"
         fetchpriority="high"
         decoding="async"
       />
-      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent" aria-hidden="true"></div>
-      <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-transparent to-transparent max-lg:hidden" aria-hidden="true"></div>
     </figure>
   </div>
 </section>
+
+<style>
+  /* Máscara: transparente en los dos costados y abajo, opaca en el centro y arriba */
+  .hero-foto {
+    --lados: linear-gradient(to right, transparent 0%, #000 22%, #000 78%, transparent 100%);
+    --abajo: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+    -webkit-mask-image: var(--lados), var(--abajo);
+    -webkit-mask-composite: source-in;
+    mask-image: var(--lados), var(--abajo);
+    mask-composite: intersect;
+  }
+</style>

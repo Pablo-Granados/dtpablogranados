@@ -815,6 +815,7 @@ async function removeCurrent() {
     await api(`${res.key}?id=${encodeURIComponent(id)}`, 'DELETE');
     await reload(res.key);
     if (res.key === 'ventas') await reload('cobros');
+    if (res.key === 'contactos') await reload('historial');
     if (res.key === 'mentorados') {
       await reload('semanas');
       if (mentDlg.open) mentDlg.close();
@@ -1194,6 +1195,23 @@ async function ofrecerMentorado(ventaId: string, cliente: string) {
 }
 
 /* ------------------------------ enlaces de entregables ------------------------------ */
+/** Elimina un prospecto. No se puede si tiene ventas, cobros o ficha de mentorado. */
+async function eliminarContacto(id: string) {
+  const c = data.contactos.find((x) => x.id === id);
+  if (data.ventas.some((v) => v.contacto_id === id)) return void say('Este prospecto tiene ventas o cobros asociados. Eliminá primero esas ventas.', true);
+  if (data.mentorados.some((m) => m.contacto_id === id)) return void say('Este prospecto es un mentorado. Eliminá primero su ficha de mentorado.', true);
+  if (!(await confirmar(c?.nombre ?? 'este prospecto', 'Se borran también sus notas y su historial. Esta acción no se puede deshacer.'))) return;
+  try {
+    await api(`contactos?id=${encodeURIComponent(id)}`, 'DELETE');
+    await Promise.all([reload('contactos'), reload('historial')]);
+    if (ficha.open) ficha.close();
+    render();
+    say('Prospecto eliminado.');
+  } catch (err) {
+    say((err as Error).message, true);
+  }
+}
+
 async function agregarEnlace() {
   const campo = (n: string) => mentBody.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-enlace="${n}"]`)!;
   const titulo = campo('titulo').value.trim();
@@ -1350,6 +1368,7 @@ function renderFicha() {
     <div class="flex flex-wrap gap-2">
       ${btn('ficha-editar', 'Editar datos', {})}
       ${['Cliente', 'Descartado'].includes(c.estado) ? '' : btn('ficha-cliente', 'Pasar a cliente', {})}
+      ${btn('del-contacto', 'Eliminar prospecto', { id: c.id })}
       ${data.mentorados.some((m) => m.contacto_id === c.id) ? btn('ment-open', 'Ver mentorado', { id: data.mentorados.find((m) => m.contacto_id === c.id)!.id }) : ''}
     </div>
 
@@ -1630,6 +1649,9 @@ root.addEventListener('click', async (e) => {
       if (m) openVenta({ contactoId: m.contacto_id ?? '', cliente: m.nombre, mentoradoId: m.id, productoId: m.cohorte === 'Fundadora' ? 'fundadora' : 'sistema' });
       break;
     }
+    case 'del-contacto':
+      await eliminarContacto(el.dataset.id!);
+      break;
     case 'enlace-agregar':
       await agregarEnlace();
       break;

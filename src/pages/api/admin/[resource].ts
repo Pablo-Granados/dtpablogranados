@@ -265,6 +265,14 @@ export const DELETE: APIRoute = async ({ request, params, url }) => {
       if (!paid.ok) return json(500, { error: 'No se pudo verificar la venta' });
       if (paid.data?.length) return json(409, { error: 'Esta venta tiene pagos cobrados. Eliminá primero esos cobros.' });
     }
+    // Un prospecto con ventas, cobros o ficha de mentorado no se borra: primero hay que eliminar eso
+    if (resource.key === 'contactos') {
+      const ventas = await sb<unknown[]>('GET', `admin_ventas?contacto_id=eq.${id}&select=id&limit=1`);
+      const mentorados = await sb<unknown[]>('GET', `admin_mentorados?contacto_id=eq.${id}&select=id&limit=1`);
+      if (!ventas.ok || !mentorados.ok) return json(500, { error: 'No se pudo verificar el prospecto' });
+      if (ventas.data?.length) return json(409, { error: 'Este prospecto tiene ventas o cobros asociados. Eliminá primero esas ventas.' });
+      if (mentorados.data?.length) return json(409, { error: 'Este prospecto es un mentorado. Eliminá primero su ficha de mentorado.' });
+    }
     const r = await sb('DELETE', `${resource.table}?${resource.pk}=eq.${encodeURIComponent(id!)}`);
     return r.ok ? json(200, { ok: true }) : json(500, { error: 'No se pudo borrar' });
   } catch (e) {
