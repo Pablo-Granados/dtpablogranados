@@ -1664,7 +1664,11 @@ root.addEventListener('click', async (e) => {
       const s = data.semanas.find((x) => x.id === el.dataset.id);
       const m = s && data.mentorados.find((x) => x.id === s.mentorado_id);
       if (!s || !m) break;
-      const base = String(import.meta.env.PUBLIC_CAL_MENTORIA_LINK);
+      const base = String(import.meta.env.PUBLIC_CAL_MENTORIA_LINK ?? '').trim();
+      if (!base) {
+        say('Falta la variable PUBLIC_CAL_MENTORIA_LINK (en .env y en Vercel). Después reiniciá o redeployá.', true);
+        break;
+      }
       const params = new URLSearchParams({ name: m.nombre, ...(m.email ? { email: m.email } : {}), notes: `Semana ${s.semana}` });
       const link = `${base.startsWith('http') ? base : `https://cal.com/${base}`}?${params}`;
       await copiar(`Hola ${String(m.nombre).trim().split(/\s+/)[0]}, para tu llamada de la semana ${s.semana} elegí el horario que mejor te quede: ${link}`);

@@ -224,7 +224,7 @@ export function mentoradoFichaView(d: Data, id: string, seleccion: number) {
         </div>
         <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
           ${sel.cal_uid ? '<span class="tag border border-signal/60 px-2.5 py-1 text-signal">Reservada en Cal.com</span>' : '<span class="text-faint">Todavía sin reserva en Cal.com</span>'}
-          ${import.meta.env.PUBLIC_CAL_MENTORIA_LINK && sel.estado === 'pendiente' ? btn('ment-agenda', 'Copiar mensaje para que agende', { id: sel.id }) : ''}
+          ${sel.estado === 'pendiente' ? btn('ment-agenda', 'Copiar mensaje para que agende', { id: sel.id }) : ''}
         </div>
 
         <details class="mt-4 border border-line bg-ink/40 p-4">
