@@ -1,0 +1,141 @@
+---
+import Base from '@/layouts/Base.astro';
+import { adminConfigured, isAdmin, isLocal, renewSession } from '@/lib/admin';
+
+export const prerender = false;
+
+// Nada de esta página se guarda en caché ni se indexa.
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const configured = adminConfigured();
+let logged = await isAdmin(Astro.request);
+// Si el acceso venció pero queda la renovación, se renueva sin pedir la contraseña de nuevo.
+if (configured && !logged) {
+  const cookies = await renewSession(Astro.request, !isLocal(Astro.url));
+  if (cookies) {
+    for (const c of cookies) Astro.response.headers.append('Set-Cookie', c);
+    logged = true;
+  }
+}
+
+const input =
+  'w-full border border-line-strong bg-ink px-3 py-3 text-base text-bone placeholder:text-faint focus:border-signal focus:outline-none';
+---
+
+<Base title="Panel" noindex>
+  {
+    logged ? (
+      <section class="page py-8 md:py-12" data-app>
+        <header class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
+          <div>
+            <p class="tag text-signal">Panel privado</p>
+            <h1 class="display mt-2 text-4xl text-bone md:text-5xl">Mi semana</h1>
+          </div>
+          <button type="button" data-logout class="tag text-faint hover:text-bone">Salir</button>
+        </header>
+
+        <nav class="mt-5 flex flex-wrap gap-2" aria-label="Secciones del panel" data-tabs>
+          {[
+            ['hoy', 'Hoy'],
+            ['resumen', 'Resumen'],
+            ['embudo', 'Embudo'],
+            ['contactos', 'Contactos'],
+            ['ventas', 'Ventas'],
+            ['tareas', 'Tareas'],
+            ['contenido', 'Contenido'],
+          ].map(([id, label]) => (
+            <button type="button" data-tab={id} class="border border-line-strong px-4 py-2 text-sm text-mute transition-colors hover:text-bone data-[active]:border-signal data-[active]:bg-signal/10 data-[active]:text-bone">
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        <div popover="manual" data-toast role="status"></div>
+        <div data-view class="mt-4"><p class="text-mute">Cargando…</p></div>
+
+        <dialog data-dialog class="m-auto w-[min(40rem,calc(100vw-2rem))] border border-line-strong bg-panel p-0 text-bone backdrop:bg-black/70">
+          <form method="dialog" data-form class="grid gap-5 p-6 md:p-8" novalidate></form>
+        </dialog>
+
+        <dialog data-ficha class="m-auto max-h-[92vh] w-[min(52rem,calc(100vw-2rem))] overflow-y-auto border border-line-strong bg-panel p-0 text-bone backdrop:bg-black/70">
+          <div data-ficha-body class="grid gap-7 p-5 md:p-8"></div>
+        </dialog>
+
+        <dialog data-confirm class="m-auto w-[min(26rem,calc(100vw-2rem))] border border-line-strong bg-panel p-0 text-bone backdrop:bg-black/70">
+          <form method="dialog" class="grid gap-5 p-6">
+            <h2 class="display text-2xl text-bone">¿Estás seguro?</h2>
+            <p class="leading-relaxed text-mute">
+              ¿Querés eliminar <strong class="text-bone" data-confirm-name></strong>?
+              <span class="mt-2 block text-sm" data-confirm-note></span>
+            </p>
+            <div class="flex justify-end gap-3">
+              <button value="cancel" class="border border-line-strong px-4 py-2.5 text-sm text-bone hover:border-signal">Cancelar</button>
+              <button value="ok" class="bg-[#ff7a7a] px-4 py-2.5 text-sm font-semibold text-ink hover:bg-bone">Sí, eliminar</button>
+            </div>
+          </form>
+        </dialog>
+      </section>
+    ) : (
+      <section class="page max-w-xl py-16 md:py-24">
+        <p class="tag text-signal">Panel privado</p>
+        <h1 class="display mt-3 text-5xl text-bone md:text-6xl">Entrar</h1>
+
+        {!configured ? (
+          <p class="mt-6 border border-line p-5 leading-relaxed text-mute">
+            Falta configurar Supabase en el servidor (<code class="text-bone">SUPABASE_URL</code> y <code class="text-bone">SUPABASE_SERVICE_ROLE_KEY</code>).
+          </p>
+        ) : (
+          <form data-login class="mt-8 grid gap-4" novalidate>
+            <label class="grid gap-2 text-sm text-mute">Mail
+              <input name="email" type="email" required autocomplete="username" class={input} />
+            </label>
+            <label class="grid gap-2 text-sm text-mute">Contraseña
+              <input name="password" type="password" required autocomplete="current-password" class={input} />
+            </label>
+            <div class="flex flex-wrap items-center gap-4">
+              <button type="submit" class="inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-bone disabled:opacity-60">
+                Entrar
+              </button>
+              <p data-login-msg class="text-sm text-mute" role="status"></p>
+            </div>
+          </form>
+        )}
+      </section>
+    )
+  }
+</Base>
+
+<script>
+  // Ingreso con mail y contraseña
+  const login = document.querySelector<HTMLFormElement>('[data-login]');
+  login?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = login.querySelector<HTMLElement>('[data-login-msg]')!;
+    const fd = new FormData(login);
+    const email = String(fd.get('email') ?? '').trim();
+    const password = String(fd.get('password') ?? '');
+    if (!email || !password) {
+      msg.textContent = 'Completá mail y contraseña.';
+      return;
+    }
+    msg.textContent = 'Entrando…';
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        location.reload();
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      msg.textContent = data.error ?? 'No se pudo entrar.';
+    } catch {
+      msg.textContent = 'No se pudo entrar.';
+    }
+  });
+
+  // Pantalla del panel (solo si hay sesión)
+  if (document.querySelector('[data-app]')) import('@/scripts/admin');
+</script>

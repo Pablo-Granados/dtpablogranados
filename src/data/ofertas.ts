@@ -37,6 +37,10 @@ const usd = (n: number) => `USD ${n.toLocaleString('es-AR')}`;
 const MONTHS_UPFRONT = 3;
 const UPFRONT_DISCOUNT = 0.25;
 
+/** Planes mensuales para clubes, en USD. Cambiar acá. */
+export const clubPlans = { seguimiento: 220, integral: 350, medida: 500 };
+const upfront = (monthly: number) => Math.round(monthly * MONTHS_UPFRONT * (1 - UPFRONT_DISCOUNT));
+
 export const chapters: Chapter[] = [
   {
     id: 'gratis',
@@ -154,26 +158,45 @@ export const chapters: Chapter[] = [
     lead: 'Trabajo a distancia con cuerpos técnicos y organizaciones. Cada servicio parte de una pregunta concreta del equipo.',
     offers: [
       {
-        id: 'informes',
-        name: 'Pack de 4 informes de rival',
-        summary: 'Cuatro rivales, cada uno resumido en una página y cinco clips que sirven para decidir.',
-        items: ['Un informe por rival', 'Una página + cinco clips', 'Para probar el trabajo antes de un acompañamiento'],
-        price: `Desde ${usd(200)}`,
-        priceNote: 'Pago por adelantado',
-        cta: { label: 'Pedir el pack', href: '/equipos?necesidad=informes', event: 'cta_informes' },
+        id: 'seguimiento',
+        name: 'Plan Seguimiento',
+        summary: 'Llegar mejor preparado a cada partido: un informe de rival por partido y una devolución mensual.',
+        items: [
+          'Informe de rival por partido, hasta 4 por mes (una página + cinco clips)',
+          '1 reunión mensual de devolución con el cuerpo técnico (30 minutos)',
+          'Consultas por WhatsApp de lunes a viernes',
+        ],
+        price: `${usd(clubPlans.seguimiento)}/mes`,
+        priceNote: `Mes a mes, sin contrato. Pago del 1 al 5. Pagando ${MONTHS_UPFRONT} meses juntos: ${usd(upfront(clubPlans.seguimiento))}.`,
+        cta: { label: 'Quiero este plan', href: '/equipos?necesidad=informes', event: 'cta_plan_seguimiento' },
       },
       {
-        id: 'acompanamiento',
-        name: 'Acompañamiento a club',
-        summary: 'Me sumo a tu cuerpo técnico como analista durante la temporada, con rutina semanal.',
+        id: 'integral',
+        name: 'Plan Integral',
+        summary: 'Un analista fijo para tu cuerpo técnico: el rival, tu propio equipo y el seguimiento de lo que importa.',
         items: [
-          'Análisis de rival y análisis propio',
-          'Seguimiento semanal y reunión con el cuerpo técnico',
-          'Mes a mes, sin contrato; lo recomendable es sostenerlo al menos 3 meses',
-          'Pago del 1 al 5 de cada mes',
+          'Todo lo del plan Seguimiento',
+          'Ficha de partido de tu propio equipo después de cada partido',
+          '2 reuniones mensuales con el cuerpo técnico',
+          'Panel de codificación e indicadores de seguimiento',
         ],
-        price: 'A medida',
-        priceNote: `Depende de categorías y partidos por semana. Pagando ${MONTHS_UPFRONT} meses juntos hay ${UPFRONT_DISCOUNT * 100}% de descuento.`,
+        price: `${usd(clubPlans.integral)}/mes`,
+        priceNote: `Mes a mes, sin contrato. Pago del 1 al 5. Pagando ${MONTHS_UPFRONT} meses juntos: ${usd(upfront(clubPlans.integral))}.`,
+        badge: 'Recomendado',
+        cta: { label: 'Quiero este plan', href: '/equipos?necesidad=acompanamiento', event: 'cta_plan_integral' },
+      },
+      {
+        id: 'a-medida',
+        name: 'Plan A medida',
+        summary: 'Para clubes o agencias con varias categorías o necesidades específicas.',
+        items: [
+          'Todo lo del plan Integral',
+          'Reuniones semanales y análisis de pelota parada',
+          'Scouting individual de jugadores',
+          'Una herramienta propia para tu club: tablero, panel o plataforma',
+        ],
+        price: `Desde ${usd(clubPlans.medida)}/mes`,
+        priceNote: 'Depende de las categorías y los partidos por semana. Pago del 1 al 5.',
         cta: { label: cta.propuesta.label, href: cta.propuesta.href, event: cta.propuesta.event },
       },
       {
@@ -201,7 +224,7 @@ export const payment = {
   items: [
     'Ebook: transferencia en pesos.',
     'Servicios en dólares: desde Argentina, por transferencia. Desde el exterior, por ARQ o Takenos.',
-    'Acompañamiento a club: se abona del 1 al 5 de cada mes.',
+    'Planes para clubes: mes a mes, sin contrato, y se abonan del 1 al 5 de cada mes. El valor en pesos se informa al abonar, según el cambio del día.',
     'Herramientas a medida: en cuotas, que se acuerdan según el alcance.',
   ],
 };

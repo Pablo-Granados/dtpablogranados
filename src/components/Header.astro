@@ -67,6 +67,28 @@ const path = Astro.url.pathname.replace(/\/$/, '');
 
 
 <script>
+  // Acceso al panel privado: 5 clics seguidos en el logo (separados por menos de 2 s).
+  // El conteo se guarda en sessionStorage porque, fuera de la home, el primer clic recarga la página.
+  document.querySelector<HTMLAnchorElement>('header a[aria-label^="Pablo Granados"]')?.addEventListener('click', (e) => {
+    const now = Date.now();
+    let n = 1;
+    try {
+      const last = JSON.parse(sessionStorage.getItem('pg_logo') ?? 'null') as { n: number; t: number } | null;
+      if (last && now - last.t < 2000) n = last.n + 1;
+      sessionStorage.setItem('pg_logo', JSON.stringify({ n: n >= 5 ? 0 : n, t: now }));
+    } catch {
+      /* sin almacenamiento: el conteo solo funciona en la home */
+    }
+    if (n >= 5) {
+      e.preventDefault();
+      location.href = '/admin';
+    } else if (location.pathname === '/') {
+      // Ya estamos en la home: volver arriba sin recargar, para no cortar el conteo
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
   // Cerrar el menú móvil al tocar un link
   document.querySelectorAll<HTMLAnchorElement>('header details a').forEach((a) =>
     a.addEventListener('click', () => a.closest('details')?.removeAttribute('open')),

@@ -32,6 +32,37 @@ export async function supabaseInsert(table: string, row: Record<string, unknown>
   return res.ok;
 }
 
+/** Llamada genérica a la API REST de Supabase con la service key (lecturas, cambios y borrados). */
+export async function sb<T = unknown>(
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  path: string,
+  body?: unknown,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  const url = env('SUPABASE_URL');
+  const key = env('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !key) throw new Error('Falta configurar Supabase');
+
+  const res = await fetch(`${url}/rest/v1/${path}`, {
+    method,
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await res.text();
+  let data: T | null = null;
+  try {
+    data = text ? (JSON.parse(text) as T) : null;
+  } catch {
+    data = null;
+  }
+  if (!res.ok) console.error('Supabase', method, path, res.status, text);
+  return { ok: res.ok, status: res.status, data };
+}
+
 /** Una sola conexión a Gmail, reutilizada entre envíos (cada conexión nueva suma varios segundos). */
 let cached: { key: string; t: ReturnType<typeof nodemailer.createTransport> } | null = null;
 function transporter(user: string, pass: string) {
