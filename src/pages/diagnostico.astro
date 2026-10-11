@@ -90,8 +90,8 @@ import { cta } from '@/data/site';
 
         <form data-form class="mt-6 grid gap-4 sm:grid-cols-2" novalidate>
           <label class="grid gap-2 text-sm text-mute">
-            Nombre
-            <input name="nombre" autocomplete="given-name" required maxlength="80"
+            Nombre y apellido
+            <input name="nombre" autocomplete="name" required maxlength="80"
               class="border border-line-strong bg-ink px-3 py-3 text-base text-bone focus:border-signal focus:outline-none" />
           </label>
           <label class="grid gap-2 text-sm text-mute">
@@ -267,7 +267,12 @@ import { cta } from '@/data/site';
     const nombre = String(data.get('nombre') ?? '').trim();
     const rol = String(data.get('rol') ?? '');
 
-    if (!nombre || !rol || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/\S+\s+\S+/.test(nombre)) {
+      msg.textContent = 'Escribí tu nombre y apellido.';
+      msg.className = 'text-sm text-signal';
+      return;
+    }
+    if (!rol || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       msg.textContent = 'Completá nombre, un email válido y tu rol.';
       msg.className = 'text-sm text-signal';
       return;

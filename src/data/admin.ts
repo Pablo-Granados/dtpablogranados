@@ -3,7 +3,7 @@
  * tablas y formularios). Para sumar un módulo o un campo: se agrega acá y en supabase/admin.sql.
  */
 
-export type FieldType = 'text' | 'longtext' | 'select' | 'date' | 'number' | 'url' | 'uuid' | 'email';
+export type FieldType = 'text' | 'longtext' | 'select' | 'date' | 'number' | 'url' | 'uuid' | 'email' | 'bool';
 
 export type Field = {
   name: string;
@@ -79,7 +79,7 @@ export const metaTypes: readonly { tipo: string; etiqueta: string; periodo: 'sem
  * Productos para registrar una venta. Cada uno trae sus cobros sugeridos (se editan después);
  * `dias` es el desfase del vencimiento desde la fecha de la venta. Los precios salen de las ofertas del sitio.
  */
-export type Producto = { id: string; nombre: string; cobros: { concepto: string; usd: number; dias: number }[]; ars?: number };
+export type Producto = { id: string; nombre: string; cobros: { concepto: string; usd: number; dias: number }[]; ars?: number; /** Se cobra todos los meses hasta dar de baja. */ recurrente?: boolean };
 export const productos: readonly Producto[] = [
   { id: 'sesion', nombre: 'Sesión 1:1', cobros: [{ concepto: 'Pago único', usd: 80, dias: 0 }] },
   {
@@ -99,9 +99,9 @@ export const productos: readonly Producto[] = [
       { concepto: 'Cuota 2 de 2', usd: 175, dias: 42 },
     ],
   },
-  { id: 'seguimiento', nombre: 'Plan Seguimiento', cobros: [{ concepto: 'Mes 1', usd: 220, dias: 0 }] },
-  { id: 'integral', nombre: 'Plan Integral', cobros: [{ concepto: 'Mes 1', usd: 350, dias: 0 }] },
-  { id: 'medida', nombre: 'Plan A medida', cobros: [{ concepto: 'Mes 1', usd: 500, dias: 0 }] },
+  { id: 'seguimiento', nombre: 'Plan Seguimiento', recurrente: true, cobros: [{ concepto: 'Mes 1', usd: 220, dias: 0 }] },
+  { id: 'integral', nombre: 'Plan Integral', recurrente: true, cobros: [{ concepto: 'Mes 1', usd: 350, dias: 0 }] },
+  { id: 'medida', nombre: 'Plan A medida', recurrente: true, cobros: [{ concepto: 'Mes 1', usd: 500, dias: 0 }] },
   { id: 'ebook', nombre: 'Ebook', ars: 29500, cobros: [{ concepto: 'Pago único', usd: 0, dias: 0 }] },
   { id: 'herramientas', nombre: 'Herramientas a medida', cobros: [{ concepto: 'Pago único', usd: 1200, dias: 0 }] },
   { id: 'personalizada', nombre: 'Personalizada', cobros: [{ concepto: 'Pago único', usd: 0, dias: 0 }] },
@@ -139,7 +139,10 @@ export const resources: Record<ResourceKey, Resource> = {
       { name: 'fecha', label: 'Fecha', type: 'date', list: true },
       { name: 'estado', label: 'Estado', type: 'select', options: estadosContenido, required: true, list: true },
       { name: 'enlace', label: 'Enlace publicado', type: 'url', max: 500 },
-      { name: 'resultado', label: 'Resultado (vistas, comentarios)', type: 'text', max: 300 },
+      { name: 'vistas', label: 'Vistas o alcance', type: 'number' },
+      { name: 'interacciones', label: 'Interacciones (likes, comentarios, guardados)', type: 'number' },
+      { name: 'mensajes', label: 'Mensajes o consultas que generó', type: 'number' },
+      { name: 'resultado', label: 'Comentario sobre el resultado', type: 'text', max: 300 },
       { name: 'notas', label: 'Notas', type: 'longtext', max: 1500 },
     ],
   },
@@ -189,7 +192,10 @@ export const resources: Record<ResourceKey, Resource> = {
       { name: 'cliente', label: 'Cliente', type: 'text', required: true, max: 120, list: true },
       { name: 'producto', label: 'Producto', type: 'text', required: true, max: 120, list: true },
       { name: 'fecha', label: 'Fecha de la venta', type: 'date', required: true, list: true },
+      { name: 'origen', label: 'Cómo llegó el cliente', type: 'select', options: origenesContacto, list: true },
       { name: 'contacto_id', label: 'Prospecto', type: 'uuid', hidden: true },
+      { name: 'recurrente', label: 'Se renueva cada mes', type: 'bool', hidden: true },
+      { name: 'activa', label: 'Activa', type: 'bool', hidden: true },
       { name: 'notas', label: 'Notas', type: 'longtext', max: 1500 },
     ],
   },

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { parseTeamRequest } from '@/data/equipos';
 import { emailLayout, mailCallout, mailP } from '@/lib/email';
+import { firstName } from '@/lib/nombre';
 import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/server';
 
 export const prerender = false;
@@ -35,7 +36,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     kicker: 'Clubes y agencias',
     title: 'Recibí tu consulta',
     body: [
-      mailP(`Hola ${esc(req.nombre)},`),
+      mailP(`Hola ${esc(firstName(req.nombre))},`),
       mailP(
         `Recibí lo que me contaste sobre <strong>${esc(req.organizacion)}</strong>. Lo leo con atención y te respondo personalmente dentro de las 24 horas, con preguntas concretas o con una propuesta.`,
       ),

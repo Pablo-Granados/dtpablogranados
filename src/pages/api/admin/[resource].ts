@@ -10,7 +10,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Limpia un valor según el tipo del campo. `undefined` = inválido; `null` = vacío permitido. */
-function cleanValue(f: Field, raw: unknown): string | number | null | undefined {
+function cleanValue(f: Field, raw: unknown): string | number | boolean | null | undefined {
   if (raw === null || raw === undefined || raw === '') return f.required ? undefined : null;
   switch (f.type) {
     case 'number': {
@@ -21,6 +21,8 @@ function cleanValue(f: Field, raw: unknown): string | number | null | undefined 
       const s = String(raw).trim().toLowerCase().slice(0, f.max ?? 160);
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : undefined;
     }
+    case 'bool':
+      return raw === true || raw === 'true' ? true : raw === false || raw === 'false' ? false : undefined;
     case 'uuid':
       return UUID.test(String(raw)) ? String(raw) : undefined;
     case 'date':
@@ -38,9 +40,10 @@ function cleanValue(f: Field, raw: unknown): string | number | null | undefined 
 
 /** Arma la fila a guardar. En una edición (`partial`) solo toca los campos enviados. */
 function build(resource: Resource, body: Record<string, unknown>, partial: boolean) {
-  const row: Record<string, string | number | null> = {};
+  const row: Record<string, string | number | boolean | null> = {};
   for (const f of resource.fields) {
-    if (partial && !(f.name in body)) continue;
+    // Los campos ocultos los completa la pantalla; si no vienen, queda el valor por defecto de la base
+    if ((partial || f.hidden) && !(f.name in body)) continue;
     const v = cleanValue(f, body[f.name] ?? (partial ? undefined : resource.defaults?.[f.name]));
     if (v === undefined) return { error: `Campo inválido: ${f.label}` };
     row[f.name] = v;

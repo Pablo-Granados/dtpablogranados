@@ -1,3 +1,4 @@
+import { hasFullName } from '../lib/nombre';
 /**
  * Formulario de aplicación a Sistema Propio.
  * Lo usan la página (para armar los pasos) y la API (para validar y calificar).
@@ -57,7 +58,7 @@ export function parseApplication(body: Record<string, unknown>): Application | n
     horas: pick(options.horas, body.horas),
     inversion: pick(options.inversion, body.inversion),
   };
-  if (!a.nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.email) || a.objetivo.length < 10) return null;
+  if (!hasFullName(a.nombre) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.email) || a.objetivo.length < 10) return null;
   if (!a.rol || !a.deporte || !a.nivel || !a.video || !a.horas || !a.inversion) return null;
   return a as Application;
 }

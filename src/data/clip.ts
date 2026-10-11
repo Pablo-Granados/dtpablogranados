@@ -1,3 +1,4 @@
+import { hasFullName } from '../lib/nombre';
 /**
  * Formulario "Análisis de un clip".
  * Lo usan la página (campos) y la API (validación).
@@ -44,7 +45,7 @@ export function parseClip(body: Record<string, unknown>): ClipRequest | null {
     pregunta: text(body.pregunta, 800),
     deporte,
   };
-  if (!r.nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) || !r.link || !r.deporte || r.pregunta.length < 10) return null;
+  if (!hasFullName(r.nombre) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) || !r.link || !r.deporte || r.pregunta.length < 10) return null;
   // El minuto es obligatorio: sin él no se sabe dónde está la jugada
   if (!/\d/.test(r.minuto)) return null;
   // Sin autorización explícita no se guarda: es lo que habilita la publicación

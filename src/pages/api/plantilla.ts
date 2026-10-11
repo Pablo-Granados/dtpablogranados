@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { findTemplate, templates } from '@/data/plantillas';
 import { emailLayout, mailButton, mailCallout, mailP } from '@/lib/email';
+import { firstName, hasFullName } from '@/lib/nombre';
 import { env, esc, json, sendMail, supabaseInsert } from '@/lib/server';
 
 export const prerender = false;
@@ -27,6 +28,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   const utm = typeof body.utm === 'object' && body.utm ? body.utm : {};
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: 'Email inválido' });
+  if (!hasFullName(nombre)) return json(400, { error: 'Falta nombre y apellido' });
 
   const template = slug ? findTemplate(slug) : null;
   if (slug && !template) return json(404, { error: 'Plantilla no disponible' });
@@ -49,7 +51,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   const site = env('SITE_URL') ?? url.origin;
   const host = site.replace(/^https?:\/\//, '');
   const otras = templates.filter((t) => t.slug !== template?.slug);
-  const hola = nombre ? `Hola ${esc(nombre)},` : 'Hola,';
+  const hola = `Hola ${esc(firstName(nombre))},`;
 
   const html = template
     ? emailLayout({

@@ -31,9 +31,9 @@ export const mensajes: readonly Mensaje[] = [
     paso: 'Por contactar',
     tipos: clubes,
     avanza: 'Contactado',
-    texto: `Hola {nombre}, ¿cómo estás? Soy Pablo, DT de futsal.
+    texto: `Hola {nombre}, ¿cómo estás? Soy Pablo, DT y analista de futsal.
 
-Hago informes de rival para cuerpos técnicos: una página con cómo juega el equipo y cinco clips de lo que más repite.
+Hago informes tanto propios, como de rival para cuerpos técnicos: una página con cómo juega el equipo y cinco clips con los patrones más claros.
 
 Me gustaría armarte uno del próximo rival de {organizacion}, sin costo, para que veas si te sirve. Si me pasás contra quién juegan, te lo mando antes del partido.
 
@@ -45,11 +45,11 @@ Me gustaría armarte uno del próximo rival de {organizacion}, sin costo, para q
     paso: 'Por contactar',
     tipos: ['Agencia'],
     avanza: 'Contactado',
-    texto: `Hola {nombre}, ¿cómo andás? Soy Pablo Granados, DT de futsal. Armé Futsal Hub (una plataforma de estadísticas de futsal) y el sitio de LAA Sports.
+    texto: `Hola {nombre}, ¿cómo andás? Soy Pablo Granados, DT y analista de futsal. Armé Futsal Hub una plataforma con las estadísticas del futsal de Rosario, una version para datos en vivo para uso de los cuerpos técnicos con gestión de plantilla, minutos jugados, mapas de calor y demás.
 
 Hago herramientas y análisis para agencias y clubes. Vi lo que hacen en {organizacion} y se me ocurrieron un par de cosas que les podrían servir.
 
-¿Te las cuento en un audio de un minuto o preferís por acá?`,
+¿Te las cuento en un minuto?`,
   },
   {
     id: 'primer-entrenador',
@@ -57,7 +57,7 @@ Hago herramientas y análisis para agencias y clubes. Vi lo que hacen en {organi
     paso: 'Por contactar',
     tipos: ['Entrenador o analista', 'Otro'],
     avanza: 'Contactado',
-    texto: `Hola {nombre}, ¿qué tal? Soy Pablo, DT de futsal.
+    texto: `Hola {nombre}, ¿qué tal? Soy Pablo, DT y analista de futsal.
 
 Analizo partidos y armo mis propias planillas y paneles para ordenar el trabajo. Dejé en la web un diagnóstico gratis de dos minutos para ver cómo analizás hoy y por dónde mejorar: {sitio}/diagnostico
 
@@ -93,7 +93,7 @@ Si más adelante querés el informe del rival o conocer cómo trabajo, escribime
     dias: 3,
     texto: `Hola {nombre}, soy Pablo. Vi que hiciste el diagnóstico en la web, gracias.
 
-Si querés te lo comento en un audio: qué me marcó tu resultado y por dónde empezaría yo.
+Si querés te lo comento: qué me marcó tu resultado y por dónde empezaría yo.
 
 Contame, ¿cuál es hoy tu mayor dolor de cabeza cuando preparás un partido?`,
   },

@@ -1,3 +1,4 @@
+import { hasFullName } from '../lib/nombre';
 /**
  * Formulario de consulta para clubes, cuerpos técnicos y agencias.
  * Lo usan la página (para armar los campos) y la API (para validar).
@@ -43,7 +44,7 @@ export function parseTeamRequest(body: Record<string, unknown>): TeamRequest | n
     nivel: pick(options.nivel, body.nivel),
     contexto: text(body.contexto, 1500),
   };
-  if (!r.nombre || !r.organizacion || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) || r.contexto.length < 10) return null;
+  if (!hasFullName(r.nombre) || !r.organizacion || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email) || r.contexto.length < 10) return null;
   if (!r.rol || !r.necesidad || !r.deporte || !r.nivel) return null;
   return r as TeamRequest;
 }

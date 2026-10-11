@@ -34,17 +34,20 @@ const input =
           <button type="button" data-logout class="tag text-faint hover:text-bone">Salir</button>
         </header>
 
-        <nav class="mt-5 flex flex-wrap gap-2" aria-label="Secciones del panel" data-tabs>
+        <nav class="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0" aria-label="Secciones del panel" data-tabs>
           {[
             ['hoy', 'Hoy'],
             ['resumen', 'Resumen'],
             ['embudo', 'Embudo'],
             ['contactos', 'Contactos'],
             ['ventas', 'Ventas'],
+            ['proyeccion', 'Proyección'],
+            ['semana', 'Semana'],
             ['tareas', 'Tareas'],
             ['contenido', 'Contenido'],
+            ['datos', 'Datos'],
           ].map(([id, label]) => (
-            <button type="button" data-tab={id} class="border border-line-strong px-4 py-2 text-sm text-mute transition-colors hover:text-bone data-[active]:border-signal data-[active]:bg-signal/10 data-[active]:text-bone">
+            <button type="button" data-tab={id} class="shrink-0 border border-line-strong px-4 py-3 text-sm text-mute transition-colors md:py-2 hover:text-bone data-[active]:border-signal data-[active]:bg-signal/10 data-[active]:text-bone">
               {label}
             </button>
           ))}

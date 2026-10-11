@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { parseClip } from '@/data/clip';
 import { emailLayout, mailCallout, mailP } from '@/lib/email';
+import { firstName } from '@/lib/nombre';
 import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/server';
 
 export const prerender = false;
@@ -35,7 +36,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     kicker: 'Análisis de un clip',
     title: 'Recibí tu clip',
     body: [
-      mailP(`Hola ${esc(clip.nombre)},`),
+      mailP(`Hola ${esc(firstName(clip.nombre))},`),
       mailP('Recibí tu clip y lo voy a ver. Cada mes elijo los que dejan más enseñanza, así que no se analizan todos.'),
       mailCallout(
         '<strong>Qué pasa ahora:</strong> si tu clip queda elegido, te escribo antes de publicar. El análisis sale de manera pública (Instagram o YouTube) el mes que viene.',

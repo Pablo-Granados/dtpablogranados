@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { areas, questions, roles, scoreAnswers, type AreaId } from '@/data/diagnostico';
 import { emailLayout, mailButton, mailCallout, mailH2, mailP } from '@/lib/email';
+import { firstName, hasFullName } from '@/lib/nombre';
 import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/server';
 
 /** Esta ruta corre en el servidor (Vercel), no se genera como HTML estático. */
@@ -23,7 +24,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   const respuestas = Array.isArray(body.respuestas) ? body.respuestas.map(Number) : [];
   const utm = typeof body.utm === 'object' && body.utm ? body.utm : {};
 
-  if (!nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !(roles as readonly string[]).includes(rol)) {
+  if (!hasFullName(nombre) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !(roles as readonly string[]).includes(rol)) {
     return json(400, { error: 'Datos incompletos' });
   }
 
@@ -85,7 +86,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     kicker: 'Diagnóstico del analista',
     title: result.level.name,
     body: `
-      ${mailP(`Hola ${esc(nombre)}, este es el resultado de tu diagnóstico.`)}
+      ${mailP(`Hola ${esc(firstName(nombre))}, este es el resultado de tu diagnóstico.`)}
       <div style="margin:0 0 6px;font-family:'Arial Narrow',Arial,sans-serif;font-size:56px;line-height:1;font-weight:800;color:#0b0d10">${result.total}<span style="font-size:22px;color:#5d646d;font-weight:400"> / 100</span></div>
       ${mailP(result.level.text)}
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 8px">${bars}</table>

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { parseApplication, qualify } from '@/data/aplicacion';
 import { emailLayout, mailButton, mailP } from '@/lib/email';
+import { firstName } from '@/lib/nombre';
 import { env, esc, json, ownerEmail, sendMail, supabaseInsert } from '@/lib/server';
 
 export const prerender = false;
@@ -49,7 +50,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     preheader: q.ok ? 'Recibí tu aplicación. Elegí día y horario para la llamada.' : 'Recibí tu aplicación. Te cuento los próximos pasos.',
     kicker: 'Sistema Propio',
     title: 'Recibí tu aplicación',
-    body: `${mailP(`Hola ${esc(app.nombre)},`)}${cuerpo}${mailP('Si tenés alguna duda, respondé este mail.')}${mailP('Pablo Granados')}`,
+    body: `${mailP(`Hola ${esc(firstName(app.nombre))},`)}${cuerpo}${mailP('Si tenés alguna duda, respondé este mail.')}${mailP('Pablo Granados')}`,
   });
 
   try {

@@ -30,7 +30,7 @@ const groups = [
     <form data-team class="mt-10 grid gap-8" novalidate>
       <div class="grid gap-6 sm:grid-cols-2">
         <label class="grid gap-2 text-sm text-mute">Nombre y apellido
-          <input name="nombre" required maxlength="80" autocomplete="name" class={input} />
+          <input name="nombre" required maxlength="80" autocomplete="name" pattern="\S+\s+\S+.*" title="Escribí nombre y apellido" class={input} />
         </label>
         <label class="grid gap-2 text-sm text-mute">Email
           <input name="email" type="email" required maxlength="160" autocomplete="email" class={input} />

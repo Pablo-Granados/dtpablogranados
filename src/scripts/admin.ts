@@ -3,11 +3,11 @@
  * Las tablas y formularios salen del esquema de src/data/admin.ts.
  */
 import { mensajes, pasos, type Mensaje } from '@/data/mensajes';
-import { entrantes, etapasEmbudo, metaTypes, plazosSeguimiento, productos, resources, type EntranteOrigen, type Field, type Producto, type Resource, type ResourceKey } from '@/data/admin';
+import { entrantes, etapasEmbudo, metaTypes, origenesContacto, plazosSeguimiento, productos, resources, type EntranteOrigen, type Field, type Producto, type Resource, type ResourceKey } from '@/data/admin';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Row = Record<string, any>;
-type Tab = 'hoy' | 'resumen' | 'embudo' | 'contactos' | 'ventas' | 'tareas' | 'contenido';
+import { contenidoResultadosView, agruparPersonas, datosView, exportar, proyeccionView, renovacionesPendientes, semanaInicial, semanaView, type Proy } from './admin-reports';
+import { addDays, addMonths, btn, esc, fechaHora, monthStart, num, pct, shortDate, sumUsd, today, weekStart, type Row } from './admin-utils';
+type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos';
 
 const root = document.querySelector<HTMLElement>('[data-app]')!;
 const view = root.querySelector<HTMLElement>('[data-view]')!;
@@ -53,31 +53,9 @@ const data: Record<ResourceKey | 'entrantes', Row[]> = { tareas: [], contenido: 
 let tab: Tab = 'hoy';
 let contactSub: 'prospectos' | 'entrantes' | 'personas' = 'prospectos';
 let personasQuery = '';
+let semanaWs = semanaInicial();
+const proy: Proy = { nuevos: 3, ticket: 350 };
 const filters = { tareas: 'abiertas', contenido: 'todas', contactos: 'activos', ventas: 'saldo' };
-
-/* ------------------------------ utilidades ------------------------------ */
-const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-const num = (n: number) => n.toLocaleString('es-AR', { maximumFractionDigits: 2 });
-
-const pad = (n: number) => String(n).padStart(2, '0');
-const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const parse = (s: string) => {
-  const [y, m, d] = s.split('-').map(Number);
-  return new Date(y, m - 1, d);
-};
-const today = () => iso(new Date());
-const addDays = (s: string, n: number) => {
-  const d = parse(s);
-  d.setDate(d.getDate() + n);
-  return iso(d);
-};
-/** Lunes de la semana de una fecha. */
-const weekStart = (s: string) => addDays(s, -((parse(s).getDay() + 6) % 7));
-const monthStart = (s: string) => `${s.slice(0, 7)}-01`;
-const shortDate = (s: unknown) => {
-  const v = String(s ?? '');
-  return /^\d{4}-\d{2}-\d{2}/.test(v) ? `${v.slice(8, 10)}/${v.slice(5, 7)}` : '';
-};
 
 let toastTimer: number | undefined;
 function say(message: string, error = false) {
@@ -111,7 +89,6 @@ async function reload(key: ResourceKey | 'entrantes') {
 
 /* ------------------------------ metas ------------------------------ */
 const periodStart = (periodo: string) => (periodo === 'mes' ? monthStart(today()) : weekStart(today()));
-const sumUsd = (rows: Row[]) => rows.reduce((a, c) => a + Number(c.monto_usd), 0);
 const cobradoMes = () => sumUsd(data.cobros.filter((c) => c.cobrado_en && String(c.cobrado_en) >= monthStart(today())));
 const cobrosDe = (ventaId: string) => data.cobros.filter((c) => c.venta_id === ventaId);
 
@@ -148,9 +125,6 @@ function metasView() {
     .join('')}</div>`;
 }
 
-const btn = (action: string, label: string, attrs: Record<string, string>) =>
-  `<button type="button" data-action="${action}" ${Object.entries(attrs).map(([k, v]) => `data-${k}="${esc(v)}"`).join(' ')} class="tag shrink-0 border px-2.5 py-1.5 ${action.startsWith('del-') ? 'border-[#ff7a7a]/40 text-[#ff7a7a] hover:border-[#ff7a7a] hover:bg-[#ff7a7a]/10' : 'border-line-strong text-faint hover:border-signal hover:text-bone'}">${label}</button>`;
-
 type Item = { html: string; buttons: string };
 
 /** Todo lo que pide atención hoy, agrupado por tipo. */
@@ -185,7 +159,7 @@ function hoyData() {
       const v = ventaDe(c.venta_id);
       return {
         html: `<strong>${esc(v?.cliente ?? 'Cliente')}</strong> <span class="text-mute">· ${esc(c.concepto)} · USD ${num(Number(c.monto_usd))} · ${c.vencimiento < t ? 'vencido' : 'vence hoy'} ${shortDate(c.vencimiento)}</span>`,
-        buttons: btn('open', 'Editar', { res: 'cobros', id: c.id }) + btn('cobrado', 'Cobrado', { id: c.id }),
+        buttons: btn('cobro-msg', 'Mensaje', { id: c.id }) + btn('open', 'Editar', { res: 'cobros', id: c.id }) + btn('cobrado', 'Cobrado', { id: c.id }),
       };
     });
 
@@ -196,7 +170,12 @@ function hoyData() {
       buttons: btn('goto-entrantes', 'Ver', {}),
     }));
 
-  return { seguir, tareas, piezas, cobros, nuevos };
+  const renovar: Item[] = renovacionesPendientes(data).map(({ v, ultimo }) => ({
+    html: `<strong>${esc(v.cliente)}</strong> <span class="text-mute">· ${esc(v.producto)} · último pago ${shortDate(ultimo.vencimiento)}</span>`,
+    buttons: btn('generar-cobro', 'Generar cobro', { id: v.id }) + btn('baja-venta', 'Dar de baja', { id: v.id }),
+  }));
+
+  return { seguir, cobros, renovar, tareas, piezas, nuevos };
 }
 
 const hoyCount = () => Object.values(hoyData()).reduce((a, l) => a + l.length, 0);
@@ -209,17 +188,34 @@ function hoyBlock(title: string, items: Item[], empty: string, tabTo?: Tab) {
       ${tabTo ? `<button type="button" data-action="tab" data-tab="${tabTo}" class="tag text-faint hover:text-bone">Ver todo</button>` : ''}
     </div>
     ${shown.length
-      ? `<ul class="mt-4 space-y-3">${shown.map((i) => `<li class="flex items-center justify-between gap-3 text-sm leading-snug text-bone"><span class="min-w-0">${i.html}</span><span class="flex shrink-0 gap-2">${i.buttons}</span></li>`).join('')}</ul>${items.length > shown.length ? `<p class="mt-3 text-sm text-faint">y ${items.length - shown.length} más</p>` : ''}`
+      ? `<ul class="mt-4 space-y-3">${shown.map((i) => `<li class="flex flex-wrap items-center justify-between gap-3 text-sm leading-snug text-bone"><span class="min-w-0">${i.html}</span><span class="flex shrink-0 gap-2">${i.buttons}</span></li>`).join('')}</ul>${items.length > shown.length ? `<p class="mt-3 text-sm text-faint">y ${items.length - shown.length} más</p>` : ''}`
       : `<p class="mt-4 text-sm text-faint">${empty}</p>`}
   </section>`;
 }
 
 function hoyView() {
   const h = hoyData();
-  return `<p class="mb-5 text-mute">${hoyCount() ? 'Esto es lo que pide atención hoy.' : 'No hay nada pendiente para hoy.'}</p>
+  const metaSemana = (tipo: string) => {
+    const m = data.metas.find((x) => x.tipo === tipo);
+    return m ? ` · ${num(actual(m))}/${num(Number(m.objetivo))}` : '';
+  };
+  const big = (q: string, label: string, sub = '') =>
+    `<button type="button" data-action="quick" data-q="${q}" class="flex min-h-16 flex-col items-start justify-center border border-line-strong bg-panel px-4 py-3 text-left text-bone hover:border-signal"><span class="font-semibold">${label}</span>${sub ? `<span class="text-xs text-faint">${sub}</span>` : ''}</button>`;
+  const lunes = new Date().getDay() === 1;
+
+  return `<div class="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
+    ${big('mensaje', '+1 Mensaje', 'enviado' + metaSemana('mensajes'))}
+    ${big('respuesta', '+1 Respuesta', 'conversación' + metaSemana('conversaciones'))}
+    ${big('cobro', 'Registrar cobro', 'marcar uno cobrado')}
+    ${big('venta', 'Nueva venta')}
+    ${big('prospecto', 'Nuevo prospecto')}
+  </div>
+  ${lunes ? `<div class="mb-6 flex flex-wrap items-center justify-between gap-3 border border-signal/60 bg-signal/5 p-4"><p class="text-sm text-bone">Es lunes: mirá cómo cerró la semana pasada y qué viene.</p>${btn('tab', 'Ver resumen semanal', { tab: 'semana' })}</div>` : ''}
+  <p class="mb-5 text-mute">${hoyCount() ? 'Esto es lo que pide atención hoy.' : 'No hay nada pendiente para hoy.'}</p>
   <div class="grid gap-4 md:grid-cols-2">
     ${hoyBlock('Seguimientos', h.seguir, 'Nadie para seguir hoy.', 'contactos')}
     ${hoyBlock('Cobros vencidos o de hoy', h.cobros, 'No hay cobros vencidos.', 'ventas')}
+    ${hoyBlock('Renovaciones de planes', h.renovar, 'Ningún plan para renovar todavía.', 'ventas')}
     ${hoyBlock('Tareas para hoy o vencidas', h.tareas, 'Sin tareas vencidas.', 'tareas')}
     ${hoyBlock('Contenido para publicar', h.piezas, 'No hay piezas atrasadas ni para hoy.', 'contenido')}
     ${hoyBlock('Contactos nuevos sin atender', h.nuevos, 'No hay contactos nuevos.')}
@@ -253,7 +249,6 @@ const seguimientoTexto = (patch: Row) =>
   patch.proximo_seguimiento ? ` Próximo seguimiento: ${shortDate(patch.proximo_seguimiento)}.` : 'proximo_seguimiento' in patch ? ' Sin seguimiento pendiente.' : '';
 
 /* ------------------------------ embudo ------------------------------ */
-const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
 
 /** Etapa más avanzada que alcanzó cada prospecto, mirando su estado actual y su historial. */
 function etapas() {
@@ -274,6 +269,13 @@ const consejos = [
   'Reciben el informe pero no hay propuesta: proponé en la misma conversación.',
   'Reciben la propuesta pero no compran: revisá el precio, la oferta y el seguimiento posterior.',
 ];
+
+/** Proporción de prospectos contactados que llegaron a cliente (null si hay pocos datos). */
+function conversionContactadoCliente() {
+  const rows = etapas();
+  const contactados = rows.filter((r) => r.idx >= 1).length;
+  return contactados >= 5 ? rows.filter((r) => r.idx >= etapasEmbudo.length - 1).length / contactados : null;
+}
 
 function embudoView() {
   const rows = etapas();
@@ -342,7 +344,8 @@ function ventasView() {
     `<div class="border border-line bg-panel p-4"><p class="tag text-faint">${label}</p><p class="display mt-2 text-3xl ${warn && value > 0 ? 'text-[#ff7a7a]' : 'text-bone'}">USD ${num(value)}</p></div>`;
 
   let ventas = data.ventas;
-  if (filters.ventas === 'saldo') ventas = ventas.filter((v) => cobrosDe(v.id).some((c) => !c.cobrado_en));
+  // Con saldo: lo que falta cobrar y los planes mensuales activos (para generar el cobro siguiente)
+  if (filters.ventas === 'saldo') ventas = ventas.filter((v) => cobrosDe(v.id).some((c) => !c.cobrado_en) || (v.recurrente === true && v.activa !== false));
 
   const cards = ventas
     .map((v) => {
@@ -360,18 +363,18 @@ function ventasView() {
           const ars = c.monto_ars != null ? ` · $${num(Number(c.monto_ars))}` : '';
           return `<li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-2.5 text-sm">
             <span class="text-bone">${esc(c.concepto)} <span class="text-mute">· USD ${num(Number(c.monto_usd))}${ars}</span></span>
-            <span class="flex items-center gap-3">${estado}${paid ? '' : btn('cobrado', 'Cobrado', { id: c.id })}${btn('open', 'Editar', { res: 'cobros', id: c.id })}${btn('del-cobro', 'Eliminar', { id: c.id })}</span>
+            <span class="flex flex-wrap items-center gap-3">${estado}${paid ? '' : btn('cobro-msg', 'Mensaje', { id: c.id })}${paid ? '' : btn('cobrado', 'Cobrado', { id: c.id })}${btn('open', 'Editar', { res: 'cobros', id: c.id })}${btn('del-cobro', 'Eliminar', { id: c.id })}</span>
           </li>`;
         })
         .join('');
       return `<article class="border border-line bg-panel p-5">
         <div class="flex flex-wrap items-baseline justify-between gap-3">
           <div><p class="font-medium text-bone">${esc(v.cliente)} <span class="text-mute">· ${esc(v.producto)}</span></p>
-            <p class="mt-1 text-sm text-faint">${shortDate(v.fecha)} · cobrado USD ${num(cobrado)} de ${num(total)}</p></div>
-          <span class="flex gap-2">${btn('open', 'Editar venta', { res: 'ventas', id: v.id })}${btn('del-venta', 'Eliminar venta', { id: v.id })}</span>
+            <p class="mt-1 text-sm text-faint">${shortDate(v.fecha)}${v.origen ? ` · ${esc(v.origen)}` : ''} · cobrado USD ${num(cobrado)} de ${num(total)}${v.recurrente === true ? (v.activa === false ? ' · <span class="text-[#ff7a7a]">De baja</span>' : ' · <span class="text-signal">Se renueva cada mes</span>') : ''}</p></div>
+          <span class="flex flex-wrap gap-2">${v.recurrente === true ? (v.activa === false ? btn('reactivar-venta', 'Reactivar', { id: v.id }) : btn('baja-venta', 'Dar de baja', { id: v.id })) : ''}${btn('open', 'Editar venta', { res: 'ventas', id: v.id })}${btn('del-venta', 'Eliminar venta', { id: v.id })}</span>
         </div>
         <ul class="mt-3 divide-y divide-line border-t border-line">${lines || '<li class="py-3 text-sm text-faint">Sin cobros cargados.</li>'}</ul>
-        ${cs.length && cs.every((c) => c.cobrado_en) ? '' : `<div class="mt-3">${btn('new-cobro', '+ Agregar cobro', { id: v.id })}</div>`}
+        ${cs.length && cs.every((c) => c.cobrado_en) ? (v.recurrente === true && v.activa !== false ? `<div class="mt-3">${btn('generar-cobro', '+ Generar cobro del mes siguiente', { id: v.id })}</div>` : '') : `<div class="mt-3">${btn('new-cobro', '+ Agregar cobro', { id: v.id })}</div>`}
       </article>`;
     })
     .join('');
@@ -381,7 +384,28 @@ function ventasView() {
     <div class="flex flex-wrap items-center gap-3">${filterSelect('ventas', [['saldo', 'Con saldo por cobrar'], ['todas', 'Todas']])}</div>
     <button type="button" data-action="new-venta" class="bg-signal px-4 py-2 text-sm font-semibold text-ink hover:bg-bone">+ Nueva venta</button>
   </div>
-  ${cards ? `<div class="grid gap-4">${cards}</div>` : '<p class="border border-line p-6 text-mute">No hay ventas para mostrar. Usá "Nueva venta".</p>'}`;
+  ${cards ? `<div class="grid gap-4">${cards}</div>` : '<p class="border border-line p-6 text-mute">No hay ventas para mostrar. Usá "Nueva venta".</p>'}
+  ${origenesView()}`;
+}
+
+/** De dónde vienen las ventas: cantidad y dinero por origen. */
+function origenesView() {
+  if (!data.ventas.length) return '';
+  const grupos = new Map<string, Row[]>();
+  for (const v of data.ventas) grupos.set(v.origen || 'Sin dato', [...(grupos.get(v.origen || 'Sin dato') ?? []), v]);
+  const filas = [...grupos.entries()]
+    .map(([origen, vs]) => {
+      const cs = vs.flatMap((v) => cobrosDe(v.id));
+      return { origen, n: vs.length, total: sumUsd(cs), cobrado: sumUsd(cs.filter((c) => c.cobrado_en)) };
+    })
+    .sort((a, b) => b.total - a.total);
+  return `<section class="mt-8">
+    <h3 class="tag text-faint">De dónde vienen las ventas</h3>
+    <div class="mt-3 overflow-x-auto border border-line"><table class="w-full min-w-[26rem] text-left text-sm">
+      <thead class="border-b border-line bg-panel"><tr>${['Origen', 'Ventas', 'Total USD', 'Cobrado USD'].map((h) => `<th class="tag px-3 py-3 font-normal text-faint">${h}</th>`).join('')}</tr></thead>
+      <tbody class="divide-y divide-line">${filas.map((f) => `<tr><td class="px-3 py-3 font-medium text-bone">${esc(f.origen)}</td><td class="px-3 py-3 text-mute">${f.n}</td><td class="px-3 py-3 text-mute">${num(f.total)}</td><td class="px-3 py-3 text-bone">${num(f.cobrado)}</td></tr>`).join('')}</tbody>
+    </table></div>
+  </section>`;
 }
 
 /* ------------------------------ tablas genéricas ------------------------------ */
@@ -442,6 +466,7 @@ function contenidoView() {
   const rows = filters.contenido === 'todas' ? data.contenido : data.contenido.filter((r) => r.estado === filters.contenido);
   const resumen = res.fields.find((f) => f.name === 'estado')!.options!.map((e) => `${e}: ${data.contenido.filter((r) => r.estado === e).length}`).join(' · ');
   return (
+    contenidoResultadosView(data) +
     toolbar(res, filterSelect('contenido', [['todas', 'Todas'], ...res.fields.find((f) => f.name === 'estado')!.options!.map((o): [string, string] => [o, o])])) +
     `<p class="mb-4 text-sm text-faint">${esc(resumen)}</p>` +
     table(res, rows)
@@ -449,19 +474,7 @@ function contenidoView() {
 }
 
 /** Una persona por mail, con todo lo que hizo en la web (descargas, diagnóstico, consultas). */
-function personas() {
-  const map = new Map<string, { email: string; nombre: string; primera: string; ultima: string; acciones: Row[] }>();
-  for (const e of data.entrantes) {
-    const key = String(e.email || e.nombre).toLowerCase();
-    const p = map.get(key) ?? { email: e.email, nombre: '', primera: e.fecha, ultima: e.fecha, acciones: [] as Row[] };
-    if (!p.nombre && e.nombre && e.nombre !== '(sin nombre)') p.nombre = e.nombre;
-    if (e.fecha < p.primera) p.primera = e.fecha;
-    if (e.fecha > p.ultima) p.ultima = e.fecha;
-    p.acciones.push(e);
-    map.set(key, p);
-  }
-  return [...map.values()].sort((a, b) => String(b.ultima).localeCompare(String(a.ultima)));
-}
+const personas = () => agruparPersonas(data.entrantes);
 
 const prospectoDe = (email: string) => (email ? data.contactos.find((c) => String(c.email ?? '').toLowerCase() === email.toLowerCase()) : undefined);
 
@@ -585,10 +598,15 @@ function render() {
   root.querySelectorAll<HTMLElement>('[data-tab]').forEach((b) => {
     if (b.closest('[data-tabs]')) b.toggleAttribute('data-active', b.dataset.tab === tab);
   });
-  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView }[tab]();
+  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, proyeccion: () => proyeccionView(data, proy, conversionContactadoCliente()), semana: () => semanaView(data, semanaWs), contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView, datos: () => datosView(data) }[tab]();
   const n = hoyCount();
   const hoyTab = root.querySelector<HTMLElement>('[data-tabs] [data-tab="hoy"]');
   if (hoyTab) hoyTab.textContent = n ? `Hoy · ${n}` : 'Hoy';
+  // Aviso de contactos nuevos sin atender, también en la pestaña y en el título de la ventana
+  const nuevos = data.entrantes.filter((e) => e.estado === entrantes[e.origen as EntranteOrigen]?.estados[0]).length;
+  const contactosTab = root.querySelector<HTMLElement>('[data-tabs] [data-tab="contactos"]');
+  if (contactosTab) contactosTab.textContent = nuevos ? `Contactos · ${nuevos} nuevos` : 'Contactos';
+  document.title = nuevos + n ? `(${nuevos + n}) Panel` : 'Panel';
 }
 
 /* ------------------------------ formulario ------------------------------ */
@@ -731,10 +749,10 @@ function toClient() {
   const c = data.contactos.find((r) => r.id === form.dataset.id);
   if (!c) return;
   dialog.close();
-  openVenta({ contactoId: c.id, cliente: c.nombre });
+  openVenta({ contactoId: c.id, cliente: c.nombre, origen: c.origen });
 }
 
-function openVenta(prefill?: { contactoId: string; cliente: string }) {
+function openVenta(prefill?: { contactoId: string; cliente: string; origen?: string }) {
   const first = productos[0];
   form.innerHTML = `
     <div class="flex items-start justify-between gap-4">
@@ -751,6 +769,10 @@ function openVenta(prefill?: { contactoId: string; cliente: string }) {
       <label class="grid gap-2 text-sm text-mute">Total en pesos <span class="text-faint">(opcional, un solo pago)</span><input name="total_ars" type="number" step="any" class="${fieldCls}" /></label>
     </div>
     <label class="grid gap-2 text-sm text-mute">Fecha de la venta<input name="fecha" type="date" value="${today()}" class="${fieldCls}" /></label>
+    <label class="grid gap-2 text-sm text-mute">Cómo llegó el cliente <span class="text-faint">(opcional)</span>
+      <select name="origen" class="${fieldCls}"><option value="">—</option>${origenesContacto.map((o) => `<option value="${esc(o)}"${o === prefill?.origen ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>
+    </label>
+    <label class="flex items-center gap-3 text-sm text-mute"><input name="recurrente" type="checkbox" class="size-4 accent-[#00f2ff]" ${first.recurrente ? 'checked' : ''} /> Se cobra todos los meses (plan mensual)</label>
     <label class="flex items-center gap-3 text-sm text-mute"><input name="cobrado" type="checkbox" class="size-4 accent-[#00f2ff]" /> Ya cobré el primer pago</label>
     <p class="text-sm text-faint" data-plan></p>
     <p data-form-msg class="min-h-5 text-sm text-signal" role="status"></p>
@@ -793,6 +815,7 @@ form.addEventListener('change', (e) => {
     const p = productoDe();
     field('total').value = String(p.cobros.reduce((a, c) => a + c.usd, 0) || '');
     field('total_ars').value = p.ars ? String(p.ars) : '';
+    field('recurrente').checked = !!p.recurrente;
   }
   showPlan();
 });
@@ -818,7 +841,7 @@ async function submitVenta() {
   btn.disabled = true;
   msg.textContent = 'Guardando…';
   try {
-    const { row } = await api<{ row: Row }>('ventas', 'POST', { cliente, producto: nombre, fecha, contacto_id: form.dataset.parent || null });
+    const { row } = await api<{ row: Row }>('ventas', 'POST', { cliente, producto: nombre, fecha, origen: (form.elements.namedItem('origen') as HTMLSelectElement).value || null, recurrente: field('recurrente').checked, activa: true, contacto_id: form.dataset.parent || null });
     const cobros = planCobros(p, total);
     for (const [i, c] of cobros.entries()) {
       await api('cobros', 'POST', {
@@ -847,6 +870,65 @@ async function submitVenta() {
   } finally {
     btn.disabled = false;
   }
+}
+
+/* ------------------------------ renovaciones y mensajes de cobro ------------------------------ */
+const ultimoCobroDe = (ventaId: string) => [...cobrosDe(ventaId)].sort((a, b) => String(a.vencimiento).localeCompare(String(b.vencimiento))).at(-1);
+
+/** Crea el cobro del mes siguiente de un plan mensual. */
+async function generarCobro(ventaId: string) {
+  const ultimo = ultimoCobroDe(ventaId);
+  if (!ultimo) return;
+  const n = Number(/^Mes (\d+)/.exec(String(ultimo.concepto))?.[1] ?? cobrosDe(ventaId).length) + 1;
+  try {
+    await api('cobros', 'POST', {
+      venta_id: ventaId,
+      concepto: `Mes ${n}`,
+      monto_usd: Number(ultimo.monto_usd),
+      monto_ars: null,
+      vencimiento: addMonths(String(ultimo.vencimiento), 1),
+      cobrado_en: null,
+    });
+    await reload('cobros');
+    render();
+    say(`Cobro generado: vence el ${shortDate(addMonths(String(ultimo.vencimiento), 1))}.`);
+  } catch (err) {
+    say((err as Error).message, true);
+  }
+}
+
+/** Recordatorio de pago listo para pegar. Sin datos de pago: esos los mandás vos. */
+function mensajeCobro(cobro: Row) {
+  const v = data.ventas.find((x) => x.id === cobro.venta_id);
+  const t = today();
+  const cuando = cobro.vencimiento < t ? `venció el ${shortDate(cobro.vencimiento)}` : cobro.vencimiento === t ? 'vence hoy' : `vence el ${shortDate(cobro.vencimiento)}`;
+  const monto = cobro.monto_ars != null ? `USD ${num(Number(cobro.monto_usd))} (equivalente a $${num(Number(cobro.monto_ars))})` : `USD ${num(Number(cobro.monto_usd))}`;
+  const nombre = String(v?.cliente ?? '').trim().split(/\s+/)[0];
+  return `Hola ${nombre}, ¿cómo estás? Te escribo por el pago de ${cobro.concepto} de ${v?.producto ?? 'el servicio'} (${monto}), que ${cuando}.\n\nCuando lo hagas, mandame el comprobante así lo registro. ¡Gracias!`;
+}
+
+/** Cobros pendientes para marcar como cobrados con un toque (pensado para el celular). */
+function openCobroRapido() {
+  const t = today();
+  const pend = data.cobros.filter((c) => !c.cobrado_en).sort((a, b) => String(a.vencimiento).localeCompare(String(b.vencimiento)));
+  form.innerHTML = `
+    <div class="flex items-start justify-between gap-4">
+      <h2 class="display text-3xl text-bone">Registrar cobro</h2>
+      <button type="button" data-close class="tag text-signal hover:text-bone" aria-label="Cerrar">Cerrar</button>
+    </div>
+    ${pend.length
+      ? `<ul class="divide-y divide-line border-y border-line">${pend
+          .map((c) => {
+            const v = data.ventas.find((x) => x.id === c.venta_id);
+            const venc = c.vencimiento < t ? `<span class="text-[#ff7a7a]">vencido ${shortDate(c.vencimiento)}</span>` : `vence ${shortDate(c.vencimiento)}`;
+            return `<li class="flex items-center justify-between gap-3 py-3"><span class="text-sm text-bone"><strong>${esc(v?.cliente ?? '')}</strong> <span class="text-mute">· ${esc(c.concepto)} · USD ${num(Number(c.monto_usd))} · ${venc}</span></span><button type="button" data-action="cobrado" data-id="${esc(c.id)}" class="min-h-11 shrink-0 bg-signal px-4 text-sm font-semibold text-ink hover:bg-bone">Cobrado</button></li>`;
+          })
+          .join('')}</ul>`
+      : '<p class="text-mute">No hay cobros pendientes.</p>'}`;
+  form.dataset.res = 'cobro-rapido';
+  form.dataset.id = '';
+  form.dataset.parent = '';
+  dialog.showModal();
 }
 
 /* ------------------------------ ficha del prospecto ------------------------------ */
@@ -896,7 +978,6 @@ function mensajeBlock(m: Mensaje, c: Row, hechos: Set<string>) {
   </div>`;
 }
 
-const fechaHora = (iso: string) => new Date(iso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 function renderFicha() {
   const c = data.contactos.find((r) => r.id === fichaId);
@@ -971,7 +1052,7 @@ async function copiar(texto: string) {
     // Sin permiso del portapapeles: copia con un campo temporal dentro del modal
     const t = document.createElement('textarea');
     t.value = texto;
-    ficha.append(t);
+    (document.querySelector('dialog[open]') ?? document.body).append(t);
     t.select();
     document.execCommand('copy');
     t.remove();
@@ -1046,6 +1127,7 @@ async function logMeta(tipo: string, cantidad: number) {
     await api('registro', 'POST', { fecha: today(), tipo, cantidad });
     await reload('registro');
     render();
+    say('Registrado.');
   } catch (err) {
     say((err as Error).message, true);
   }
@@ -1119,7 +1201,59 @@ root.addEventListener('click', async (e) => {
     case 'ficha-cliente': {
       const c = data.contactos.find((r) => r.id === fichaId);
       ficha.close();
-      if (c) openVenta({ contactoId: c.id, cliente: c.nombre });
+      if (c) openVenta({ contactoId: c.id, cliente: c.nombre, origen: c.origen });
+      break;
+    }
+    case 'semana-prev':
+      semanaWs = addDays(semanaWs, -7);
+      render();
+      break;
+    case 'semana-next':
+      semanaWs = addDays(semanaWs, 7);
+      render();
+      break;
+    case 'semana-hoy':
+      semanaWs = weekStart(today());
+      render();
+      break;
+    case 'export': {
+      const file = exportar(el.dataset.que!, data);
+      if (!file) break;
+      const url = URL.createObjectURL(new Blob([file.contenido], { type: file.mime }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.nombre;
+      a.click();
+      URL.revokeObjectURL(url);
+      say('Descarga lista: ' + file.nombre);
+      break;
+    }
+    case 'generar-cobro':
+      await generarCobro(el.dataset.id!);
+      break;
+    case 'baja-venta':
+      await patchField('ventas', el.dataset.id!, { activa: false });
+      say('Plan dado de baja. No se generan más cobros.');
+      break;
+    case 'reactivar-venta':
+      await patchField('ventas', el.dataset.id!, { activa: true });
+      say('Plan reactivado.');
+      break;
+    case 'cobro-msg': {
+      const c = data.cobros.find((x) => x.id === el.dataset.id);
+      if (c) {
+        await copiar(mensajeCobro(c));
+        say('Mensaje de cobro copiado.');
+      }
+      break;
+    }
+    case 'quick': {
+      const q = el.dataset.q;
+      if (q === 'mensaje') await logMeta('mensajes', 1);
+      else if (q === 'respuesta') await logMeta('conversaciones', 1);
+      else if (q === 'cobro') openCobroRapido();
+      else if (q === 'venta') openVenta();
+      else if (q === 'prospecto') openForm(resources.contactos);
       break;
     }
     case 'to-prospect':
@@ -1139,6 +1273,8 @@ root.addEventListener('click', async (e) => {
       break;
     case 'cobrado':
       await patchField('cobros', el.dataset.id!, { cobrado_en: today() });
+      if (dialog.open && form.dataset.res === 'cobro-rapido') dialog.close();
+      say('Cobro registrado.');
       break;
     case 'hecha-tarea':
       await patchField('tareas', el.dataset.id!, { estado: 'hecha' });
@@ -1190,6 +1326,13 @@ root.addEventListener('change', async (e) => {
   const action = el.dataset.action;
   const value = (el as HTMLInputElement).value;
 
+  if (action === 'proy') {
+    proy[el.dataset.campo as keyof Proy] = Math.max(0, Number(value) || 0);
+    return void render();
+  }
+  if (action === 'resultado') {
+    return void (await patchField('contenido', el.dataset.id!, { [el.dataset.campo!]: value === '' ? null : Number(value) }));
+  }
   if (action === 'ficha-estado') return void (await cambiarContacto({ estado: value, ...seguimientoPara(value) }, 'Estado actualizado.'));
   if (action === 'ficha-fecha') return void (await cambiarContacto({ proximo_seguimiento: value || null }, 'Seguimiento actualizado.'));
 
