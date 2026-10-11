@@ -90,15 +90,6 @@ const groups = [
       </div>
     </form>
 
-    <div data-done hidden class="mt-12 border-t border-line pt-10">
-      <p class="tag text-signal">Consulta recibida</p>
-      <h2 class="display mt-3 text-4xl text-bone md:text-5xl">Gracias por contarme</h2>
-      <p class="mt-4 text-lg leading-relaxed text-mute">
-        Te mandé un mail de confirmación. Te respondo personalmente dentro de las 24 horas. Si no lo ves, revisá la
-        carpeta de spam.
-      </p>
-      <a href="/trabajar-juntos" class="mt-8 inline-block text-sm text-mute underline underline-offset-4 hover:text-signal">Volver a las opciones</a>
-    </div>
   </section>
 </Base>
 
@@ -158,9 +149,9 @@ const groups = [
       });
       if (!res.ok) throw new Error(await res.text());
       track('equipos_submit', { necesidad: String(data.necesidad) });
-      form.hidden = true;
-      document.querySelector<HTMLElement>('[data-done]')!.hidden = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Un instante para que el evento de analytics salga antes de cambiar de página
+      await new Promise((r) => setTimeout(r, 250));
+      location.assign('/gracias?de=equipos');
     } catch {
       stopSending();
       msg.className = 'text-sm text-signal';

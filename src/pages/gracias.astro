@@ -1,0 +1,83 @@
+---
+import Base from '@/layouts/Base.astro';
+import { gracias, graciasGenerica } from '@/data/gracias';
+import { site } from '@/data/site';
+
+export const prerender = false;
+
+// Qué caso mostrar: /gracias?de=equipos. Si no existe, un agradecimiento genérico.
+const de = Astro.url.searchParams.get('de') ?? '';
+const g = gracias[de] ?? graciasGenerica;
+Astro.response.headers.set('Cache-Control', 'no-store');
+---
+
+<Base title="Gracias" noindex>
+  <section class="page max-w-3xl py-16 md:py-24">
+    <p class="tag text-signal">{g.kicker}</p>
+    <h1 class="display mt-3 text-5xl text-bone md:text-7xl">{g.title}</h1>
+    <p class="mt-6 text-lg leading-relaxed text-mute md:text-xl">{g.intro}</p>
+
+    {
+      g.steps.length > 0 && (
+        <div class="mt-12">
+          <h2 class="tag text-faint">Qué pasa ahora</h2>
+          <ol class="mt-5 border-l border-line-strong">
+            {g.steps.map((s, i) => (
+              <li class="relative pb-8 pl-8 last:pb-0">
+                <span class="absolute -left-[5px] top-2 size-2.5 bg-signal" aria-hidden="true" />
+                <p class="tag text-faint">Paso {i + 1}</p>
+                <h3 class="mt-1 text-xl font-semibold text-bone">{s.title}</h3>
+                <p class="mt-1 leading-relaxed text-mute">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )
+    }
+
+    {
+      g.mail && (
+        <p class="mt-10 border border-line bg-panel p-5 text-sm leading-relaxed text-mute">
+          <strong class="text-bone">Revisá tu mail.</strong> Sale desde {site.email}. Si en unos minutos no lo ves, mirá la carpeta de spam o promociones.
+        </p>
+      )
+    }
+
+    {
+      g.next.length > 0 && (
+        <div class="mt-12">
+          <h2 class="tag text-faint">Mientras tanto</h2>
+          <ul class="mt-5 grid gap-4 sm:grid-cols-2">
+            {g.next.map((n) => (
+              <li>
+                <a
+                  href={n.href}
+                  class="group block h-full border border-line p-5 transition-colors hover:border-signal/60"
+                  target={n.external ? '_blank' : undefined}
+                  rel={n.external ? 'noopener' : undefined}
+                  data-umami-event={n.event}
+                  data-umami-event-de={de || 'generica'}
+                >
+                  <p class="font-semibold text-bone group-hover:text-signal">{n.title}</p>
+                  <p class="mt-1 text-sm leading-relaxed text-mute">{n.body}</p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <a href="/" class="mt-12 inline-block text-sm text-mute underline underline-offset-4 hover:text-signal">Volver al inicio</a>
+  </section>
+</Base>
+
+<script define:vars={{ de }}>
+  // Evento de conversión: cuántas personas llegan hasta acá, y desde qué formulario.
+  var intentos = 0;
+  var enviar = function () {
+    if (window.umami && window.umami.track) window.umami.track('gracias_view', { de: de || 'generica' });
+    else if (intentos++ < 20) setTimeout(enviar, 250);
+  };
+  enviar();
+</script>

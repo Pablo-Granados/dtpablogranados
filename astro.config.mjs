@@ -12,6 +12,6 @@ export default defineConfig({
   trailingSlash: 'never',
   build: { format: 'file' },
   adapter: vercel(),
-  integrations: [sitemap({ filter: (page) => !page.includes('/api/') && !page.includes('/admin') })],
+  integrations: [sitemap({ filter: (page) => !page.includes('/api/') && !page.includes('/admin') && !page.includes('/gracias') && !page.includes('/agendar') })],
   vite: { plugins: [tailwindcss()] },
 });

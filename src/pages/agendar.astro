@@ -1,0 +1,67 @@
+---
+import Base from '@/layouts/Base.astro';
+
+// Agenda de las llamadas de mentoría. Embebe el evento de Cal.com en el sitio para poder llevar a la persona
+// a /gracias al terminar (la redirección propia de Cal.com es del plan pago). Se abre con el link que copia el panel:
+// /agendar?name=Nombre&email=mail&notes=Semana 3
+const calLink = import.meta.env.PUBLIC_CAL_MENTORIA_LINK ?? '';
+---
+
+<Base title="Agendar tu llamada" noindex>
+  <section class="page max-w-4xl py-12 md:py-20">
+    <p class="tag text-signal">Sistema Propio</p>
+    <h1 class="display mt-3 text-4xl text-bone md:text-6xl">Elegí el horario de tu llamada</h1>
+    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-mute">
+      Reservá con el mismo mail con el que te anotaste, así la llamada queda asociada a tu programa. Te llega la confirmación por mail.
+    </p>
+
+    {
+      calLink ? (
+        <div class="mt-10 min-h-[40rem] border border-line bg-panel" id="cal-inline" aria-live="polite">
+          <p class="p-6 text-mute" data-cargando>Cargando la agenda…</p>
+        </div>
+      ) : (
+        <p class="mt-10 border border-line bg-panel p-6 text-mute">La agenda todavía no está disponible. Escribime y coordinamos el horario.</p>
+      )
+    }
+
+    <p class="mt-6 text-sm text-faint">
+      ¿No carga? <a data-cal-fallback href={calLink ? `https://cal.com/${calLink}` : '/'} class="underline underline-offset-4 hover:text-signal">Abrí la agenda en otra pestaña</a>.
+    </p>
+  </section>
+</Base>
+
+<script define:vars={{ calLink }}>
+  if (calLink) {
+    var q = new URLSearchParams(location.search);
+    var name = q.get('name') || '';
+    var email = q.get('email') || '';
+    var notes = (q.get('notes') || '').slice(0, 500);
+
+    // Mismo link de respaldo, con los datos ya cargados
+    var fb = document.querySelector('[data-cal-fallback]');
+    if (fb) fb.href = 'https://cal.com/' + calLink + '?name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email) + (notes ? '&notes=' + encodeURIComponent(notes) : '');
+
+    // Snippet oficial de Cal.com (embed inline)
+    (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    // El embed trae su propio indicador de carga: se quita el mensaje de espera
+    var espera = document.querySelector('[data-cargando]');
+    if (espera) espera.remove();
+
+    Cal('init', { origin: 'https://cal.com' });
+    Cal('inline', {
+      elementOrSelector: '#cal-inline',
+      calLink: calLink,
+      config: { name: name, email: email, notes: notes, theme: 'dark', layout: 'month_view' },
+    });
+    Cal('on', {
+      action: 'bookingSuccessful',
+      callback: function () {
+        if (window.umami) window.umami.track('llamada_mentoria_agendada');
+        // Un momento para ver la confirmación de Cal.com y después, la página de gracias
+        setTimeout(function () { location.assign('/gracias?de=mentoria'); }, 2500);
+      },
+    });
+  }
+</script>

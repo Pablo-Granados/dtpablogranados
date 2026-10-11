@@ -154,20 +154,6 @@ const chip =
       }
     </div>
 
-    <!-- Resultado: no califica -->
-    <div data-no hidden class="mt-12 border-t border-line pt-10">
-      <p class="tag text-signal">Aplicación recibida</p>
-      <h2 class="display mt-3 text-4xl text-bone md:text-5xl">Gracias por contarme</h2>
-      <p class="mt-4 text-lg leading-relaxed text-mute">
-        Por lo que me contaste, hoy Sistema Propio no es lo que más te va a servir, y prefiero decírtelo ahora en
-        lugar de venderte algo que no vas a poder aprovechar. Te mandé un mail con los próximos pasos.
-      </p>
-      <p class="mt-4 text-lg leading-relaxed text-mute">
-        Si no lo hiciste, empezá por el diagnóstico: en 3 minutos te dice por dónde arrancar.
-      </p>
-      <a href="/diagnostico" class="mt-8 inline-flex items-center gap-2 bg-signal px-6 py-3.5 font-semibold text-ink hover:bg-bone"
-        data-umami-event="cta_diagnostico" data-umami-event-ubicacion="aplicar-no-califica">Hacer el diagnóstico</a>
-    </div>
   </section>
 </Base>
 
@@ -188,7 +174,11 @@ const chip =
     });
     Cal('on', {
       action: 'bookingSuccessful',
-      callback: function () { if (window.umami) window.umami.track('llamada_agendada'); },
+      callback: function () {
+        if (window.umami) window.umami.track('llamada_agendada');
+        // Un momento para que se vea la confirmación de Cal.com y después, la página de gracias
+        setTimeout(function () { location.assign('/gracias?de=reserva'); }, 2500);
+      },
     });
   };
 </script>
@@ -271,9 +261,15 @@ const chip =
       const { calificada } = await res.json();
       track('aplicacion_submit', { calificada });
 
+      if (!calificada) {
+        await new Promise((r) => setTimeout(r, 250));
+        location.assign('/gracias?de=aplicacion');
+        return;
+      }
+
       form.hidden = true;
       document.querySelector<HTMLElement>('[data-steps-nav]')!.hidden = true;
-      document.querySelector<HTMLElement>(calificada ? '[data-ok]' : '[data-no]')!.hidden = false;
+      document.querySelector<HTMLElement>('[data-ok]')!.hidden = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (calificada) (window as unknown as { pgLoadCal?: (n: string, e: string, o: string) => void }).pgLoadCal?.(String(data.nombre), String(data.email), String(data.objetivo));

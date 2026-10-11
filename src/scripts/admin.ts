@@ -1686,15 +1686,13 @@ root.addEventListener('click', async (e) => {
       const s = data.semanas.find((x) => x.id === el.dataset.id);
       const m = s && data.mentorados.find((x) => x.id === s.mentorado_id);
       if (!s || !m) break;
-      const base = String(import.meta.env.PUBLIC_CAL_MENTORIA_LINK ?? '').trim();
-      if (!base) {
-        say('Falta la variable PUBLIC_CAL_MENTORIA_LINK (en .env y en Vercel). Después reiniciá o redeployá.', true);
-        break;
-      }
+      // El link lleva a la agenda del sitio (/agendar), que embebe Cal.com y al reservar muestra la página de gracias
       const params = new URLSearchParams({ name: m.nombre, ...(m.email ? { email: m.email } : {}), notes: `Semana ${s.semana}` });
-      const link = `${base.startsWith('http') ? base : `https://cal.com/${base}`}?${params}`;
+      const link = `${location.origin}/agendar?${params}`;
+      const enLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
       await copiar(`Hola ${String(m.nombre).trim().split(/\s+/)[0]}, para tu llamada de la semana ${s.semana} elegí el horario que mejor te quede: ${link}`);
-      say('Mensaje con el link para agendar copiado.');
+      if (enLocal) say('Copiado, pero estás en localhost: ese link solo funciona en tu computadora. Copialo desde el panel publicado.', true);
+      else say('Mensaje con el link para agendar copiado.');
       break;
     }
     case 'ment-recibido':

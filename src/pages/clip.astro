@@ -88,15 +88,6 @@ const reglas = [
       </div>
     </form>
 
-    <div data-done hidden class="mt-12 border-t border-line pt-10">
-      <p class="tag text-signal">Clip recibido</p>
-      <h2 class="display mt-3 text-4xl text-bone md:text-5xl">Gracias por mandarlo</h2>
-      <p class="mt-4 text-lg leading-relaxed text-mute">
-        Te mandé un mail de confirmación. Si tu clip queda elegido, te escribo antes de publicar el análisis. Si no lo
-        ves, revisá spam.
-      </p>
-      <a href="/plantillas" class="mt-8 inline-block text-sm text-mute underline underline-offset-4 hover:text-signal">Mientras tanto, mirá las plantillas gratis</a>
-    </div>
   </section>
 </Base>
 
@@ -145,9 +136,9 @@ const reglas = [
       const res = await fetch('/api/clip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       if (!res.ok) throw new Error(await res.text());
       track('clip_submit', { deporte: String(data.deporte) });
-      form.hidden = true;
-      document.querySelector<HTMLElement>('[data-done]')!.hidden = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Un instante para que el evento de analytics salga antes de cambiar de página
+      await new Promise((r) => setTimeout(r, 250));
+      location.assign('/gracias?de=clip');
     } catch {
       stop();
       msg.className = 'text-sm text-signal';
