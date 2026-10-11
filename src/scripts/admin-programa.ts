@@ -1,6 +1,8 @@
 /** Vista del panel con la hoja de ruta de Sistema Propio: 12 semanas, tipos de clase y variantes por perfil. */
-import { etapasPrograma, perfiles, programa, tiposClase, type Perfil, type Semana, type TipoClase } from '@/data/programa';
-import { esc } from './admin-utils';
+import { etapasPrograma, perfiles, tiposClase, type Perfil, type Semana, type TipoClase } from '@/data/programa';
+import { edicionHabilitada, programaActual } from './admin-catalogo';
+import { bannerEdicion } from './admin-textos';
+import { btn, esc, type Data } from './admin-utils';
 
 export type ProgramaFiltro = { perfil: Perfil | 'todos'; tipo: TipoClase | 'todos' };
 
@@ -17,7 +19,8 @@ const colorTipo: Record<TipoClase, string> = {
 const lista = (items: readonly string[]) => `<ul class="mt-2 space-y-1.5 text-sm leading-snug text-mute">${items.map((i) => `<li class="flex gap-2"><span class="text-faint" aria-hidden="true">–</span><span>${esc(i)}</span></li>`).join('')}</ul>`;
 const bloque = (titulo: string, cuerpo: string) => `<div><h4 class="tag text-faint">${titulo}</h4>${cuerpo}</div>`;
 
-function tarjeta(s: Semana, f: ProgramaFiltro) {
+function tarjeta(s: Semana, f: ProgramaFiltro, d: Data) {
+  const fila = d.programa?.find((r) => r.semana === s.n);
   const variantes =
     f.perfil === 'todos'
       ? `<div class="mt-5 border border-line p-4"><h4 class="tag text-signal">Cómo cambia según el perfil</h4><dl class="mt-3 grid gap-3 text-sm">${perfiles
@@ -45,15 +48,16 @@ function tarjeta(s: Semana, f: ProgramaFiltro) {
         ${bloque('Para pasar a la semana siguiente', `<p class="mt-2 text-sm leading-snug text-bone">${esc(s.avanza)}</p>`)}
       </div>
       ${variantes}
+      ${edicionHabilitada(d, 'programa') && fila ? `<div class="mt-5">${btn('open', 'Editar esta semana', { res: 'programa', id: fila.id })}</div>` : ''}
     </div>
   </details>`;
 }
 
-export function programaView(f: ProgramaFiltro) {
+export function programaView(f: ProgramaFiltro, d: Data) {
   const select = (name: string, label: string, valor: string, opciones: readonly { v: string; l: string }[]) =>
     `<label class="grid gap-2 text-sm text-mute">${label}<select data-action="${name}" class="border border-line-strong bg-ink px-3 py-2.5 text-base text-bone focus:border-signal focus:outline-none">${opciones.map((o) => `<option value="${esc(o.v)}"${o.v === valor ? ' selected' : ''}>${esc(o.l)}</option>`).join('')}</select></label>`;
 
-  const semanas = programa.filter((s) => f.tipo === 'todos' || s.tipo === f.tipo);
+  const semanas = programaActual().filter((s) => f.tipo === 'todos' || s.tipo === f.tipo);
 
   const mapa = etapasPrograma
     .map(
@@ -61,11 +65,11 @@ export function programaView(f: ProgramaFiltro) {
     )
     .join('');
 
-  return `<p class="max-w-3xl text-mute">Tu hoja de ruta de las 12 semanas: qué prepararte, qué hacer en cada llamada, qué revisar en la devolución y cómo cambia según quién sea la persona. Es solo para vos; no se muestra en la web.</p>
+  return `${bannerEdicion(d, 'programa')}<p class="max-w-3xl text-mute">Tu hoja de ruta de las 12 semanas: qué prepararte, qué hacer en cada llamada, qué revisar en la devolución y cómo cambia según quién sea la persona. Es solo para vos; no se muestra en la web.</p>
   <ol class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">${mapa}</ol>
   <div class="mt-6 grid gap-4 sm:grid-cols-2 md:max-w-2xl">
     ${select('programa-perfil', 'Ver para el perfil', f.perfil, [{ v: 'todos', l: 'Todos los perfiles' }, ...perfiles.map((p) => ({ v: p.id, l: p.label }))])}
     ${select('programa-tipo', 'Tipo de clase', f.tipo, [{ v: 'todos', l: 'Todos los tipos' }, ...tiposClase.map((t) => ({ v: t, l: t }))])}
   </div>
-  <div class="mt-6 grid gap-3">${semanas.length ? semanas.map((s) => tarjeta(s, f)).join('') : '<p class="border border-line p-6 text-mute">No hay semanas de ese tipo.</p>'}</div>`;
+  <div class="mt-6 grid gap-3">${semanas.length ? semanas.map((s) => tarjeta(s, f, d)).join('') : '<p class="border border-line p-6 text-mute">No hay semanas de ese tipo.</p>'}</div>`;
 }

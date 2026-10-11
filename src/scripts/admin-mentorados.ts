@@ -2,7 +2,8 @@
  * Vistas de Mentorados: lista con progreso, ficha de cada persona y resumen de sus 12 semanas.
  * El esqueleto de cada semana sale de src/data/programa.ts; acá se adapta a cada mentorado.
  */
-import { perfiles, programa, type Semana } from '@/data/programa';
+import { perfiles, type Semana } from '@/data/programa';
+import { programaActual, programaInicial } from './admin-catalogo';
 import { estadosMentorado, estadosSemana, tiposEnlace } from '@/data/admin';
 import { addDays, btn, esc, num, shortDate, sumUsd, today, type Data, type Row } from './admin-utils';
 
@@ -55,7 +56,7 @@ export function enlacesView(d: Data, q: string) {
   );
 }
 
-export const esqueleto = (n: number): Semana => programa.find((s) => s.n === n)!;
+export const esqueleto = (n: number): Semana => (programaActual().find((s) => s.n === n) ?? programaInicial.find((s) => s.n === n))!;
 
 /** Semana en la que está: la primera pendiente (o la última si ya terminó todas). */
 export const semanaActual = (ss: Row[]) => ss.find((s) => s.estado === 'pendiente') ?? ss.at(-1);
@@ -83,7 +84,7 @@ export function planInicial(n: number, perfil: unknown) {
 
 /** Las 12 filas de semanas de un mentorado nuevo, con fecha de llamada cada 7 días. */
 export const semanasIniciales = (m: Row) =>
-  programa.map((s) => ({
+  programaActual().map((s) => ({
     mentorado_id: m.id,
     semana: s.n,
     estado: 'pendiente',

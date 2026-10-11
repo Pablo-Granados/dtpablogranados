@@ -2,14 +2,16 @@
  * Pantalla del panel privado: resumen con metas, contactos, tareas y contenido.
  * Las tablas y formularios salen del esquema de src/data/admin.ts.
  */
-import { mensajes, pasos, type Mensaje } from '@/data/mensajes';
+import { pasos, type Mensaje } from '@/data/mensajes';
+import { actualizarCatalogo, mensajeAFila, mensajesActuales, mensajesIniciales, programaInicial, semanaAFila } from './admin-catalogo';
+import { mensajesView } from './admin-textos';
 import { entrantes, etapasEmbudo, metaTypes, origenesContacto, plazosSeguimiento, productos, resources, type EntranteOrigen, type Field, type Producto, type Resource, type ResourceKey } from '@/data/admin';
 
 import { enlacesView, mentoradoFichaView, mentoradosView, planInicial, progreso, resumenTexto, semanaActual, semanasDe, semanasIniciales } from './admin-mentorados';
 import { programaView, type ProgramaFiltro } from './admin-programa';
 import { contenidoResultadosView, agruparPersonas, datosView, exportar, proyeccionView, renovacionesPendientes, semanaInicial, semanaView, type Proy } from './admin-reports';
 import { addDays, addMonths, btn, esc, fechaHora, iso, monthStart, num, pct, shortDate, sumUsd, today, weekStart, type Row } from './admin-utils';
-type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos' | 'programa' | 'mentorados' | 'enlaces';
+type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos' | 'programa' | 'mentorados' | 'enlaces' | 'mensajes';
 
 const root = document.querySelector<HTMLElement>('[data-app]')!;
 const view = root.querySelector<HTMLElement>('[data-view]')!;
@@ -66,7 +68,7 @@ function nombreDe(key: ResourceKey, row?: Row): string {
   }
 }
 
-const data: Record<ResourceKey | 'entrantes', Row[]> = { tareas: [], contenido: [], contactos: [], registro: [], metas: [], ventas: [], cobros: [], historial: [], mentorados: [], semanas: [], enlaces: [], reservas: [], entrantes: [] };
+const data: Record<ResourceKey | 'entrantes', Row[]> = { tareas: [], contenido: [], contactos: [], registro: [], metas: [], ventas: [], cobros: [], historial: [], mentorados: [], semanas: [], enlaces: [], reservas: [], mensajes: [], programa: [], entrantes: [] };
 let tab: Tab = 'hoy';
 let contactSub: 'prospectos' | 'entrantes' | 'personas' = 'prospectos';
 let personasQuery = '';
@@ -75,7 +77,7 @@ let progFiltro: ProgramaFiltro = { perfil: 'todos', tipo: 'todos' };
 /** Menú en dos niveles: grupos arriba y, dentro del grupo activo, sus secciones. */
 const grupos: readonly { id: string; label: string; tabs: readonly (readonly [Tab, string])[] }[] = [
   { id: 'dia', label: 'Hoy', tabs: [['hoy', 'Hoy'], ['semana', 'Semana'], ['resumen', 'Metas']] },
-  { id: 'vender', label: 'Vender', tabs: [['embudo', 'Embudo'], ['contactos', 'Contactos'], ['ventas', 'Ventas'], ['proyeccion', 'Proyección']] },
+  { id: 'vender', label: 'Vender', tabs: [['embudo', 'Embudo'], ['contactos', 'Contactos'], ['ventas', 'Ventas'], ['proyeccion', 'Proyección'], ['mensajes', 'Mensajes']] },
   { id: 'contenido', label: 'Contenido', tabs: [['contenido', 'Calendario']] },
   { id: 'mentoria', label: 'Mentoría', tabs: [['mentorados', 'Mentorados'], ['enlaces', 'Enlaces'], ['programa', 'Programa']] },
   { id: 'gestion', label: 'Gestión', tabs: [['tareas', 'Tareas'], ['datos', 'Datos']] },
@@ -274,7 +276,7 @@ function hoyView() {
     ${big('prospecto', 'Nuevo prospecto')}
   </div>
   ${lunes ? `<div class="mb-6 flex flex-wrap items-center justify-between gap-3 border border-signal/60 bg-signal/5 p-4"><p class="text-sm text-bone">Es lunes: mirá cómo cerró la semana pasada y qué viene.</p>${btn('tab', 'Ver resumen semanal', { tab: 'semana' })}</div>` : ''}
-  <p class="mb-5 text-mute">${hoyCount() ? 'Esto es lo que pide atención hoy.' : 'No hay nada pendiente para hoy.'}</p>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><p class="text-mute">${hoyCount() ? 'Esto es lo que pide atención hoy.' : 'No hay nada pendiente para hoy.'}</p>${btn('enviar-resumen', 'Enviarme este resumen por mail ahora')}</div>
   <div class="grid gap-4 md:grid-cols-2">
     ${hoyBlock('Reservas de hoy y mañana', h.reservas, 'No hay reservas para hoy ni mañana.')}
     ${hoyBlock('Seguimientos', h.seguir, 'Nadie para seguir hoy.', 'contactos')}
@@ -681,7 +683,8 @@ function renderTabs(hoy: number, nuevos: number) {
 }
 
 function render() {
-  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, proyeccion: () => proyeccionView(data, proy, conversionContactadoCliente()), semana: () => semanaView(data, semanaWs), contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView, datos: () => datosView(data), programa: () => programaView(progFiltro), mentorados: () => mentoradosView(data, mentFiltro), enlaces: () => enlacesView(data, enlacesQuery) }[tab]();
+  actualizarCatalogo(data);
+  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, proyeccion: () => proyeccionView(data, proy, conversionContactadoCliente()), semana: () => semanaView(data, semanaWs), contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView, datos: () => datosView(data), programa: () => programaView(progFiltro, data), mensajes: () => mensajesView(data), mentorados: () => mentoradosView(data, mentFiltro), enlaces: () => enlacesView(data, enlacesQuery) }[tab]();
   const n = hoyCount();
   // Aviso de contactos nuevos sin atender, también en el título de la ventana
   const nuevos = data.entrantes.filter((e) => e.estado === entrantes[e.origen as EntranteOrigen]?.estados[0]).length;
@@ -695,7 +698,7 @@ function fieldInput(f: Field, v: unknown) {
   const val = v == null ? '' : String(v);
   const cls = 'w-full border border-line-strong bg-ink px-3 py-2.5 text-base text-bone focus:border-signal focus:outline-none';
   if (f.type === 'select')
-    return `<select name="${f.name}" class="${cls}">${f.options!.map((o) => `<option value="${esc(o)}"${o === val ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+    return `<select name="${f.name}" class="${cls}">${f.options!.map((o) => `<option value="${esc(o)}"${o === val ? ' selected' : ''}>${esc(o) || '—'}</option>`).join('')}</select>`;
   if (f.type === 'longtext') return `<textarea name="${f.name}" rows="4" maxlength="${f.max ?? 1500}" class="${cls}">${esc(val)}</textarea>`;
   const type = f.type === 'date' ? 'date' : f.type === 'number' ? 'number' : 'text';
   return `<input name="${f.name}" type="${type}" ${f.type === 'number' ? 'step="any"' : ''} value="${esc(val)}" maxlength="${f.max ?? 300}" placeholder="${f.type === 'url' ? 'https://…' : esc(f.placeholder ?? '')}" class="${cls}" />`;
@@ -703,7 +706,7 @@ function fieldInput(f: Field, v: unknown) {
 
 function openForm(res: Resource, id?: string, parent?: string) {
   const row = id ? data[res.key].find((r) => String(r[res.pk]) === id) : undefined;
-  const values: Row = row ?? { ...(res.defaults ?? {}), ...(res.key === 'registro' ? { fecha: today() } : {}), ...(res.key === 'cobros' ? { vencimiento: today() } : {}), ...(res.key === 'mentorados' ? { inicio: today() } : {}) };
+  const values: Row = row ?? { ...(res.defaults ?? {}), ...(res.key === 'registro' ? { fecha: today() } : {}), ...(res.key === 'cobros' ? { vencimiento: today() } : {}), ...(res.key === 'mentorados' ? { inicio: today() } : {}), ...(res.key === 'mensajes' ? { orden: data.mensajes.reduce((a, r) => Math.max(a, Number(r.orden ?? 0)), 0) + 1 } : {}) };
 
   form.innerHTML = `
     <div class="flex items-start justify-between gap-4">
@@ -1312,7 +1315,7 @@ const aplica = (m: Mensaje, c: Row) => (!m.tipos || m.tipos.includes(c.tipo)) &&
 
 /** El próximo mensaje a mandar: el primero del paso actual que todavía no se envió. */
 function sugerido(c: Row): Mensaje | undefined {
-  const lista = mensajes.filter((m) => m.paso === c.estado && aplica(m, c));
+  const lista = mensajesActuales().filter((m) => m.paso === c.estado && aplica(m, c));
   const hechos = enviadosDe(c.id);
   return lista.find((m) => !hechos.has(m.titulo)) ?? lista[0];
 }
@@ -1343,7 +1346,7 @@ function renderFicha() {
   const hechos = enviadosDe(c.id);
   const estados = resources.contactos.fields.find((f) => f.name === 'estado')!.options!;
   const log = data.historial.filter((h) => h.contacto_id === c.id).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
-  const aplicables = mensajes.filter((m) => aplica(m, c) && m !== sug);
+  const aplicables = mensajesActuales().filter((m) => aplica(m, c) && m !== sug);
   const info = [c.email, c.contacto, c.origen ? `Llegó por ${c.origen}` : ''].filter(Boolean).map((x) => esc(x)).join(' · ');
 
   fichaBody.innerHTML = `
@@ -1421,7 +1424,7 @@ const textoDe = (id: string) => ficha.querySelector<HTMLTextAreaElement>(`[data-
 
 async function enviarMensaje(id: string) {
   const c = data.contactos.find((r) => r.id === fichaId);
-  const m = mensajes.find((x) => x.id === id);
+  const m = mensajesActuales().find((x) => x.id === id);
   if (!c || !m) return;
   await copiar(textoDe(id));
   try {
@@ -1647,6 +1650,27 @@ root.addEventListener('click', async (e) => {
     case 'ment-venta-nueva': {
       const m = data.mentorados.find((x) => x.id === el.dataset.id);
       if (m) openVenta({ contactoId: m.contacto_id ?? '', cliente: m.nombre, mentoradoId: m.id, productoId: m.cohorte === 'Fundadora' ? 'fundadora' : 'sistema' });
+      break;
+    }
+    case 'enviar-resumen':
+      try {
+        const r = await api<{ enviado: boolean; total: number }>('resumen', 'POST', {});
+        say(r.enviado ? `Mail enviado a tu casilla (${r.total} para atender).` : 'No se envió nada.');
+      } catch (err) {
+        say((err as Error).message, true);
+      }
+      break;
+    case 'catalogo-habilitar': {
+      const que = el.dataset.what as 'mensajes' | 'programa';
+      const filas = que === 'mensajes' ? mensajesIniciales.map((m, i) => mensajeAFila(m, i)) : programaInicial.map(semanaAFila);
+      try {
+        await api(que, 'POST', filas);
+        await reload(que);
+        render();
+        say('Edición habilitada. Ya podés editar los textos.');
+      } catch (err) {
+        say((err as Error).message, true);
+      }
       break;
     }
     case 'del-contacto':
@@ -1875,7 +1899,9 @@ root.querySelector('[data-tabs]')!.addEventListener('click', (e) => {
 renderTabs(0, 0);
 (async () => {
   try {
-    await Promise.all((['tareas', 'contenido', 'contactos', 'registro', 'metas', 'ventas', 'cobros', 'historial', 'mentorados', 'semanas', 'enlaces', 'reservas', 'entrantes'] as const).map((k) => reload(k)));
+    // Los textos editables son opcionales: si todavía no existen las tablas, se usan los textos iniciales
+    const opcionales = ['mensajes', 'programa'];
+    await Promise.all((['tareas', 'contenido', 'contactos', 'registro', 'metas', 'ventas', 'cobros', 'historial', 'mentorados', 'semanas', 'enlaces', 'reservas', 'mensajes', 'programa', 'entrantes'] as const).map((k) => reload(k).catch((e) => { if (!opcionales.includes(k)) throw e; })));
     render();
   } catch (err) {
     view.innerHTML = `<p class="border border-line p-6 text-mute">No se pudo cargar el panel: ${esc((err as Error).message)}. Revisá que ejecutaste supabase/admin.sql en Supabase.</p>`;

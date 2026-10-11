@@ -3,7 +3,8 @@
  * tablas y formularios). Para sumar un módulo o un campo: se agrega acá y en supabase/admin.sql.
  */
 
-import { perfiles } from './programa';
+import { pasos } from './mensajes';
+import { perfiles, tiposClase } from './programa';
 
 export type FieldType = 'text' | 'longtext' | 'select' | 'date' | 'number' | 'url' | 'uuid' | 'email' | 'bool';
 
@@ -21,7 +22,7 @@ export type Field = {
   hidden?: boolean;
 };
 
-export type ResourceKey = 'tareas' | 'contenido' | 'contactos' | 'registro' | 'metas' | 'ventas' | 'cobros' | 'historial' | 'mentorados' | 'semanas' | 'enlaces' | 'reservas';
+export type ResourceKey = 'tareas' | 'contenido' | 'contactos' | 'registro' | 'metas' | 'ventas' | 'cobros' | 'historial' | 'mentorados' | 'semanas' | 'enlaces' | 'reservas' | 'mensajes' | 'programa';
 
 export type Resource = {
   key: ResourceKey;
@@ -279,6 +280,48 @@ export const resources: Record<ResourceKey, Resource> = {
       { name: 'tarea', label: 'Tarea acordada', type: 'text', max: 600 },
       { name: 'entregable_en', label: 'Entregable recibido el', type: 'date' },
       { name: 'devolucion_url', label: 'Enlace a la devolución en video', type: 'url', max: 500 },
+    ],
+  },
+  mensajes: {
+    key: 'mensajes',
+    table: 'admin_mensajes',
+    label: 'Mensajes',
+    singular: 'mensaje',
+    pk: 'id',
+    order: 'orden.asc,created_at.asc',
+    defaults: { seguimiento: 'no cambia', paso: 'Por contactar' },
+    fields: [
+      { name: 'titulo', label: 'Título (solo para vos)', type: 'text', required: true, max: 160, list: true },
+      { name: 'paso', label: 'Se usa cuando el prospecto está en', type: 'select', options: pasos, required: true, list: true },
+      { name: 'tipos', label: 'Solo para estos tipos de prospecto (separados por coma; vacío = todos)', type: 'text', max: 200 },
+      { name: 'origenes', label: 'Solo si llegó por (separados por coma; vacío = todos)', type: 'text', max: 200 },
+      { name: 'texto', label: 'Mensaje', type: 'longtext', required: true, max: 3000 },
+      { name: 'avanza', label: 'Al marcarlo como enviado, pasa a', type: 'select', options: ['', ...pasos] },
+      { name: 'seguimiento', label: 'Seguimiento al marcarlo como enviado', type: 'select', options: ['no cambia', 'en días', 'quitar'], required: true },
+      { name: 'dias', label: 'Días hasta el seguimiento (si elegiste "en días")', type: 'number' },
+      { name: 'orden', label: 'Orden dentro del paso (menor = primero)', type: 'number', required: true },
+    ],
+  },
+  programa: {
+    key: 'programa',
+    table: 'admin_programa',
+    label: 'Programa',
+    singular: 'semana del programa',
+    pk: 'id',
+    order: 'semana.asc',
+    fields: [
+      { name: 'semana', label: 'Semana', type: 'number', required: true, list: true },
+      { name: 'titulo', label: 'Título', type: 'text', required: true, max: 160, list: true },
+      { name: 'tipo', label: 'Tipo de clase', type: 'select', options: tiposClase, required: true, list: true },
+      { name: 'objetivo', label: 'Objetivo', type: 'longtext', max: 600 },
+      { name: 'antes', label: 'Antes de la llamada (uno por renglón)', type: 'longtext', max: 1200 },
+      { name: 'llamada', label: 'En la llamada de 45 min (uno por renglón)', type: 'longtext', max: 1200 },
+      { name: 'tarea', label: 'Tarea de la semana', type: 'longtext', max: 600 },
+      { name: 'entregable', label: 'Entregable', type: 'text', max: 200 },
+      { name: 'devolucion', label: 'Qué mirar en la devolución (uno por renglón)', type: 'longtext', max: 1200 },
+      { name: 'herramientas', label: 'Herramientas y material (uno por renglón)', type: 'longtext', max: 800 },
+      { name: 'avanza', label: 'Para pasar a la semana siguiente', type: 'longtext', max: 400 },
+      ...perfiles.map((p) => ({ name: `var_${p.id}`, label: `Variante: ${p.label}`, type: 'longtext' as const, max: 600 })),
     ],
   },
   reservas: {
