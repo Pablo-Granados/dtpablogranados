@@ -7,7 +7,7 @@ export const meta = {
   titulo: 'Mapa de observación',
   subtitulo: 'Qué mirar antes de abrir el video',
   autor: 'Pablo Granados',
-  web: 'dtpablogranados.vercel.app',
+  web: 'pablogranados.com.ar',
   version: 'Versión 1',
 };
 
@@ -178,6 +178,6 @@ export const ejemplo = {
 
 export const cierre = {
   siguiente: 'Hay tres plantillas más, gratis: panel de codificación, ficha de partido y checklist semanal.',
-  texto: 'Están en la web. Y si querés trabajar este mapa con tu propio equipo, con devolución sobre tus partidos, eso es lo que hacemos en Sistema Propio: dtpablogranados.vercel.app/mentoria',
-  url: 'dtpablogranados.vercel.app/plantillas',
+  texto: 'Están en la web. Y si querés trabajar este mapa con tu propio equipo, con devolución sobre tus partidos, eso es lo que hacemos en Sistema Propio: pablogranados.com.ar/mentoria',
+  url: 'pablogranados.com.ar/plantillas',
 };

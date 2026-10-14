@@ -104,7 +104,7 @@ export async function enviarResumen(opciones: { forzar?: boolean; sinEnviar?: bo
   if (opciones.sinEnviar) return { enviado: false, total, secciones: secciones.map((s) => ({ titulo: s.titulo, items: s.items.length })) };
   if (!total && !opciones.forzar) return { enviado: false, total, motivo: 'Sin pendientes' };
 
-  const site = (env('SITE_URL') ?? 'https://dtpablogranados.vercel.app').replace(/\/$/, '');
+  const site = (env('SITE_URL') ?? 'https://pablogranados.com.ar').replace(/\/$/, '');
   const owner = ownerEmail();
   if (!owner) throw new Error('Falta GMAIL_USER');
 

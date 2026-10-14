@@ -124,8 +124,8 @@ const ejemploPasos = [
 
 const cierre = {
   titulo: 'Hay más plantillas gratis',
-  texto: 'Mapa de observación, ficha de partido y checklist semanal, en la web. Y si querés armar tu panel con devolución sobre tus partidos, eso es lo que hacemos en Sistema Propio: dtpablogranados.vercel.app/mentoria',
-  url: 'dtpablogranados.vercel.app/plantillas',
+  texto: 'Mapa de observación, ficha de partido y checklist semanal, en la web. Y si querés armar tu panel con devolución sobre tus partidos, eso es lo que hacemos en Sistema Propio: pablogranados.com.ar/mentoria',
+  url: 'pablogranados.com.ar/plantillas',
 };
 
 /* ------------------------------ PDF ------------------------------ */

@@ -114,8 +114,8 @@ function buildPdf(file) {
   doc.moveDown(0.6);
   P.closing(ctx, {
     titulo: 'Hay más plantillas gratis',
-    texto: 'Mapa de observación, panel de codificación y ficha de partido, en la web. Y si querés armar tu semana con acompañamiento, eso es lo que hacemos en Sistema Propio: dtpablogranados.vercel.app/mentoria',
-    url: 'dtpablogranados.vercel.app/plantillas',
+    texto: 'Mapa de observación, panel de codificación y ficha de partido, en la web. Y si querés armar tu semana con acompañamiento, eso es lo que hacemos en Sistema Propio: pablogranados.com.ar/mentoria',
+    url: 'pablogranados.com.ar/plantillas',
   });
   P.finish(ctx);
 }

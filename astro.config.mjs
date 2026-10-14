@@ -5,7 +5,7 @@ import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
 
 // Cambiar por el dominio definitivo cuando esté comprado.
-const SITE_URL = 'https://pablogranados.com';
+const SITE_URL = 'https://pablogranados.com.ar';
 
 export default defineConfig({
   site: SITE_URL,
