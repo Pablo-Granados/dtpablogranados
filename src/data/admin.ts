@@ -93,17 +93,36 @@ export const productos: readonly Producto[] = [
     id: 'sistema',
     nombre: 'Sistema Propio',
     cobros: [
-      { concepto: 'Cuota 1 de 3', usd: 250, dias: 0 },
-      { concepto: 'Cuota 2 de 3', usd: 250, dias: 42 },
-      { concepto: 'Cuota 3 de 3', usd: 190, dias: 84 },
+      { concepto: 'Cuota 1 de 3', usd: 600, dias: 0 },
+      { concepto: 'Cuota 2 de 3', usd: 450, dias: 28 },
+      { concepto: 'Cuota 3 de 3', usd: 450, dias: 56 },
     ],
   },
   {
     id: 'fundadora',
     nombre: 'Sistema Propio · Fundadora',
     cobros: [
-      { concepto: 'Cuota 1 de 2', usd: 175, dias: 0 },
-      { concepto: 'Cuota 2 de 2', usd: 175, dias: 42 },
+      { concepto: 'Cuota 1 de 2', usd: 375, dias: 0 },
+      { concepto: 'Cuota 2 de 2', usd: 375, dias: 42 },
+    ],
+  },
+  { id: 'intensivo', nombre: 'Intensivo de pretemporada', cobros: [{ concepto: 'Pago único', usd: 490, dias: 0 }] },
+  {
+    id: 'pro',
+    nombre: 'Sistema Propio Pro',
+    cobros: [
+      { concepto: 'Cuota 1 de 3', usd: 1000, dias: 0 },
+      { concepto: 'Cuota 2 de 3', usd: 950, dias: 42 },
+      { concepto: 'Cuota 3 de 3', usd: 950, dias: 84 },
+    ],
+  },
+  {
+    id: 'cuerpo-tecnico',
+    nombre: 'Cuerpo Técnico',
+    cobros: [
+      { concepto: 'Cuota 1 de 3', usd: 1000, dias: 0 },
+      { concepto: 'Cuota 2 de 3', usd: 700, dias: 28 },
+      { concepto: 'Cuota 3 de 3', usd: 700, dias: 56 },
     ],
   },
   { id: 'seguimiento', nombre: 'Plan Seguimiento', recurrente: true, cobros: [{ concepto: 'Mes 1', usd: 220, dias: 0 }] },

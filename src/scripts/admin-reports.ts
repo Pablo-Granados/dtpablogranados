@@ -114,7 +114,7 @@ export function proyeccionView(d: Data, p: Proy, conv: number | null) {
   const escenarios = [escenario('Cauteloso', 1, p.ticket), escenario('Base', 2, p.ticket), escenario('Ambicioso', 4, p.ticket), escenario('El tuyo', p.nuevos, p.ticket)];
 
   const precios = ['seguimiento', 'integral', 'medida'].map((id) => productos.find((x) => x.id === id)!);
-  const cubren = [...precios.map((x) => ({ nombre: x.nombre + ' (por mes)', precio: x.cobros[0].usd })), { nombre: 'Sesión 1:1 (venta suelta)', precio: 80 }, { nombre: 'Sistema Propio (venta suelta)', precio: 690 }]
+  const cubren = [...precios.map((x) => ({ nombre: x.nombre + ' (por mes)', precio: x.cobros[0].usd })), { nombre: 'Sesión 1:1 (venta suelta)', precio: 80 }, { nombre: 'Sistema Propio (venta suelta)', precio: 1500 }]
     .map((x) => `<tr><td class="px-3 py-3 font-medium text-bone">${esc(x.nombre)}</td><td class="px-3 py-3 text-mute">USD ${num(x.precio)}</td><td class="px-3 py-3 text-bone">${brecha ? Math.ceil(brecha / x.precio) : 0}</td></tr>`)
     .join('');
 
