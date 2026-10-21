@@ -48,6 +48,67 @@ export type Semana = {
   variantes: Record<Perfil, string>;
 };
 
+/**
+ * Onboarding de Sistema Propio: qué hacer desde que alguien confirma hasta que termina la semana 1.
+ * Los mensajes listos para enviar están en el panel → Mensajes (pasos "Onboarding 1" a "Onboarding 4").
+ */
+export const onboarding: readonly { cuando: string; titulo: string; items: readonly string[] }[] = [
+  {
+    cuando: 'Día 0 · al confirmar el pago',
+    titulo: 'Dejar todo registrado',
+    items: [
+      'Registrar la venta en Vender → Ventas (producto "Sistema Propio" o "Fundadora"): se crean los cobros de las cuotas',
+      'Crear la ficha en Mentoría → Mentorados: se arman sus 12 semanas',
+      'Mandar el mensaje "Onboarding 1" con las condiciones del programa y el formulario de inicio',
+      'Crear una carpeta compartida con tres subcarpetas: Entregables, Devoluciones y Material',
+      'Darle acceso al módulo de entrenadores de Futsal Hub y compartirle el banco de informes modelo',
+      'Si está entre las primeras 3 personas de la camada, anotar y agendar el bono de revisión de un partido real en vivo',
+    ],
+  },
+  {
+    cuando: 'Hasta 3 días antes de la primera llamada',
+    titulo: 'Que llegue con lo necesario',
+    items: [
+      'Confirmar que reservó la primera llamada en Cal.com (y las 12 si se acuerda un horario fijo)',
+      'Mandar el mensaje "Onboarding 2": equipo, dos partidos, herramienta y un análisis previo',
+      'Revisar su aplicación y el formulario de inicio para llegar con su perfil definido',
+      'Preparar su plan personal en blanco (semana 1) según su perfil',
+    ],
+  },
+  {
+    cuando: 'Día de la primera llamada',
+    titulo: 'La llamada de arranque',
+    items: [
+      'Mandar el recordatorio de "Onboarding 3" el día anterior',
+      'Medir la foto de partida: cuánto le lleva hoy un informe, qué entrega y a quién',
+      'Acordar el objetivo de la semana 12 y un entregable medible (por ejemplo, "un informe de rival en 90 minutos")',
+      'Acordar equipo, partidos y horas por semana; dejar el horario fijo para las 12 llamadas',
+    ],
+  },
+  {
+    cuando: 'Primeras 24 horas después',
+    titulo: 'Cerrar la semana 1',
+    items: [
+      'Mandar el mensaje "Onboarding 4" con lo acordado por escrito',
+      'Cargar en la ficha: equipo y video, objetivo y dónde está trabado',
+      'Agendar la llamada de control a los 30 días de terminar el programa (campo "Llamada de control")',
+      'Programar el pedido de testimonio para la semana 12',
+      'Anotar en la ficha qué hay que entregarle al terminar: certificado y, si quiere, su perfil en /egresados',
+    ],
+  },
+];
+
+/** Condiciones que se envían antes del primer pago. REVISAR con asesor legal antes de usar como contrato. */
+export const condiciones: readonly string[] = [
+  'El programa dura 12 semanas e incluye 12 llamadas 1:1 de 45 minutos. Las llamadas se reprograman con al menos 24 horas de aviso; una reprogramación por persona sin costo.',
+  'El pago se hace en 3 cuotas (al iniciar, semana 5 y semana 9) o completo por adelantado con 10% de descuento. Desde Argentina, por transferencia; desde el exterior, por ARQ o Takenos.',
+  'Podés pedir la devolución dentro de las 2 primeras semanas. Cada semana cursada se cobra a valor proporcional (el precio dividido 12) y se devuelve el resto.',
+  'El programa pide entre 4 y 6 horas por semana y acceso a video de un equipo durante las 12 semanas. Los resultados dependen del trabajo semanal.',
+  'Todo el video, los datos y los informes que compartas se tratan como confidenciales y no se publican sin tu permiso por escrito.',
+  'Si aceptás participar como caso de estudio (cohorte fundadora), se usará tu trabajo sin datos sensibles.',
+  'El programa no incluye conseguir trabajo en un club ni garantiza un resultado deportivo.',
+];
+
 export const programa: readonly Semana[] = [
   {
     n: 1,

@@ -1,5 +1,5 @@
 /** Vista del panel con la hoja de ruta de Sistema Propio: 12 semanas, tipos de clase y variantes por perfil. */
-import { etapasPrograma, perfiles, tiposClase, type Perfil, type Semana, type TipoClase } from '@/data/programa';
+import { condiciones, etapasPrograma, onboarding, perfiles, tiposClase, type Perfil, type Semana, type TipoClase } from '@/data/programa';
 import { edicionHabilitada, programaActual } from './admin-catalogo';
 import { bannerEdicion } from './admin-textos';
 import { btn, esc, type Data } from './admin-utils';
@@ -53,6 +53,24 @@ function tarjeta(s: Semana, f: ProgramaFiltro, d: Data) {
   </details>`;
 }
 
+function onboardingView() {
+  const pasos = onboarding
+    .map(
+      (o) => `<div class="border border-line bg-panel p-4"><p class="tag text-signal">${esc(o.cuando)}</p><h4 class="mt-2 font-medium text-bone">${esc(o.titulo)}</h4>${lista(o.items)}</div>`,
+    )
+    .join('');
+  return `<details class="group mt-6 border border-signal/40 bg-panel">
+    <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-4 md:p-5 [&::-webkit-details-marker]:hidden">
+      <span><span class="tag block text-signal">Antes de la semana 1</span><span class="mt-1 block font-medium text-bone">Onboarding y condiciones</span></span>
+      <span class="font-mono text-signal transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+    </summary>
+    <div class="border-t border-line p-4 md:p-6">
+      <div class="grid gap-3 md:grid-cols-2">${pasos}</div>
+      <div class="mt-5 border border-line p-4"><h4 class="tag text-faint">Condiciones del programa (se envían antes del primer pago)</h4>${lista(condiciones)}</div>
+    </div>
+  </details>`;
+}
+
 export function programaView(f: ProgramaFiltro, d: Data) {
   const select = (name: string, label: string, valor: string, opciones: readonly { v: string; l: string }[]) =>
     `<label class="grid gap-2 text-sm text-mute">${label}<select data-action="${name}" class="border border-line-strong bg-ink px-3 py-2.5 text-base text-bone focus:border-signal focus:outline-none">${opciones.map((o) => `<option value="${esc(o.v)}"${o.v === valor ? ' selected' : ''}>${esc(o.l)}</option>`).join('')}</select></label>`;
@@ -67,6 +85,7 @@ export function programaView(f: ProgramaFiltro, d: Data) {
 
   return `${bannerEdicion(d, 'programa')}<p class="max-w-3xl text-mute">Tu hoja de ruta de las 12 semanas: qué prepararte, qué hacer en cada llamada, qué revisar en la devolución y cómo cambia según quién sea la persona. Es solo para vos; no se muestra en la web.</p>
   <ol class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">${mapa}</ol>
+  ${onboardingView()}
   <div class="mt-6 grid gap-4 sm:grid-cols-2 md:max-w-2xl">
     ${select('programa-perfil', 'Ver para el perfil', f.perfil, [{ v: 'todos', l: 'Todos los perfiles' }, ...perfiles.map((p) => ({ v: p.id, l: p.label }))])}
     ${select('programa-tipo', 'Tipo de clase', f.tipo, [{ v: 'todos', l: 'Todos los tipos' }, ...tiposClase.map((t) => ({ v: t, l: t }))])}

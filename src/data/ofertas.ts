@@ -4,7 +4,7 @@
  *
  * Los CTA que apuntan a WhatsApp son temporales, hasta tener los formularios propios.
  */
-import { pricing, installmentsText, session } from './mentoria';
+import { pricing, installmentsText, session, tiers, upfrontDiscount } from './mentoria';
 import { cta, wa } from './site';
 
 export type Offer = {
@@ -91,6 +91,25 @@ export const chapters: Chapter[] = [
     lead: 'Para entrenadores y analistas que quieren mejorar su propio proceso. De lo más corto a lo más profundo.',
     offers: [
       {
+        id: 'mini-taller',
+        name: 'Mini-taller: tu primer informe de rival',
+        summary: 'Una hora de video para armar tu primer informe de rival de una página, paso a paso, con la plantilla lista.',
+        items: [
+          'Video grabado de 60 minutos, para ver a tu ritmo',
+          'Plantilla del informe de rival y checklist de observación',
+          'Acceso de por vida',
+          'Se coordina por WhatsApp: pagás por transferencia en pesos y te lo envío por mail al confirmar',
+        ],
+        price: 'ARS 9.900',
+        priceNote: 'Pago único por transferencia en pesos',
+        badge: 'Para empezar',
+        cta: {
+          label: 'Pedirlo por WhatsApp',
+          href: wa('Hola Pablo, quiero comprar el mini-taller "Tu primer informe de rival".'),
+          event: 'cta_mini_taller',
+        },
+      },
+      {
         id: 'ebook',
         name: 'Ebook "Leé el Partido"',
         summary: 'La forma de mirar un partido antes de analizarlo, con un glosario para usar los mismos términos.',
@@ -127,6 +146,26 @@ export const chapters: Chapter[] = [
         },
       },
       {
+        id: 'taller',
+        name: 'Taller en vivo: informe de rival de punta a punta',
+        summary: 'Tres encuentros en vivo, en grupo reducido, para armar un informe de rival real con tu propio video.',
+        items: [
+          '3 encuentros en vivo de 90 minutos, con cupo de hasta 12 personas',
+          'Armás un informe de rival real y recibís una devolución en video, individual',
+          'Incluye el mini-taller, las plantillas, el ebook "Leé el Partido" y las grabaciones',
+          `Si en los ${session.creditDays} días siguientes entrás a Sistema Propio, los USD 120 se descuentan del precio (no se suma al crédito de la sesión 1:1)`,
+          'Cómo se reserva: me escribís por WhatsApp, abonás y te confirmo las fechas del próximo grupo',
+        ],
+        price: 'USD 120',
+        priceNote: 'Pago único, bonificado si pasás a la mentoría',
+        badge: 'Grupo reducido',
+        cta: {
+          label: 'Reservar por WhatsApp',
+          href: wa('Hola Pablo, quiero reservar un lugar en el taller en vivo "Informe de rival de punta a punta" (USD 120).'),
+          event: 'cta_taller',
+        },
+      },
+      {
         id: 'mentoria',
         name: 'Sistema Propio',
         summary: 'Mentoría 1:1 de 12 semanas. Construís tu sistema de análisis sobre tu equipo real.',
@@ -134,12 +173,15 @@ export const chapters: Chapter[] = [
           `${pricing.weeks} llamadas 1:1 de 45 minutos`,
           '5 entregables con devolución en video',
           'Consultas de lunes a viernes, respuesta en 24 horas',
-          'Plantillas, ebook y llamada de control a los 30 días',
+          'Plantillas, ebook, bonos (Futsal Hub para entrenadores, banco de informes, certificado) y llamada de control a los 30 días',
+          `Niveles superiores: Pro (${usd(tiers[2].price)}), Cuerpo Técnico (${usd(tiers[3].price)}) e Intensivo (${usd(tiers[0].price)})`,
+          `Pagando todo por adelantado, ${Math.round(upfrontDiscount * 100)}% de descuento`,
           `Si hiciste una sesión 1:1 en los últimos ${session.creditDays} días, se descuentan ${usd(session.price)}`,
         ],
         price: usd(pricing.full),
         priceNote: `${pricing.installments.length} cuotas: ${installmentsText(pricing.installments)}`,
         badge: '3 lugares simultáneos',
+        // Pagando todo por adelantado hay descuento; ver mentoria.ts.
         extra:
           pricing.founders.spots > 0
             ? {

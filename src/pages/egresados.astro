@@ -1,0 +1,70 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/ui/Button.astro';
+import { cta } from '@/data/site';
+import { cohort } from '@/data/mentoria';
+import { egresados } from '@/data/egresados';
+
+const hayEgresados = egresados.length > 0;
+---
+
+<Base
+  title="Egresados de Sistema Propio"
+  description="Quienes completaron Sistema Propio, la mentoría 1:1 de análisis para fútbol y futsal."
+  noindex={!hayEgresados}
+>
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+    <div class="page relative py-16 md:py-24" data-reveal>
+      <p class="tag reveal text-signal">Sistema Propio</p>
+      <h1 class="display reveal mt-6 max-w-4xl text-5xl text-bone sm:text-7xl lg:text-8xl" style="--d:.06s">Egresados</h1>
+      <p class="reveal mt-6 max-w-2xl text-xl leading-relaxed text-mute" style="--d:.12s">
+        Entrenadores y analistas que armaron su propio sistema de análisis durante las 12 semanas.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-24" aria-label="Egresados">
+    <div class="page">
+      {
+        hayEgresados ? (
+          <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {
+              egresados.map((e, i) => (
+                <li class="reveal border border-line bg-panel p-6" data-reveal style={`--d:${i * 0.05}s`}>
+                  <p class="tag text-signal">{e.camada}</p>
+                  <h2 class="mt-3 text-xl font-semibold text-bone">{e.nombre}</h2>
+                  <p class="mt-1 text-mute">
+                    {e.rol}
+                    {e.equipo ? ` · ${e.equipo}` : ''}
+                  </p>
+                  {e.frase && <p class="mt-4 leading-relaxed text-bone">“{e.frase}”</p>}
+                  {e.instagram && (
+                    <a
+                      href={`https://instagram.com/${e.instagram}`}
+                      target="_blank"
+                      rel="noopener"
+                      class="tag mt-5 inline-block text-faint hover:text-bone"
+                      data-umami-event="out_instagram"
+                    >
+                      @{e.instagram}
+                    </a>
+                  )}
+                </li>
+              ))
+            }
+          </ul>
+        ) : (
+          <div class="max-w-2xl border border-line p-8">
+            <p class="text-lg leading-relaxed text-mute">
+              Todavía no hay egresados: la primera camada arranca el {cohort.start}. Si querés estar en la próxima, aplicá.
+            </p>
+            <div class="mt-6">
+              <Button href={cta.aplicar.href} event={cta.aplicar.event} place="egresados-vacio">{cta.aplicar.label}</Button>
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</Base>

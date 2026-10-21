@@ -6,20 +6,20 @@
 export const pricing = {
   currency: 'USD',
   weeks: 12,
-  full: 690,
-  /** Cuotas en orden. `when` es el momento de cada pago. */
+  full: 1500,
+  /** Cuotas en orden. `when` es el momento de cada pago. Todo se cobra antes de la semana 9. */
   installments: [
-    { amount: 250, when: 'al iniciar' },
-    { amount: 250, when: 'a la mitad del programa' },
-    { amount: 190, when: 'al finalizar' },
+    { amount: 600, when: 'al iniciar' },
+    { amount: 450, when: 'en la semana 5' },
+    { amount: 450, when: 'en la semana 9' },
   ],
   /** Cohorte fundadora: precio reducido a cambio de testimonio y caso de estudio. Poner `spots: 0` para ocultarla. */
   founders: {
-    price: 350,
+    price: 750,
     spots: 3,
     installments: [
-      { amount: 175, when: 'al iniciar' },
-      { amount: 175, when: 'a la mitad del programa' },
+      { amount: 375, when: 'al iniciar' },
+      { amount: 375, when: 'a la mitad del programa' },
     ],
   },
 };
@@ -27,7 +27,7 @@ export const pricing = {
 /** Sesión 1:1: su valor se bonifica en la mentoría si la persona entra dentro del plazo. */
 export const session = { price: 80, creditDays: 30 };
 
-/** Texto de cuotas listo para mostrar: "250 al iniciar · 250 a la mitad del programa · 190 al finalizar". */
+/** Texto de cuotas listo para mostrar: "600 al iniciar · 450 en la semana 5 · 450 en la semana 9". */
 export const installmentsText = (list: { amount: number; when: string }[]) =>
   list.map((i) => `${pricing.currency} ${i.amount} ${i.when}`).join(' · ');
 
@@ -36,6 +36,75 @@ export const guarantee = {
   windowWeeks: 2,
   weekValue: (price: number) => Math.round((price / pricing.weeks) * 100) / 100,
 };
+
+/** Pago completo por adelantado: descuento sobre el precio de lista. */
+export const upfrontDiscount = 0.1;
+
+/** Niveles de la escalera. El estándar toma sus números de `pricing`; el resto se ajusta acá. */
+export const tiers = [
+  {
+    id: 'intensivo',
+    name: 'Intensivo de pretemporada',
+    weeks: 4,
+    price: 490,
+    summary: 'Para entrar al método sin comprometer 12 semanas: un mapa de observación, un panel y un informe de rival hechos con tu equipo.',
+    items: ['4 llamadas 1:1 de 45 minutos', 'Mapa de observación, panel propio e informe de rival', 'Plantillas y ebook "Leé el Partido"', 'Si seguís con Sistema Propio, el intensivo se descuenta'],
+    note: 'Se hace antes de que arranque la temporada.',
+  },
+  {
+    id: 'estandar',
+    name: 'Sistema Propio',
+    weeks: pricing.weeks,
+    price: pricing.full,
+    summary: 'El programa completo: tu sistema de análisis funcionando sobre tu equipo real.',
+    items: ['12 llamadas 1:1 de 45 minutos', '5 entregables con devolución en video', 'Consultas de lunes a viernes, respuesta en 24 horas', 'Llamada de control a los 30 días'],
+    note: 'El más elegido.',
+  },
+  {
+    id: 'pro',
+    name: 'Sistema Propio Pro',
+    weeks: 24,
+    price: 2900,
+    summary: 'El programa completo más 12 semanas de implementación: analizamos tus partidos reales, semana a semana, con vos.',
+    items: ['Todo Sistema Propio', '12 semanas más: revisión de tus partidos reales y de tu rival de turno', 'Respuesta en el día por WhatsApp', 'Una presentación al cuerpo técnico, preparada y ensayada juntos'],
+    note: 'Cupo de 2 personas por cohorte.',
+  },
+  {
+    id: 'cuerpo-tecnico',
+    name: 'Cuerpo Técnico',
+    weeks: pricing.weeks,
+    price: 2400,
+    summary: 'Para 2 o 3 personas del mismo staff que quieren trabajar con el mismo sistema.',
+    items: ['Programa de 12 semanas para hasta 3 personas', 'Un plan único y un panel compartido', 'Informe de rival y propio hechos por el staff', 'Llamada de control a los 30 días'],
+    note: 'Un solo equipo, un solo método.',
+  },
+] as const;
+
+/** Bonos incluidos en Sistema Propio y en los niveles superiores. */
+export const bonuses = [
+  {
+    title: 'Módulo de entrenadores de Futsal Hub',
+    body: 'Acceso durante las 12 semanas a la herramienta con la que gestiono plantel, minutos jugados, mapas de calor y seguimiento en vivo. La usás con tu propio equipo.',
+  },
+  {
+    title: 'Banco de informes modelo y plantillas',
+    body: 'Informes reales de rival, de partido propio y de jugador, para copiar la estructura, y todas las plantillas del programa en versión editable.',
+  },
+  {
+    title: 'Certificado y perfil de egresado',
+    body: 'Un certificado con el detalle de tus entregables y, si querés, tu perfil en la página de egresados de la web.',
+  },
+] as const;
+
+/** Bono de acción rápida: solo para las primeras personas que confirman cada camada. */
+export const fastAction = {
+  title: 'Revisión de un partido real en vivo',
+  body: 'Una llamada extra donde analizamos juntos un partido real de tu equipo, con vos viendo cómo lo hago.',
+  spots: 3,
+};
+
+/** Cuándo abre la próxima cohorte. Actualizar acá cada vez que se abre una. */
+export const cohort = { label: 'Próxima cohorte', start: 'miércoles 2 de diciembre de 2026', startDate: '2026-12-02', spots: 3, open: true };
 
 export const problem = {
   title: 'Mirás muchos partidos. Pocos terminan en una decisión.',
@@ -126,7 +195,7 @@ export const faq = [
   },
   {
     q: '¿Cómo se paga?',
-    a: 'En 3 cuotas: la primera al iniciar, la segunda a la mitad del programa y la última al finalizar. Desde Argentina, por transferencia. Desde otros países, por ARQ o Takenos.',
+    a: 'En 3 cuotas: USD 600 al iniciar, USD 450 en la semana 5 y USD 450 en la semana 9. Pagando todo por adelantado tenés un 10% de descuento (USD 1.350). Desde Argentina, por transferencia. Desde otros países, por ARQ o Takenos.',
   },
   {
     q: 'Hice una sesión 1:1, ¿se descuenta?',
@@ -134,6 +203,6 @@ export const faq = [
   },
   {
     q: '¿Qué pasa si empiezo y no es para mí?',
-    a: 'Podés pedir la devolución dentro de las 2 primeras semanas. Cada semana que cursaste se cobra a valor proporcional (el precio dividido 12) y el resto te lo devuelvo. Ejemplo: si pagaste USD 690 y hiciste 1 semana, esa semana son USD 57,50 y te devuelvo USD 632,50.',
+    a: 'Podés pedir la devolución dentro de las 2 primeras semanas. Cada semana que cursaste se cobra a valor proporcional (el precio dividido 12) y el resto te lo devuelvo. Ejemplo: si pagaste USD 1.500 y hiciste 1 semana, esa semana son USD 125 y te devuelvo USD 1.375.',
   },
 ] as const;
