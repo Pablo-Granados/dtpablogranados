@@ -2,7 +2,7 @@
 import Base from '@/layouts/Base.astro';
 import Button from '@/components/ui/Button.astro';
 import { cta, site } from '@/data/site';
-import { pricing, installmentsText, guarantee, session, problem, forWho, stages, includes, faq, tiers, bonuses, cohort, upfrontDiscount } from '@/data/mentoria';
+import { pricing, installmentsText, guarantee, session, problem, forWho, stages, includes, faq, tiers, cohort, upfrontDiscount } from '@/data/mentoria';
 
 const fmt = (n: number) =>
   `${pricing.currency} ${n.toLocaleString('es-AR', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2 })}`;
@@ -36,6 +36,13 @@ const schema = [
     <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
     <div class="page relative grid gap-12 py-16 md:py-24 lg:grid-cols-12 lg:items-end">
       <div class="lg:col-span-8" data-reveal>
+        {
+          cohort.open && (
+            <p class="tag reveal mb-5 inline-block border border-signal/60 px-3 py-1.5 text-signal">
+              Inscripción abierta · Arranca el {cohort.start}
+            </p>
+          )
+        }
         <p class="tag reveal flex flex-wrap items-center gap-x-3 gap-y-1 text-mute">
           <span class="text-signal">Mentoría 1:1</span><span aria-hidden="true">/</span>
           <span>12 semanas</span><span aria-hidden="true">/</span>
@@ -149,24 +156,6 @@ const schema = [
           </ul>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Bonos -->
-  <section class="border-y border-line bg-panel py-20 md:py-28" aria-labelledby="bonos-title">
-    <div class="page">
-      <p class="tag text-signal">Además</p>
-      <h2 id="bonos-title" class="display mt-3 mb-10 text-4xl text-bone md:text-5xl">Bonos incluidos</h2>
-      <ul class="grid gap-x-10 gap-y-8 sm:grid-cols-2" data-reveal>
-        {
-          bonuses.map((b, i) => (
-            <li class="reveal border-t border-line pt-5" style={`--d:${i * 0.05}s`}>
-              <h3 class="font-semibold text-bone">{b.title}</h3>
-              <p class="mt-2 leading-relaxed text-mute">{b.body}</p>
-            </li>
-          ))
-        }
-      </ul>
     </div>
   </section>
 

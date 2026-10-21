@@ -80,7 +80,7 @@ export const tiers = [
   },
 ] as const;
 
-/** Bonos incluidos en Sistema Propio y los niveles superiores. */
+/** Bonos: PENDIENTE de definir con Pablo. No se muestran en la web todavía (ver mentoria.astro). */
 export const bonuses = [
   { title: 'Revisión de un partido en vivo', body: 'Un partido real de tu equipo analizado juntos, con vos viendo cómo lo hago.' },
   { title: 'Banco de informes modelo', body: 'Informes de rival, de partido propio y de jugador reales, para copiar la estructura.' },
@@ -89,7 +89,7 @@ export const bonuses = [
 ] as const;
 
 /** Cuándo abre la próxima cohorte. Actualizar acá cada vez que se abre una. */
-export const cohort = { label: 'Próxima cohorte', start: 'A confirmar', spots: 3 };
+export const cohort = { label: 'Próxima cohorte', start: 'miércoles 2 de diciembre de 2026', startDate: '2026-12-02', spots: 3, open: true };
 
 export const problem = {
   title: 'Mirás muchos partidos. Pocos terminan en una decisión.',

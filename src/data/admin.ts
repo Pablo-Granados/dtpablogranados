@@ -88,6 +88,8 @@ export const metaTypes: readonly { tipo: string; etiqueta: string; periodo: 'sem
  */
 export type Producto = { id: string; nombre: string; cobros: { concepto: string; usd: number; dias: number }[]; ars?: number; /** Se cobra todos los meses hasta dar de baja. */ recurrente?: boolean };
 export const productos: readonly Producto[] = [
+  { id: 'mini-taller', nombre: 'Mini-taller: informe de rival', ars: 9900, cobros: [{ concepto: 'Pago único', usd: 0, dias: 0 }] },
+  { id: 'taller', nombre: 'Taller en vivo: informe de rival', cobros: [{ concepto: 'Pago único', usd: 120, dias: 0 }] },
   { id: 'sesion', nombre: 'Sesión 1:1', cobros: [{ concepto: 'Pago único', usd: 80, dias: 0 }] },
   {
     id: 'sistema',
