@@ -61,6 +61,8 @@ export const onboarding: readonly { cuando: string; titulo: string; items: reado
       'Crear la ficha en Mentoría → Mentorados: se arman sus 12 semanas',
       'Mandar el mensaje "Onboarding 1" con las condiciones del programa y el formulario de inicio',
       'Crear una carpeta compartida con tres subcarpetas: Entregables, Devoluciones y Material',
+      'Darle acceso al módulo de entrenadores de Futsal Hub y compartirle el banco de informes modelo',
+      'Si está entre las primeras 3 personas de la camada, anotar y agendar el bono de revisión de un partido real en vivo',
     ],
   },
   {
@@ -91,6 +93,7 @@ export const onboarding: readonly { cuando: string; titulo: string; items: reado
       'Cargar en la ficha: equipo y video, objetivo y dónde está trabado',
       'Agendar la llamada de control a los 30 días de terminar el programa (campo "Llamada de control")',
       'Programar el pedido de testimonio para la semana 12',
+      'Anotar en la ficha qué hay que entregarle al terminar: certificado y, si quiere, su perfil en /egresados',
     ],
   },
 ];

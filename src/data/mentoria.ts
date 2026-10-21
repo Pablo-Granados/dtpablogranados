@@ -80,13 +80,28 @@ export const tiers = [
   },
 ] as const;
 
-/** Bonos: PENDIENTE de definir con Pablo. No se muestran en la web todavía (ver mentoria.astro). */
+/** Bonos incluidos en Sistema Propio y en los niveles superiores. */
 export const bonuses = [
-  { title: 'Revisión de un partido en vivo', body: 'Un partido real de tu equipo analizado juntos, con vos viendo cómo lo hago.' },
-  { title: 'Banco de informes modelo', body: 'Informes de rival, de partido propio y de jugador reales, para copiar la estructura.' },
-  { title: 'Certificado de finalización', body: 'Con el detalle de tus entregables, para tu CV o tu portfolio.' },
-  { title: 'Comunidad de egresados', body: 'Un grupo cerrado con quienes pasaron por el programa: dudas, partidos y ofertas de trabajo.' },
+  {
+    title: 'Módulo de entrenadores de Futsal Hub',
+    body: 'Acceso durante las 12 semanas a la herramienta con la que gestiono plantel, minutos jugados, mapas de calor y seguimiento en vivo. La usás con tu propio equipo.',
+  },
+  {
+    title: 'Banco de informes modelo y plantillas',
+    body: 'Informes reales de rival, de partido propio y de jugador, para copiar la estructura, y todas las plantillas del programa en versión editable.',
+  },
+  {
+    title: 'Certificado y perfil de egresado',
+    body: 'Un certificado con el detalle de tus entregables y, si querés, tu perfil en la página de egresados de la web.',
+  },
 ] as const;
+
+/** Bono de acción rápida: solo para las primeras personas que confirman cada camada. */
+export const fastAction = {
+  title: 'Revisión de un partido real en vivo',
+  body: 'Una llamada extra donde analizamos juntos un partido real de tu equipo, con vos viendo cómo lo hago.',
+  spots: 3,
+};
 
 /** Cuándo abre la próxima cohorte. Actualizar acá cada vez que se abre una. */
 export const cohort = { label: 'Próxima cohorte', start: 'miércoles 2 de diciembre de 2026', startDate: '2026-12-02', spots: 3, open: true };

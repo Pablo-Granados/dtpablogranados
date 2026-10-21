@@ -4,7 +4,7 @@
  * Orden importa: dentro de un mismo paso, el primero que coincide con el prospecto es el sugerido.
  */
 import { clubPlans } from './ofertas';
-import { pricing, installmentsText, cohort, guarantee } from './mentoria';
+import { pricing, installmentsText, cohort, guarantee, fastAction } from './mentoria';
 
 export type Mensaje = {
   id: string;
@@ -193,6 +193,8 @@ Está todo acá: {sitio}/mentoria. Si te interesa, aplicás en {sitio}/mentoria/
 • 5 entregables (plan, mapa de observación, panel propio, informes y presentación) con devolución en video.
 • Consultas de lunes a viernes, con respuesta dentro de las 24 horas.
 • Plantillas, ebook y una llamada de control a los 30 días.
+• De regalo: acceso al módulo de entrenadores de Futsal Hub durante el programa, un banco de informes modelo y un certificado de finalización.
+• Para las primeras ${fastAction.spots} personas de la camada: una llamada extra para analizar juntos un partido real de tu equipo.
 
 Inversión: ${usd(pricing.full)} (${installmentsText(pricing.installments)}). Pagando todo junto, 10% de descuento.
 Arranca el ${inicio}. Podés pedir la devolución dentro de las primeras ${guarantee.windowWeeks} semanas.
@@ -318,6 +320,7 @@ Te dejo los próximos pasos:
 2) Completá el formulario de inicio: [link]. Me sirve para llegar a la primera llamada con tu plan casi armado.
 3) Reservá tu primera llamada acá: [link de Cal.com].
 4) Elegí el equipo y dos partidos completos en video con los que vamos a trabajar las ${pricing.weeks} semanas.
+5) Te paso el acceso al módulo de entrenadores de Futsal Hub: [datos de acceso].
 
 Cualquier duda, escribime por acá.`,
   },

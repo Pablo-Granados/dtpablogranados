@@ -173,7 +173,7 @@ export const chapters: Chapter[] = [
           `${pricing.weeks} llamadas 1:1 de 45 minutos`,
           '5 entregables con devolución en video',
           'Consultas de lunes a viernes, respuesta en 24 horas',
-          'Plantillas, ebook y llamada de control a los 30 días',
+          'Plantillas, ebook, bonos (Futsal Hub para entrenadores, banco de informes, certificado) y llamada de control a los 30 días',
           `Niveles superiores: Pro (${usd(tiers[2].price)}), Cuerpo Técnico (${usd(tiers[3].price)}) e Intensivo (${usd(tiers[0].price)})`,
           `Pagando todo por adelantado, ${Math.round(upfrontDiscount * 100)}% de descuento`,
           `Si hiciste una sesión 1:1 en los últimos ${session.creditDays} días, se descuentan ${usd(session.price)}`,
