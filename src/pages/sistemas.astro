@@ -1,0 +1,247 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/ui/Button.astro';
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import {
+  sistemaHero,
+  sistemaEvidencia,
+  sistemaProblema,
+  sistemaModulos,
+  sistemaCasos,
+  sistemaPasos,
+  sistemaPlanes,
+  sistemaCondiciones,
+  sistemaFaq,
+} from '@/data/sistemas';
+
+const CTA = '/equipos?necesidad=herramientas';
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Sistemas a medida para clubes y agencias deportivas',
+    description: sistemaHero.lead,
+    provider: { '@type': 'Person', name: 'Pablo Granados' },
+    areaServed: 'Argentina y Latinoamérica',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: sistemaFaq.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+];
+---
+
+<Base
+  title="Sistemas a medida para clubes y agencias"
+  description="Cuotas, plantel, partidos y panel de dirigentes en un solo sistema, hecho a medida para tu club o agencia deportiva."
+  schema={schema}
+>
+  <!-- Entrada -->
+  <section class="relative overflow-hidden border-b border-line" aria-labelledby="sistemas-title">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden="true"></div>
+    <div class="page relative py-16 md:py-28" data-reveal>
+      <p class="tag reveal text-signal">{sistemaHero.kicker}</p>
+      <h1 id="sistemas-title" class="display reveal mt-6 max-w-4xl text-6xl text-bone sm:text-7xl lg:text-8xl" style="--d:.06s">
+        {sistemaHero.title}
+      </h1>
+      <p class="reveal mt-7 max-w-2xl text-xl leading-relaxed text-mute" style="--d:.12s">{sistemaHero.lead}</p>
+      <div class="reveal mt-10 flex flex-wrap items-center gap-x-6 gap-y-4" style="--d:.2s">
+        <Button href={CTA} event="cta_proyecto" place="sistemas-hero">Contame tu caso</Button>
+        <Button href="#planes" variant="ghost" event="sistemas_ver_planes" place="sistemas-hero">Cómo se cotiza</Button>
+      </div>
+      <p class="reveal mt-4 text-sm text-faint" style="--d:.26s">La primera charla es de 30 minutos y no tiene costo.</p>
+    </div>
+  </section>
+
+  <!-- Evidencia -->
+  <section class="border-b border-line bg-panel" aria-label="Datos">
+    <dl class="page grid grid-cols-2 gap-px lg:grid-cols-4">
+      {
+        sistemaEvidencia.map((e) => (
+          <div class="py-8 pr-4 lg:py-10">
+            <dt class="display text-4xl text-bone md:text-5xl">{e.value}</dt>
+            <dd class="mt-2 max-w-[14rem] text-sm leading-relaxed text-mute">{e.label}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <!-- Problema -->
+  <section class="border-b border-line py-16 md:py-28" aria-labelledby="problema-title">
+    <div class="page grid gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-5" data-reveal>
+        <h2 id="problema-title" class="display reveal text-[2.5rem] text-bone sm:text-5xl md:text-6xl">{sistemaProblema.title}</h2>
+        <p class="reveal mt-5 text-lg leading-relaxed text-mute" style="--d:.08s">{sistemaProblema.closing}</p>
+      </div>
+      <ul class="lg:col-span-7" data-reveal>
+        {
+          sistemaProblema.items.map((t, i) => (
+            <li class="reveal flex gap-5 border-t border-line py-6 last:border-b" style={`--d:${i * 0.06}s`}>
+              <span class="tag mt-1 text-signal">{String(i + 1).padStart(2, '0')}</span>
+              <span class="text-lg leading-relaxed text-bone">{t}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Módulos -->
+  <section class="border-b border-line bg-panel py-16 md:py-28" aria-labelledby="modulos-title">
+    <div class="page">
+      <SectionHeader
+        id="modulos-title"
+        kicker="Qué puede incluir"
+        title="Armo solo lo que tu club necesita"
+        lead="Elegimos los módulos en la charla. Nada de pagar por funciones que nadie va a usar."
+      />
+      <ul class="grid gap-px border border-line bg-line md:grid-cols-2 lg:grid-cols-3" data-reveal>
+        {
+          sistemaModulos.map((m, i) => (
+            <li class="reveal bg-ink p-7" style={`--d:${i * 0.05}s`}>
+              <h3 class="text-xl font-semibold text-bone">{m.title}</h3>
+              <p class="mt-2 leading-relaxed text-mute">{m.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Prueba -->
+  <section class="border-b border-line py-16 md:py-28" aria-labelledby="prueba-title">
+    <div class="page">
+      <SectionHeader
+        id="prueba-title"
+        kicker="Ya lo hice"
+        title="Funcionando, no en una presentación"
+        lead="Dos sistemas que existen y se usan hoy. Podés entrar y recorrerlos."
+      />
+      <div class="grid gap-8 md:grid-cols-2" data-reveal>
+        {
+          sistemaCasos.map((c, i) => (
+            <article class="reveal frame flex flex-col border border-line bg-panel p-7 md:p-9" style={`--d:${i * 0.08}s`}>
+              <p class="tag text-signal">{c.kind}</p>
+              <h3 class="display mt-3 text-4xl text-bone md:text-5xl">{c.name}</h3>
+              <p class="mt-4 flex-1 leading-relaxed text-mute">{c.body}</p>
+              <div class="mt-7">
+                <Button href={`/proyectos/${c.slug}`} variant="text" event={`caso_${c.slug}`} place="sistemas">Leer el caso</Button>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Proceso -->
+  <section class="border-b border-line bg-panel py-16 md:py-28" aria-labelledby="proceso-title">
+    <div class="page">
+      <SectionHeader id="proceso-title" kicker="Cómo trabajamos" title="Cuatro pasos, sin sorpresas" />
+      <ol class="grid gap-8 md:grid-cols-2 lg:grid-cols-4" data-reveal>
+        {
+          sistemaPasos.map((p, i) => (
+            <li class="reveal border-t border-line-strong pt-5" style={`--d:${i * 0.06}s`}>
+              <p class="tag text-signal">{p.n}</p>
+              <h3 class="mt-3 text-xl font-semibold text-bone">{p.title}</h3>
+              <p class="mt-2 leading-relaxed text-mute">{p.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Planes -->
+  <section id="planes" class="scroll-mt-20 border-b border-line py-16 md:py-28" aria-labelledby="planes-title">
+    <div class="page">
+      <SectionHeader
+        id="planes-title"
+        kicker="Inversión"
+        title="A medida de tu presupuesto"
+        lead="No hay precios de lista: cada sistema se cotiza según lo que necesita tu club. Te paso la propuesta por mail, con precio cerrado antes de empezar."
+      />
+      <div class="grid gap-8 lg:grid-cols-3" data-reveal>
+        {
+          sistemaPlanes.map((p, i) => (
+            <article
+              class:list={['reveal flex flex-col border p-7 md:p-8', 'badge' in p ? 'frame border-signal/50 bg-panel' : 'border-line']}
+              style={`--d:${i * 0.08}s`}
+            >
+              {'badge' in p && <p class="tag mb-3 text-signal">{p.badge}</p>}
+              <h3 class="text-2xl font-semibold text-bone">{p.name}</h3>
+              <p class="display mt-4 text-4xl text-bone md:text-5xl">{p.price}</p>
+              <p class="tag mt-2 text-faint">{p.priceNote}</p>
+              <p class="mt-3 leading-relaxed text-mute">{p.summary}</p>
+              <ul class="mt-6 flex-1 space-y-2.5">
+                {p.items.map((t) => (
+                  <li class="flex gap-3 text-bone">
+                    <span class="mt-2.5 h-px w-3 shrink-0 bg-signal" aria-hidden="true" />
+                    <span class="leading-relaxed">{t}</span>
+                  </li>
+                ))}
+              </ul>
+              <div class="mt-8">
+                <Button
+                  href={CTA}
+                  variant={'badge' in p ? 'primary' : 'ghost'}
+                  event="cta_proyecto"
+                  place={`sistemas-${p.id}`}
+                >
+                  Pedir propuesta
+                </Button>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="mt-12 grid gap-8 border-t border-line pt-8 md:grid-cols-3" data-reveal>
+        <p class="reveal leading-relaxed text-mute">{sistemaCondiciones.mantenimiento}</p>
+        <p class="reveal leading-relaxed text-mute" style="--d:.06s">{sistemaCondiciones.pago}</p>
+        <p class="reveal leading-relaxed text-mute" style="--d:.12s">{sistemaCondiciones.datos}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preguntas -->
+  <section class="border-b border-line bg-panel py-16 md:py-28" aria-labelledby="faq-title">
+    <div class="page grid gap-12 lg:grid-cols-12">
+      <h2 id="faq-title" class="display text-[2.5rem] text-bone sm:text-5xl md:text-6xl lg:col-span-4">Preguntas frecuentes</h2>
+      <div class="lg:col-span-8">
+        {
+          sistemaFaq.map((f) => (
+            <details class="group border-t border-line py-5 last:border-b">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-6 text-lg font-medium text-bone [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <span class="font-mono text-signal transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+              </summary>
+              <p class="mt-3 max-w-2xl leading-relaxed text-mute">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section class="relative overflow-hidden">
+    <div class="court-grid pointer-events-none absolute inset-0 opacity-20" aria-hidden="true"></div>
+    <div class="page relative flex flex-col items-start gap-8 py-20 md:flex-row md:items-end md:justify-between md:py-28">
+      <div class="max-w-2xl">
+        <h2 class="display text-5xl text-bone md:text-6xl">Contame qué hoy está en planillas.</h2>
+        <p class="mt-4 text-lg leading-relaxed text-mute">
+          Te respondo dentro de las 24 horas, con preguntas o con una propuesta.
+        </p>
+      </div>
+      <Button href={CTA} event="cta_proyecto" place="sistemas-cierre">Contame tu caso</Button>
+    </div>
+  </section>
+</Base>
