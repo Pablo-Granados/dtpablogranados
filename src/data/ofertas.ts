@@ -4,7 +4,7 @@
  *
  * Los CTA que apuntan a WhatsApp son temporales, hasta tener los formularios propios.
  */
-import { pricing, installmentsText, session, tiers, upfrontDiscount } from './mentoria';
+import { pricing, installmentsText, session, tiers, upfrontDiscount, guarantee } from './mentoria';
 import { cta, wa } from './site';
 
 export type Offer = {
@@ -21,7 +21,11 @@ export type Offer = {
   badge?: string;
   /** Detalle secundario destacado (ej: cohorte fundadora). */
   extra?: { label: string; text: string };
+  /** Oferta principal del capítulo: se destaca visualmente. */
+  featured?: boolean;
   cta: { label: string; href: string; event: string };
+  /** Segundo botón, más discreto. */
+  secondary?: { label: string; href: string; event: string };
 };
 
 export type Chapter = {
@@ -39,7 +43,6 @@ const UPFRONT_DISCOUNT = 0.25;
 
 /** Planes mensuales para clubes, en USD. Cambiar acá. */
 export const clubPlans = { seguimiento: 220, integral: 350, medida: 500 };
-const upfront = (monthly: number) => Math.round(monthly * MONTHS_UPFRONT * (1 - UPFRONT_DISCOUNT));
 
 export const chapters: Chapter[] = [
   {
@@ -52,35 +55,15 @@ export const chapters: Chapter[] = [
         id: 'diagnostico',
         name: 'Diagnóstico del analista',
         summary: 'Doce preguntas sobre cómo analizás hoy. Te devuelvo tu perfil y por dónde conviene empezar.',
-        items: ['3 minutos', 'Perfil en 5 áreas', 'Tus dos prioridades', 'Te llega por mail con la plantilla de informe de rival'],
+        items: [
+          '3 minutos, con perfil en 5 áreas y tus dos prioridades',
+          'Te llega por mail con la plantilla de informe de rival',
+          'Cuatro plantillas de trabajo completas, en PDF y en hoja de cálculo editable',
+          'Si mandás un clip de tu equipo, puede ser elegido para analizarse de manera pública',
+        ],
         price: 'Gratis',
         cta: { label: cta.diagnostico.label, href: cta.diagnostico.href, event: cta.diagnostico.event },
-      },
-      {
-        id: 'plantillas',
-        name: 'Plantillas de trabajo',
-        summary: 'Las herramientas que uso para analizar, completas y sin versiones de prueba.',
-        items: [
-          'Mapa de observación, panel de codificación, ficha de partido y checklist semanal',
-          'Cada una en PDF y en hoja de cálculo editable',
-          'Informe de rival de una página: se entrega con el diagnóstico',
-        ],
-        price: 'Gratis',
-        badge: '4 plantillas',
-        cta: { label: 'Ver las plantillas', href: '/plantillas', event: 'cta_plantillas' },
-      },
-      {
-        id: 'clip',
-        name: 'Análisis de un clip',
-        summary: 'Mandás un clip de tu equipo. Elijo los que dejan más enseñanza y los analizo de manera pública.',
-        items: [
-          'Hay cupo cada mes: no se analizan todos los clips',
-          'Un clip enviado este mes se analiza de manera pública (Instagram o YouTube) el mes que viene',
-          'Al enviarlo, autorizás que se use en esa publicación',
-        ],
-        price: 'Gratis',
-        badge: 'Por cupo mensual',
-        cta: { label: 'Mandar un clip', href: '/clip', event: 'cta_clip' },
+        secondary: { label: 'Ver las plantillas', href: '/plantillas', event: 'cta_plantillas' },
       },
     ],
   },
@@ -88,54 +71,44 @@ export const chapters: Chapter[] = [
     id: 'individual',
     n: '02',
     title: 'Trabajar conmigo',
-    lead: 'Para entrenadores y analistas que quieren mejorar su propio proceso. De lo más corto a lo más profundo.',
+    lead: 'Para entrenadores y analistas que quieren armar su propio sistema de análisis, con alguien que ya lo hizo.',
     offers: [
       {
-        id: 'mini-taller',
-        name: 'Mini-taller: tu primer informe de rival',
-        summary: 'Una hora de video para armar tu primer informe de rival de una página, paso a paso, con la plantilla lista.',
+        id: 'mentoria',
+        name: 'Sistema Propio',
+        summary: 'Mentoría 1:1 de 12 semanas. Construís tu sistema de análisis sobre tu equipo real y terminás con algo que usás todas las semanas.',
         items: [
-          'Video grabado de 60 minutos, para ver a tu ritmo',
-          'Plantilla del informe de rival y checklist de observación',
-          'Acceso de por vida',
-          'Se coordina por WhatsApp: pagás por transferencia en pesos y te lo envío por mail al confirmar',
+          `${pricing.weeks} llamadas 1:1 de 45 minutos`,
+          '5 entregables hechos con tus partidos, con devolución en video',
+          'Consultas de lunes a viernes, respuesta en 24 horas',
+          'Plantillas, ebook, bonos (Futsal Hub para entrenadores, banco de informes, certificado) y llamada de control a los 30 días',
+          `Otros niveles: Intensivo (${usd(tiers[0].price)}), y Pro y Cuerpo Técnico, que se cotizan según tu caso`,
+          `Pagando todo por adelantado, ${Math.round(upfrontDiscount * 100)}% de descuento`,
         ],
-        price: 'ARS 9.900',
-        priceNote: 'Pago único por transferencia en pesos',
-        badge: 'Para empezar',
-        cta: {
-          label: 'Pedirlo por WhatsApp',
-          href: wa('Hola Pablo, quiero comprar el mini-taller "Tu primer informe de rival".'),
-          event: 'cta_mini_taller',
-        },
-      },
-      {
-        id: 'ebook',
-        name: 'Ebook "Leé el Partido"',
-        summary: 'La forma de mirar un partido antes de analizarlo, con un glosario para usar los mismos términos.',
-        items: [
-          'PDF + glosario',
-          'Se coordina por WhatsApp: pagás por transferencia en pesos y te lo envío por mail al confirmar',
-        ],
-        price: 'ARS 29.500',
-        priceNote: 'Pago por transferencia en pesos',
-        cta: {
-          label: 'Pedir el ebook por WhatsApp',
-          href: wa('Hola Pablo, quiero comprar el ebook "Leé el Partido".'),
-          event: 'cta_ebook',
-        },
+        price: usd(pricing.full),
+        priceNote: `${pricing.installments.length} cuotas: ${installmentsText(pricing.installments)}. Garantía en las primeras ${guarantee.windowWeeks} semanas.`,
+        badge: '3 lugares simultáneos',
+        featured: true,
+        extra:
+          pricing.founders.spots > 0
+            ? {
+                label: `Cohorte fundadora · ${pricing.founders.spots} lugares`,
+                text: `${usd(pricing.founders.price)} (${pricing.founders.installments.length} cuotas de ${usd(pricing.founders.installments[0].amount)}). A cambio, tu caso de estudio y tu opinión sincera al terminar.`,
+              }
+            : undefined,
+        cta: { label: cta.aplicar.label, href: cta.aplicar.href, event: cta.aplicar.event },
+        secondary: { label: 'Ver el programa completo', href: cta.mentoria.href, event: cta.mentoria.event },
       },
       {
         id: 'sesion',
         name: 'Sesión de análisis 1:1',
-        summary: 'Una hora conmigo sobre tu equipo, con material hecho a partir de lo que vos elijas.',
+        summary: '¿Querés probar antes? Una hora conmigo sobre tu equipo, con material hecho a partir de lo que vos elijas.',
         items: [
           'Videollamada de 60 minutos',
-          'Me mandás 3 jugadas antes de la sesión: del video que quieras (tu equipo, un rival, un partido de referencia)',
+          'Me mandás 3 jugadas antes de la sesión: del video que quieras',
           'Te entrego el material realizado durante la sesión',
           'Incluye el ebook "Leé el Partido" y su glosario',
           `Si en los ${session.creditDays} días siguientes entrás a Sistema Propio, los ${usd(session.price)} se descuentan del precio`,
-          'Cómo se reserva: me escribís por WhatsApp, abonás, y te mando un link privado para elegir día y horario y cargar tus 3 jugadas',
         ],
         price: usd(session.price),
         priceNote: 'Pago único, bonificado si pasás a la mentoría',
@@ -145,110 +118,45 @@ export const chapters: Chapter[] = [
           event: 'cta_sesion',
         },
       },
-      {
-        id: 'taller',
-        name: 'Taller en vivo: informe de rival de punta a punta',
-        summary: 'Tres encuentros en vivo, en grupo reducido, para armar un informe de rival real con tu propio video.',
-        items: [
-          '3 encuentros en vivo de 90 minutos, con cupo de hasta 12 personas',
-          'Armás un informe de rival real y recibís una devolución en video, individual',
-          'Incluye el mini-taller, las plantillas, el ebook "Leé el Partido" y las grabaciones',
-          `Si en los ${session.creditDays} días siguientes entrás a Sistema Propio, los USD 120 se descuentan del precio (no se suma al crédito de la sesión 1:1)`,
-          'Cómo se reserva: me escribís por WhatsApp, abonás y te confirmo las fechas del próximo grupo',
-        ],
-        price: 'USD 120',
-        priceNote: 'Pago único, bonificado si pasás a la mentoría',
-        badge: 'Grupo reducido',
-        cta: {
-          label: 'Reservar por WhatsApp',
-          href: wa('Hola Pablo, quiero reservar un lugar en el taller en vivo "Informe de rival de punta a punta" (USD 120).'),
-          event: 'cta_taller',
-        },
-      },
-      {
-        id: 'mentoria',
-        name: 'Sistema Propio',
-        summary: 'Mentoría 1:1 de 12 semanas. Construís tu sistema de análisis sobre tu equipo real.',
-        items: [
-          `${pricing.weeks} llamadas 1:1 de 45 minutos`,
-          '5 entregables con devolución en video',
-          'Consultas de lunes a viernes, respuesta en 24 horas',
-          'Plantillas, ebook, bonos (Futsal Hub para entrenadores, banco de informes, certificado) y llamada de control a los 30 días',
-          `Niveles superiores: Pro (${usd(tiers[2].price)}), Cuerpo Técnico (${usd(tiers[3].price)}) e Intensivo (${usd(tiers[0].price)})`,
-          `Pagando todo por adelantado, ${Math.round(upfrontDiscount * 100)}% de descuento`,
-          `Si hiciste una sesión 1:1 en los últimos ${session.creditDays} días, se descuentan ${usd(session.price)}`,
-        ],
-        price: usd(pricing.full),
-        priceNote: `${pricing.installments.length} cuotas: ${installmentsText(pricing.installments)}`,
-        badge: '3 lugares simultáneos',
-        // Pagando todo por adelantado hay descuento; ver mentoria.ts.
-        extra:
-          pricing.founders.spots > 0
-            ? {
-                label: `Cohorte fundadora · ${pricing.founders.spots} lugares`,
-                text: `${usd(pricing.founders.price)} (${pricing.founders.installments.length} cuotas de ${usd(pricing.founders.installments[0].amount)}). A cambio, tu caso de estudio y tu opinión sincera al terminar.`,
-              }
-            : undefined,
-        cta: { label: 'Ver la mentoría', href: cta.mentoria.href, event: cta.mentoria.event },
-      },
     ],
   },
   {
     id: 'equipos',
     n: '03',
     title: 'Para clubes y agencias',
-    lead: 'Trabajo a distancia con cuerpos técnicos y organizaciones. Cada servicio parte de una pregunta concreta del equipo.',
+    lead: 'Trabajo a distancia con cuerpos técnicos y organizaciones. O te construyo el sistema, o me sumo a tu staff como analista.',
     offers: [
       {
-        id: 'seguimiento',
-        name: 'Plan Seguimiento',
-        summary: 'Llegar mejor preparado a cada partido: un informe de rival por partido y una devolución mensual.',
+        id: 'sistema-a-medida',
+        name: 'Sistema a medida',
+        summary: 'Cuotas, plantel, partidos y panel de dirigentes en un solo lugar, construido para cómo trabaja tu club o agencia.',
         items: [
-          'Informe de rival por partido, hasta 4 por mes (una página + cinco clips)',
-          '1 reunión mensual de devolución con el cuerpo técnico (30 minutos)',
-          'Consultas por WhatsApp de lunes a viernes',
+          'Solo los módulos que necesitás: socios y cuotas, fichas, partidos, accesos por rol, sitio público',
+          'Propuesta y precio cerrados por escrito antes de empezar',
+          'Capacitación para quienes lo van a usar',
+          'Mantenimiento mensual opcional',
+          'Ya lo hice: Futsal Hub (3.500+ partidos registrados) y LAA Sports (50+ perfiles de atletas)',
         ],
-        price: `${usd(clubPlans.seguimiento)}/mes`,
-        priceNote: `Mes a mes, sin contrato. Pago del 1 al 5. Pagando ${MONTHS_UPFRONT} meses juntos: ${usd(upfront(clubPlans.seguimiento))}.`,
-        cta: { label: 'Quiero este plan', href: '/equipos?necesidad=informes', event: 'cta_plan_seguimiento' },
-      },
-      {
-        id: 'integral',
-        name: 'Plan Integral',
-        summary: 'Un analista fijo para tu cuerpo técnico: el rival, tu propio equipo y el seguimiento de lo que importa.',
-        items: [
-          'Todo lo del plan Seguimiento',
-          'Ficha de partido de tu propio equipo después de cada partido',
-          '2 reuniones mensuales con el cuerpo técnico',
-          'Panel de codificación e indicadores de seguimiento',
-        ],
-        price: `${usd(clubPlans.integral)}/mes`,
-        priceNote: `Mes a mes, sin contrato. Pago del 1 al 5. Pagando ${MONTHS_UPFRONT} meses juntos: ${usd(upfront(clubPlans.integral))}.`,
-        badge: 'Recomendado',
-        cta: { label: 'Quiero este plan', href: '/equipos?necesidad=acompanamiento', event: 'cta_plan_integral' },
-      },
-      {
-        id: 'a-medida',
-        name: 'Plan A medida',
-        summary: 'Para clubes o agencias con varias categorías o necesidades específicas.',
-        items: [
-          'Todo lo del plan Integral',
-          'Reuniones semanales y análisis de pelota parada',
-          'Scouting individual de jugadores',
-          'Una herramienta propia para tu club: tablero, panel o plataforma',
-        ],
-        price: `Desde ${usd(clubPlans.medida)}/mes`,
-        priceNote: 'Depende de las categorías y los partidos por semana. Pago del 1 al 5.',
-        cta: { label: cta.propuesta.label, href: cta.propuesta.href, event: cta.propuesta.event },
-      },
-      {
-        id: 'herramientas',
-        name: 'Herramientas a medida',
-        summary: 'Sitios, paneles y bases de datos para tu organización, como hice con Futsal Hub y LAA Sports.',
-        items: ['Plataformas para clubes, agencias y jugadores', 'Paneles internos para cuerpos técnicos', 'Pago en cuotas'],
         price: 'A medida',
-        priceNote: 'Se cotiza según el alcance y se paga en cuotas.',
-        cta: { label: cta.proyecto.label, href: cta.proyecto.href, event: cta.proyecto.event },
+        priceNote: 'Adaptado a tu presupuesto. Te paso la propuesta por mail, con la primera charla sin costo.',
+        badge: 'Para clubes y agencias',
+        featured: true,
+        cta: { label: 'Ver cómo funciona', href: '/sistemas', event: 'cta_sistemas' },
+        secondary: { label: 'Pedir propuesta por mail', href: cta.proyecto.href, event: cta.proyecto.event },
+      },
+      {
+        id: 'analisis',
+        name: 'Analista para tu cuerpo técnico',
+        summary: 'Llegar mejor preparado a cada partido: informes de rival, seguimiento de tu equipo y una reunión con el staff.',
+        items: [
+          `Seguimiento (${usd(clubPlans.seguimiento)}/mes): informe de rival por partido, hasta 4 por mes, y una reunión mensual`,
+          `Integral (${usd(clubPlans.integral)}/mes): todo lo anterior, más ficha de partido de tu equipo, 2 reuniones y panel de codificación`,
+          `A medida (desde ${usd(clubPlans.medida)}/mes): varias categorías, pelota parada y scouting`,
+          `Mes a mes, sin contrato. Pagando ${MONTHS_UPFRONT} meses juntos, ${Math.round(UPFRONT_DISCOUNT * 100)}% de descuento.`,
+        ],
+        price: `Desde ${usd(clubPlans.seguimiento)}/mes`,
+        priceNote: 'Pago del 1 al 5 de cada mes. El valor en pesos se informa al abonar, según el cambio del día.',
+        cta: { label: cta.propuesta.label, href: cta.propuesta.href, event: cta.propuesta.event },
       },
     ],
   },
@@ -264,9 +172,9 @@ export const chooser = [
 export const payment = {
   title: 'Cómo se paga',
   items: [
-    'Ebook: transferencia en pesos.',
+    'Sesión 1:1: transferencia en pesos o en dólares, según acordemos.',
     'Servicios en dólares: desde Argentina, por transferencia. Desde el exterior, por ARQ o Takenos.',
     'Planes para clubes: mes a mes, sin contrato, y se abonan del 1 al 5 de cada mes. El valor en pesos se informa al abonar, según el cambio del día.',
-    'Herramientas a medida: en cuotas, que se acuerdan según el alcance.',
+    'Sistemas a medida: en cuotas, una parte al empezar y el resto contra entregas.',
   ],
 };

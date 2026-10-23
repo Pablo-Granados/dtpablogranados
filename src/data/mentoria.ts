@@ -6,10 +6,10 @@
 export const pricing = {
   currency: 'USD',
   weeks: 12,
-  full: 1500,
+  full: 1490,
   /** Cuotas en orden. `when` es el momento de cada pago. Todo se cobra antes de la semana 9. */
   installments: [
-    { amount: 600, when: 'al iniciar' },
+    { amount: 590, when: 'al iniciar' },
     { amount: 450, when: 'en la semana 5' },
     { amount: 450, when: 'en la semana 9' },
   ],
@@ -64,7 +64,8 @@ export const tiers = [
     id: 'pro',
     name: 'Sistema Propio Pro',
     weeks: 24,
-    price: 2900,
+    /** Por encima de USD 800 no se publica el precio: se cotiza según el caso. */
+    price: null,
     summary: 'El programa completo más 12 semanas de implementación: analizamos tus partidos reales, semana a semana, con vos.',
     items: ['Todo Sistema Propio', '12 semanas más: revisión de tus partidos reales y de tu rival de turno', 'Respuesta en el día por WhatsApp', 'Una presentación al cuerpo técnico, preparada y ensayada juntos'],
     note: 'Cupo de 2 personas por cohorte.',
@@ -73,7 +74,7 @@ export const tiers = [
     id: 'cuerpo-tecnico',
     name: 'Cuerpo Técnico',
     weeks: pricing.weeks,
-    price: 2400,
+    price: null,
     summary: 'Para 2 o 3 personas del mismo staff que quieren trabajar con el mismo sistema.',
     items: ['Programa de 12 semanas para hasta 3 personas', 'Un plan único y un panel compartido', 'Informe de rival y propio hechos por el staff', 'Llamada de control a los 30 días'],
     note: 'Un solo equipo, un solo método.',
@@ -195,7 +196,7 @@ export const faq = [
   },
   {
     q: '¿Cómo se paga?',
-    a: 'En 3 cuotas: USD 600 al iniciar, USD 450 en la semana 5 y USD 450 en la semana 9. Pagando todo por adelantado tenés un 10% de descuento (USD 1.350). Desde Argentina, por transferencia. Desde otros países, por ARQ o Takenos.',
+    a: 'En 3 cuotas: USD 590 al iniciar, USD 450 en la semana 5 y USD 450 en la semana 9. Pagando todo por adelantado tenés un 10% de descuento (USD 1.341). Desde Argentina, por transferencia. Desde otros países, por ARQ o Takenos.',
   },
   {
     q: 'Hice una sesión 1:1, ¿se descuenta?',
@@ -203,6 +204,6 @@ export const faq = [
   },
   {
     q: '¿Qué pasa si empiezo y no es para mí?',
-    a: 'Podés pedir la devolución dentro de las 2 primeras semanas. Cada semana que cursaste se cobra a valor proporcional (el precio dividido 12) y el resto te lo devuelvo. Ejemplo: si pagaste USD 1.500 y hiciste 1 semana, esa semana son USD 125 y te devuelvo USD 1.375.',
+    a: 'Podés pedir la devolución dentro de las 2 primeras semanas. Cada semana que cursaste se cobra a valor proporcional (el precio dividido 12) y el resto te lo devuelvo. Ejemplo: si pagaste USD 1.490 y hiciste 1 semana, esa semana son USD 124,17 y te devuelvo USD 1.365,83.',
   },
 ] as const;

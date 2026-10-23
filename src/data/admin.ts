@@ -4,6 +4,7 @@
  */
 
 import { pasos } from './mensajes';
+import { sistemaPrecios } from './sistemas';
 import { perfiles, tiposClase } from './programa';
 
 export type FieldType = 'text' | 'longtext' | 'select' | 'date' | 'number' | 'url' | 'uuid' | 'email' | 'bool';
@@ -95,7 +96,7 @@ export const productos: readonly Producto[] = [
     id: 'sistema',
     nombre: 'Sistema Propio',
     cobros: [
-      { concepto: 'Cuota 1 de 3', usd: 600, dias: 0 },
+      { concepto: 'Cuota 1 de 3', usd: 590, dias: 0 },
       { concepto: 'Cuota 2 de 3', usd: 450, dias: 28 },
       { concepto: 'Cuota 3 de 3', usd: 450, dias: 56 },
     ],
@@ -131,7 +132,24 @@ export const productos: readonly Producto[] = [
   { id: 'integral', nombre: 'Plan Integral', recurrente: true, cobros: [{ concepto: 'Mes 1', usd: 350, dias: 0 }] },
   { id: 'medida', nombre: 'Plan A medida', recurrente: true, cobros: [{ concepto: 'Mes 1', usd: 500, dias: 0 }] },
   { id: 'ebook', nombre: 'Ebook', ars: 29500, cobros: [{ concepto: 'Pago único', usd: 0, dias: 0 }] },
-  { id: 'herramientas', nombre: 'Herramientas a medida', cobros: [{ concepto: 'Pago único', usd: 1200, dias: 0 }] },
+  {
+    id: 'herramientas',
+    nombre: 'Sistema a medida · Una herramienta',
+    cobros: [
+      { concepto: 'Anticipo', usd: sistemaPrecios.base / 2, dias: 0 },
+      { concepto: 'Entrega', usd: sistemaPrecios.base / 2, dias: 30 },
+    ],
+  },
+  {
+    id: 'sistema-completo',
+    nombre: 'Sistema a medida · Club completo',
+    cobros: [
+      { concepto: 'Anticipo', usd: sistemaPrecios.completo / 2, dias: 0 },
+      { concepto: 'Entrega parcial', usd: sistemaPrecios.completo / 4, dias: 30 },
+      { concepto: 'Entrega final', usd: sistemaPrecios.completo / 4, dias: 60 },
+    ],
+  },
+  { id: 'mantenimiento', nombre: 'Mantenimiento de sistema', recurrente: true, cobros: [{ concepto: 'Mes 1', usd: sistemaPrecios.mantenimiento, dias: 0 }] },
   { id: 'personalizada', nombre: 'Personalizada', cobros: [{ concepto: 'Pago único', usd: 0, dias: 0 }] },
 ];
 

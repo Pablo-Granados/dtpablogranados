@@ -23,7 +23,7 @@ const schema = [
 
 <Base
   title="Trabajar juntos"
-  description="Recursos gratuitos, sesiones 1:1, la mentoría Sistema Propio y servicios de análisis y herramientas para clubes y agencias."
+  description="Diagnóstico gratuito, la mentoría Sistema Propio y sistemas a medida y análisis para clubes y agencias."
   schema={schema}
 >
   <!-- Entrada -->
@@ -36,8 +36,8 @@ const schema = [
           Elegí por dónde empezar
         </h1>
         <p class="reveal mt-6 max-w-xl text-xl leading-relaxed text-mute" style="--d:.12s">
-          Hay cosas gratis, sesiones puntuales, una mentoría de 12 semanas y trabajo para equipos. Cada una resuelve un
-          problema distinto: acá está cuál es cuál y cuánto cuesta.
+          Hay tres caminos: empezar gratis, aprender a armar tu propio sistema de análisis, o que te construya el sistema
+          de tu club. Acá está cuál es cuál y cuánto cuesta.
         </p>
       </div>
 
@@ -83,7 +83,14 @@ const schema = [
 
           <ul class="border-b border-line">
             {ch.offers.map((o, i) => (
-              <li class="reveal grid gap-6 border-t border-line py-9 lg:grid-cols-12 lg:gap-10" data-reveal style={`--d:${i * 0.06}s`}>
+              <li
+                class:list={[
+                  'reveal grid gap-6 border-t py-9 lg:grid-cols-12 lg:gap-10',
+                  o.featured ? 'border-signal/60 bg-panel-2/40 lg:-mx-6 lg:px-6' : 'border-line',
+                ]}
+                data-reveal
+                style={`--d:${i * 0.06}s`}
+              >
                 <div class="lg:col-span-4">
                   {o.badge && <p class="tag mb-3 text-signal">{o.badge}</p>}
                   <h3 class="text-2xl font-semibold leading-tight text-bone md:text-3xl">{o.name}</h3>
@@ -110,9 +117,16 @@ const schema = [
                       <p class="mt-2 text-sm leading-relaxed text-mute">{o.extra.text}</p>
                     </div>
                   )}
-                  <Button href={o.cta.href} variant={o.id === 'mentoria' ? 'primary' : 'ghost'} event={o.cta.event} place={`trabajar-${o.id}`}>
-                    {o.cta.label}
-                  </Button>
+                  <div class="flex flex-wrap items-center gap-x-6 gap-y-3 lg:justify-end">
+                    <Button href={o.cta.href} variant={o.featured ? 'primary' : 'ghost'} event={o.cta.event} place={`trabajar-${o.id}`}>
+                      {o.cta.label}
+                    </Button>
+                    {o.secondary && (
+                      <Button href={o.secondary.href} variant="text" event={o.secondary.event} place={`trabajar-${o.id}-2`}>
+                        {o.secondary.label}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}

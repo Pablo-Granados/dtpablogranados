@@ -139,6 +139,18 @@ Para entender bien qué necesitás: ¿cuántos partidos juegan por semana y qui�
 Te lo mando el [día] y me decís si te sirve. Sin compromiso.`,
   },
   {
+    id: 'oferta-sistema',
+    titulo: 'Ofrecer un sistema a medida (cuotas, fichas, plantel)',
+    paso: 'Respondió',
+    tipos: [...clubes, 'Agencia'],
+    avanza: 'Propuesta',
+    texto: `{nombre}, por lo que me contás de {organizacion}, creo que lo que más les va a servir es ordenar [las cuotas / las fichas / el plantel] en un sistema propio, en lugar de seguir con planillas.
+
+Lo armo a medida y solo con los módulos que necesiten. Ya lo hice con Futsal Hub y con el sitio y panel de LAA Sports: {sitio}/sistemas
+
+Se cotiza a medida, adaptado a tu presupuesto, con precio cerrado por escrito antes de empezar y pago en cuotas. Si te parece, hacemos una charla de 30 minutos sin costo y te mando la propuesta por mail. ¿Cuándo te queda cómodo?`,
+  },
+  {
     id: 'oferta-mini-taller',
     titulo: 'Ofrecer el mini-taller (para empezar liviano)',
     paso: 'Respondió',
