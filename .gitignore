@@ -4,3 +4,6 @@ dist/
 .env
 .DS_Store
 .vercel/
+
+# Imágenes del plan de contenido: se regeneran con `npm run marketing:render`
+marketing/piezas/

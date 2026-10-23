@@ -45,6 +45,38 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
 /** "2026-10-01" → "oct 26". */
 export const mesCorto = (s: string) => `${MESES[Number(s.slice(5, 7)) - 1]} ${s.slice(2, 4)}`;
 
+/** Lee un CSV (con comillas, comas y saltos de línea dentro de una celda) y devuelve las filas. */
+export function parseCsv(texto: string): string[][] {
+  const filas: string[][] = [];
+  let fila: string[] = [];
+  let celda = '';
+  let comillas = false;
+  const src = texto.replace(/^\ufeff/, '');
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (comillas) {
+      if (c === '"' && src[i + 1] === '"') {
+        celda += '"';
+        i++;
+      } else if (c === '"') comillas = false;
+      else celda += c;
+    } else if (c === '"') comillas = true;
+    else if (c === ',') {
+      fila.push(celda);
+      celda = '';
+    } else if (c === '\n' || c === '\r') {
+      if (c === '\r' && src[i + 1] === '\n') i++;
+      fila.push(celda);
+      celda = '';
+      if (fila.some((x) => x.trim())) filas.push(fila);
+      fila = [];
+    } else celda += c;
+  }
+  fila.push(celda);
+  if (fila.some((x) => x.trim())) filas.push(fila);
+  return filas;
+}
+
 export const sumUsd = (rows: Row[]) => rows.reduce((a, c) => a + Number(c.monto_usd), 0);
 
 /** Botón chico de acción. Las acciones que empiezan con "del-" salen en rojo. */

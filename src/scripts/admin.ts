@@ -11,7 +11,7 @@ import { entrantes, etapasEmbudo, metaTypes, origenesContacto, plazosSeguimiento
 import { enlacesView, mentoradoFichaView, mentoradosView, planInicial, progreso, resumenTexto, semanaActual, semanasDe, semanasIniciales } from './admin-mentorados';
 import { programaView, type ProgramaFiltro } from './admin-programa';
 import { contenidoResultadosView, agruparPersonas, datosView, exportar, proyeccionView, renovacionesPendientes, semanaInicial, semanaView, type Proy } from './admin-reports';
-import { addDays, addMonths, btn, esc, fechaHora, iso, monthStart, num, pct, shortDate, sumUsd, today, weekStart, type Row } from './admin-utils';
+import { addDays, addMonths, btn, esc, fechaHora, iso, parseCsv, monthStart, num, pct, shortDate, sumUsd, today, weekStart, type Row } from './admin-utils';
 type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos' | 'programa' | 'mentorados' | 'enlaces' | 'mensajes' | 'guia';
 
 const root = document.querySelector<HTMLElement>('[data-app]')!;
@@ -539,7 +539,8 @@ function contenidoView() {
   return (
     contenidoResultadosView(data) +
     toolbar(res, filterSelect('contenido', [['todas', 'Todas'], ...res.fields.find((f) => f.name === 'estado')!.options!.map((o): [string, string] => [o, o])])) +
-    `<p class="mb-4 text-sm text-faint">${esc(resumen)}</p>` +
+    `<p class="mb-2 text-sm text-faint">${esc(resumen)}</p>` +
+    `<div class="mb-4"><label class="inline-flex cursor-pointer items-center border border-line-strong px-3 py-2.5 text-sm text-bone hover:border-signal">Importar calendario (CSV)<input type="file" accept=".csv,text/csv" data-action="importar-csv" class="sr-only" /></label></div>` +
     table(res, rows)
   );
 }
@@ -1219,6 +1220,51 @@ async function eliminarContacto(id: string) {
   }
 }
 
+/** Importa piezas de contenido desde un CSV (titulo, tipo, canal, fecha, estado, notas). No duplica las que ya existen. */
+async function importarCsv(archivo?: File) {
+  if (!archivo) return;
+  try {
+    const filas = parseCsv(await archivo.text());
+    const cab = (filas.shift() ?? []).map((c) => c.trim().toLowerCase());
+    const col = (n: string) => cab.indexOf(n);
+    if (col('titulo') < 0 || col('fecha') < 0) return void say('El archivo necesita al menos las columnas "titulo" y "fecha".', true);
+    const tipos = resources.contenido.fields.find((f) => f.name === 'tipo')!.options!;
+    const canales = resources.contenido.fields.find((f) => f.name === 'canal')!.options!;
+    const estados = resources.contenido.fields.find((f) => f.name === 'estado')!.options!;
+    const val = (f: string[], n: string) => (col(n) >= 0 ? (f[col(n)] ?? '').trim() : '');
+    const ya = new Set(data.contenido.map((c) => `${c.titulo}|${c.fecha}`));
+    const nuevas: Row[] = [];
+    let repetidas = 0;
+    let invalidas = 0;
+    for (const f of filas) {
+      const titulo = val(f, 'titulo');
+      const fecha = val(f, 'fecha');
+      if (!titulo || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        invalidas++;
+        continue;
+      }
+      if (ya.has(`${titulo}|${fecha}`)) {
+        repetidas++;
+        continue;
+      }
+      nuevas.push({
+        titulo: titulo.slice(0, 200),
+        tipo: tipos.includes(val(f, 'tipo')) ? val(f, 'tipo') : 'Otro',
+        canal: canales.includes(val(f, 'canal')) ? val(f, 'canal') : 'Instagram',
+        fecha,
+        estado: estados.includes(val(f, 'estado')) ? val(f, 'estado') : 'idea',
+        notas: val(f, 'notas').slice(0, 1500) || null,
+      });
+    }
+    for (let i = 0; i < nuevas.length; i += 50) await api('contenido', 'POST', nuevas.slice(i, i + 50));
+    await reload('contenido');
+    render();
+    say(`Importadas ${nuevas.length} piezas${repetidas ? ` (${repetidas} ya existían)` : ''}${invalidas ? ` · ${invalidas} filas sin título o fecha válida` : ''}.`);
+  } catch (err) {
+    say((err as Error).message, true);
+  }
+}
+
 async function agregarEnlace() {
   const campo = (n: string) => mentBody.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-enlace="${n}"]`)!;
   const titulo = campo('titulo').value.trim();
@@ -1827,6 +1873,11 @@ root.addEventListener('change', async (e) => {
   const action = el.dataset.action;
   const value = (el as HTMLInputElement).value;
 
+  if (action === 'importar-csv') {
+    await importarCsv((el as HTMLInputElement).files?.[0]);
+    (el as HTMLInputElement).value = '';
+    return;
+  }
   if (action === 'ment-filtro') {
     mentFiltro = value;
     return void render();
