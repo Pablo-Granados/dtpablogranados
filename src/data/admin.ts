@@ -3,6 +3,7 @@
  * tablas y formularios). Para sumar un módulo o un campo: se agrega acá y en supabase/admin.sql.
  */
 
+import { seccionesGuia } from './guia';
 import { pasos } from './mensajes';
 import { sistemaPrecios } from './sistemas';
 import { perfiles, tiposClase } from './programa';
@@ -23,7 +24,7 @@ export type Field = {
   hidden?: boolean;
 };
 
-export type ResourceKey = 'tareas' | 'contenido' | 'contactos' | 'registro' | 'metas' | 'ventas' | 'cobros' | 'historial' | 'mentorados' | 'semanas' | 'enlaces' | 'reservas' | 'mensajes' | 'programa';
+export type ResourceKey = 'tareas' | 'contenido' | 'contactos' | 'registro' | 'metas' | 'ventas' | 'cobros' | 'historial' | 'mentorados' | 'semanas' | 'enlaces' | 'reservas' | 'mensajes' | 'programa' | 'guia';
 
 export type Resource = {
   key: ResourceKey;
@@ -361,6 +362,21 @@ export const resources: Record<ResourceKey, Resource> = {
       { name: 'herramientas', label: 'Herramientas y material (uno por renglón)', type: 'longtext', max: 800 },
       { name: 'avanza', label: 'Para pasar a la semana siguiente', type: 'longtext', max: 400 },
       ...perfiles.map((p) => ({ name: `var_${p.id}`, label: `Variante: ${p.label}`, type: 'longtext' as const, max: 600 })),
+    ],
+  },
+  guia: {
+    key: 'guia',
+    table: 'admin_guia',
+    label: 'Guía',
+    singular: 'documento',
+    pk: 'id',
+    order: 'orden.asc,created_at.asc',
+    defaults: { seccion: 'Manual' },
+    fields: [
+      { name: 'seccion', label: 'Sección', type: 'select', options: seccionesGuia, required: true, list: true },
+      { name: 'titulo', label: 'Título', type: 'text', required: true, max: 160, list: true },
+      { name: 'orden', label: 'Orden dentro de la sección (menor = primero)', type: 'number', required: true },
+      { name: 'contenido', label: 'Contenido (## título, - lista, **negrita**, > texto para copiar, tablas con |)', type: 'longtext', required: true, max: 30000 },
     ],
   },
   reservas: {

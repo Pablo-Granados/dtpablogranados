@@ -159,7 +159,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 
   // Varias filas de una vez (las 12 semanas de un mentorado)
   if (Array.isArray(body)) {
-    if (!['semanas', 'mensajes', 'programa'].includes(resource!.key) || body.length > 60) return json(400, { error: 'Datos inválidos' });
+    if (!['semanas', 'mensajes', 'programa', 'guia'].includes(resource!.key) || body.length > 60) return json(400, { error: 'Datos inválidos' });
     const rows: Record<string, string | number | boolean | null>[] = [];
     for (const item of body as Record<string, unknown>[]) {
       const b = build(resource!, item, false);

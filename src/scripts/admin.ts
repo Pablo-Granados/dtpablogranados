@@ -5,13 +5,14 @@
 import { pasos, type Mensaje } from '@/data/mensajes';
 import { actualizarCatalogo, mensajeAFila, mensajesActuales, mensajesIniciales, programaInicial, semanaAFila } from './admin-catalogo';
 import { mensajesView } from './admin-textos';
+import { guiaAFila, guiaIniciales, guiaView } from './admin-guia';
 import { entrantes, etapasEmbudo, metaTypes, origenesContacto, plazosSeguimiento, productos, resources, type EntranteOrigen, type Field, type Producto, type Resource, type ResourceKey } from '@/data/admin';
 
 import { enlacesView, mentoradoFichaView, mentoradosView, planInicial, progreso, resumenTexto, semanaActual, semanasDe, semanasIniciales } from './admin-mentorados';
 import { programaView, type ProgramaFiltro } from './admin-programa';
 import { contenidoResultadosView, agruparPersonas, datosView, exportar, proyeccionView, renovacionesPendientes, semanaInicial, semanaView, type Proy } from './admin-reports';
 import { addDays, addMonths, btn, esc, fechaHora, iso, monthStart, num, pct, shortDate, sumUsd, today, weekStart, type Row } from './admin-utils';
-type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos' | 'programa' | 'mentorados' | 'enlaces' | 'mensajes';
+type Tab = 'hoy' | 'resumen' | 'embudo' | 'proyeccion' | 'semana' | 'contactos' | 'ventas' | 'tareas' | 'contenido' | 'datos' | 'programa' | 'mentorados' | 'enlaces' | 'mensajes' | 'guia';
 
 const root = document.querySelector<HTMLElement>('[data-app]')!;
 const view = root.querySelector<HTMLElement>('[data-view]')!;
@@ -28,6 +29,8 @@ let mentId = '';
 let mentSemana = 1;
 let mentFiltro = 'activos';
 let enlacesQuery = '';
+let guiaSel = '';
+let guiaQuery = '';
 
 /** Pregunta antes de borrar, con un modal propio (el confirm del navegador puede estar bloqueado). */
 type OpcionesConfirmar = { titulo?: string; verbo?: string; boton?: string; peligro?: boolean };
@@ -68,7 +71,7 @@ function nombreDe(key: ResourceKey, row?: Row): string {
   }
 }
 
-const data: Record<ResourceKey | 'entrantes', Row[]> = { tareas: [], contenido: [], contactos: [], registro: [], metas: [], ventas: [], cobros: [], historial: [], mentorados: [], semanas: [], enlaces: [], reservas: [], mensajes: [], programa: [], entrantes: [] };
+const data: Record<ResourceKey | 'entrantes', Row[]> = { tareas: [], contenido: [], contactos: [], registro: [], metas: [], ventas: [], cobros: [], historial: [], mentorados: [], semanas: [], enlaces: [], reservas: [], mensajes: [], programa: [], guia: [], entrantes: [] };
 let tab: Tab = 'hoy';
 let contactSub: 'prospectos' | 'entrantes' | 'personas' = 'prospectos';
 let personasQuery = '';
@@ -81,6 +84,7 @@ const grupos: readonly { id: string; label: string; tabs: readonly (readonly [Ta
   { id: 'contenido', label: 'Contenido', tabs: [['contenido', 'Calendario']] },
   { id: 'mentoria', label: 'Mentoría', tabs: [['mentorados', 'Mentorados'], ['enlaces', 'Enlaces'], ['programa', 'Programa']] },
   { id: 'gestion', label: 'Gestión', tabs: [['tareas', 'Tareas'], ['datos', 'Datos']] },
+  { id: 'guia', label: 'Guía', tabs: [['guia', 'Guía']] },
 ];
 const ultimaPestana: Record<string, Tab> = {};
 let semanaWs = semanaInicial();
@@ -684,7 +688,7 @@ function renderTabs(hoy: number, nuevos: number) {
 
 function render() {
   actualizarCatalogo(data);
-  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, proyeccion: () => proyeccionView(data, proy, conversionContactadoCliente()), semana: () => semanaView(data, semanaWs), contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView, datos: () => datosView(data), programa: () => programaView(progFiltro, data), mensajes: () => mensajesView(data), mentorados: () => mentoradosView(data, mentFiltro), enlaces: () => enlacesView(data, enlacesQuery) }[tab]();
+  view.innerHTML = { hoy: hoyView, resumen: resumenView, embudo: embudoView, proyeccion: () => proyeccionView(data, proy, conversionContactadoCliente()), semana: () => semanaView(data, semanaWs), contactos: contactosView, ventas: ventasView, tareas: tareasView, contenido: contenidoView, datos: () => datosView(data), programa: () => programaView(progFiltro, data), mensajes: () => mensajesView(data), guia: () => guiaView(data, guiaSel, guiaQuery), mentorados: () => mentoradosView(data, mentFiltro), enlaces: () => enlacesView(data, enlacesQuery) }[tab]();
   const n = hoyCount();
   // Aviso de contactos nuevos sin atender, también en el título de la ventana
   const nuevos = data.entrantes.filter((e) => e.estado === entrantes[e.origen as EntranteOrigen]?.estados[0]).length;
@@ -699,14 +703,14 @@ function fieldInput(f: Field, v: unknown) {
   const cls = 'w-full border border-line-strong bg-ink px-3 py-2.5 text-base text-bone focus:border-signal focus:outline-none';
   if (f.type === 'select')
     return `<select name="${f.name}" class="${cls}">${f.options!.map((o) => `<option value="${esc(o)}"${o === val ? ' selected' : ''}>${esc(o) || '—'}</option>`).join('')}</select>`;
-  if (f.type === 'longtext') return `<textarea name="${f.name}" rows="4" maxlength="${f.max ?? 1500}" class="${cls}">${esc(val)}</textarea>`;
+  if (f.type === 'longtext') return `<textarea name="${f.name}" rows="${(f.max ?? 0) > 5000 ? 18 : 4}" maxlength="${f.max ?? 1500}" class="${cls}">${esc(val)}</textarea>`;
   const type = f.type === 'date' ? 'date' : f.type === 'number' ? 'number' : 'text';
   return `<input name="${f.name}" type="${type}" ${f.type === 'number' ? 'step="any"' : ''} value="${esc(val)}" maxlength="${f.max ?? 300}" placeholder="${f.type === 'url' ? 'https://…' : esc(f.placeholder ?? '')}" class="${cls}" />`;
 }
 
 function openForm(res: Resource, id?: string, parent?: string) {
   const row = id ? data[res.key].find((r) => String(r[res.pk]) === id) : undefined;
-  const values: Row = row ?? { ...(res.defaults ?? {}), ...(res.key === 'registro' ? { fecha: today() } : {}), ...(res.key === 'cobros' ? { vencimiento: today() } : {}), ...(res.key === 'mentorados' ? { inicio: today() } : {}), ...(res.key === 'mensajes' ? { orden: data.mensajes.reduce((a, r) => Math.max(a, Number(r.orden ?? 0)), 0) + 1 } : {}) };
+  const values: Row = row ?? { ...(res.defaults ?? {}), ...(res.key === 'registro' ? { fecha: today() } : {}), ...(res.key === 'cobros' ? { vencimiento: today() } : {}), ...(res.key === 'mentorados' ? { inicio: today() } : {}), ...(res.key === 'guia' ? { orden: data.guia.reduce((a, r) => Math.max(a, Number(r.orden ?? 0)), 0) + 1 } : {}), ...(res.key === 'mensajes' ? { orden: data.mensajes.reduce((a, r) => Math.max(a, Number(r.orden ?? 0)), 0) + 1 } : {}) };
 
   form.innerHTML = `
     <div class="flex items-start justify-between gap-4">
@@ -1660,9 +1664,19 @@ root.addEventListener('click', async (e) => {
         say((err as Error).message, true);
       }
       break;
+    case 'guia-doc':
+      guiaSel = el.dataset.titulo ?? '';
+      render();
+      // En pantallas chicas el índice queda arriba: llevar la vista al documento elegido
+      if (innerWidth < 1024) view.querySelector('article')?.scrollIntoView({ block: 'start' });
+      break;
+    case 'guia-copiar':
+      await copiar(el.dataset.texto ?? '');
+      say('Texto copiado.');
+      break;
     case 'catalogo-habilitar': {
-      const que = el.dataset.what as 'mensajes' | 'programa';
-      const filas = que === 'mensajes' ? mensajesIniciales.map((m, i) => mensajeAFila(m, i)) : programaInicial.map(semanaAFila);
+      const que = el.dataset.what as 'mensajes' | 'programa' | 'guia';
+      const filas = que === 'mensajes' ? mensajesIniciales.map((m, i) => mensajeAFila(m, i)) : que === 'guia' ? guiaIniciales.map((g, i) => guiaAFila(g, i)) : programaInicial.map(semanaAFila);
       try {
         await api(que, 'POST', filas);
         await reload(que);
@@ -1863,6 +1877,15 @@ root.addEventListener('change', async (e) => {
 
 root.addEventListener('input', (e) => {
   const el = e.target as HTMLInputElement;
+  if (el.dataset.action === 'guia-q') {
+    guiaQuery = el.value;
+    const caret = el.selectionStart;
+    render();
+    const next = view.querySelector<HTMLInputElement>('[data-action="guia-q"]');
+    next?.focus();
+    if (caret != null) next?.setSelectionRange(caret, caret);
+    return;
+  }
   if (el.dataset.action === 'enlaces-q') {
     enlacesQuery = el.value;
     const caret = el.selectionStart;
@@ -1900,8 +1923,8 @@ renderTabs(0, 0);
 (async () => {
   try {
     // Los textos editables son opcionales: si todavía no existen las tablas, se usan los textos iniciales
-    const opcionales = ['mensajes', 'programa'];
-    await Promise.all((['tareas', 'contenido', 'contactos', 'registro', 'metas', 'ventas', 'cobros', 'historial', 'mentorados', 'semanas', 'enlaces', 'reservas', 'mensajes', 'programa', 'entrantes'] as const).map((k) => reload(k).catch((e) => { if (!opcionales.includes(k)) throw e; })));
+    const opcionales = ['mensajes', 'programa', 'guia'];
+    await Promise.all((['tareas', 'contenido', 'contactos', 'registro', 'metas', 'ventas', 'cobros', 'historial', 'mentorados', 'semanas', 'enlaces', 'reservas', 'mensajes', 'programa', 'guia', 'entrantes'] as const).map((k) => reload(k).catch((e) => { if (!opcionales.includes(k)) throw e; })));
     render();
   } catch (err) {
     view.innerHTML = `<p class="border border-line p-6 text-mute">No se pudo cargar el panel: ${esc((err as Error).message)}. Revisá que ejecutaste supabase/admin.sql en Supabase.</p>`;
